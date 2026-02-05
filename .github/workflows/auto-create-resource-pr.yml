@@ -18,36 +18,79 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Create resource file and PR
+      - name: Parse issue and create resource
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const issueBody = issue.body;
+            
+            const parseField = (fieldName) => {
+              const regex = new RegExp('### ' + fieldName + '\\s+([\\s\\S]*?)(?=###|$)', 'i');
+              const match = issueBody.match(regex);
+              return match ? match[1].trim() : '';
+            };
+            
+            const name = parseField('Ressource Navn / Resource Name');
+            const url = parseField('URL');
+            const categoryRaw = parseField('Kategori / Category');
+            const section = parseField('Section Tag \\(valgfri / optional\\)') || '';
+            const description = parseField('Beskrivelse / Description');
+            
+            const categoryMap = {
+              '🔄 Nostr Alternativer (nostr-alternatives)': 'nostr-alternatives',
+              '⚡ Nostr Services (services)': 'services',
+              '🔌 Browser Udvidelser (extensions)': 'extensions',
+              '🛠️ Nostr Værktøjer (tools)': 'tools',
+              '🌐 Nostr Relays (relays)': 'relays'
+            };
+            
+            const category = categoryMap[categoryRaw] || 'nostr-alternatives';
+            
+            const filename = name
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '') + '.md';
+            
+            const finalDescription = description.endsWith('.') ? description : description + '.';
+            const finalUrl = url.endsWith('/') || url.includes('?') ? url : url + '/';
+            
+            let frontmatter = '---\n';
+            frontmatter += 'title: "' + name + '"\n';
+            frontmatter += 'description: "' + finalDescription + '"\n';
+            frontmatter += 'url: "' + finalUrl + '"\n';
+            frontmatter += 'category: "' + category + '"\n';
+            if (section) {
+              frontmatter += 'section: "' + section + '"\n';
+            }
+            frontmatter += 'order: 50\n';
+            frontmatter += 'published: true\n';
+            frontmatter += '---\n';
+            
+            core.exportVariable('RESOURCE_NAME', name);
+            core.exportVariable('RESOURCE_FILENAME', filename);
+            core.exportVariable('RESOURCE_CONTENT', frontmatter);
+            core.exportVariable('RESOURCE_URL', finalUrl);
+            core.exportVariable('RESOURCE_CATEGORY', category);
+            core.exportVariable('RESOURCE_SECTION', section);
+            core.exportVariable('RESOURCE_DESCRIPTION', finalDescription);
+      
+      - name: Create branch and file
         run: |
-          # Configure git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          # Parse issue body (simplified - just for testing)
-          BRANCH_NAME="add-resource-test-${{ github.event.issue.number }}"
-          FILENAME="test-resource-${{ github.event.issue.number }}.md"
+          BRANCH_NAME="add-resource-${RESOURCE_FILENAME%.md}"
           
-          # Create new branch
           git checkout -b "$BRANCH_NAME"
           
-          # Create the resource file
-          cat > "src/content/resources/$FILENAME" << 'EOF'
-          ---
-          title: "Test Resource"
-          description: "This is a test resource from issue #${{ github.event.issue.number }}."
-          url: "https://example.com/"
-          category: "nostr-alternatives"
-          order: 50
-          published: true
-          ---
-          EOF
+          echo "$RESOURCE_CONTENT" > "src/content/resources/$RESOURCE_FILENAME"
           
-          # Commit and push
-          git add "src/content/resources/$FILENAME"
-          git commit -m "Add test resource from issue #${{ github.event.issue.number }}"
+          git add "src/content/resources/$RESOURCE_FILENAME"
+          git commit -m "Add $RESOURCE_NAME from issue #${{ github.event.issue.number }}"
           git push origin "$BRANCH_NAME"
           
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
@@ -55,20 +98,43 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const branchName = 'add-resource-test-' + context.issue.number;
+            const name = process.env.RESOURCE_NAME;
+            const url = process.env.RESOURCE_URL;
+            const category = process.env.RESOURCE_CATEGORY;
+            const section = process.env.RESOURCE_SECTION;
+            const description = process.env.RESOURCE_DESCRIPTION;
+            const filename = process.env.RESOURCE_FILENAME;
+            const branchName = process.env.BRANCH_NAME;
+            
+            const prBody = 'This PR adds **' + name + '** to the resources.\n\n' +
+              '**Auto-generated from issue #' + context.issue.number + '**\n\n' +
+              '## Resource Details\n' +
+              '- **Name:** ' + name + '\n' +
+              '- **URL:** ' + url + '\n' +
+              '- **Category:** ' + category + '\n' +
+              (section ? '- **Section:** ' + section + '\n' : '') +
+              '- **Description:** ' + description + '\n\n' +
+              '## Review Checklist\n' +
+              '- [ ] URL is correct and works\n' +
+              '- [ ] Description is accurate\n' +
+              '- [ ] Category is appropriate\n' +
+              '- [ ] Filename follows convention (' + filename + ')\n' +
+              '- [ ] Order value is reasonable (currently set to 50)\n\n' +
+              '---\n' +
+              'Closes #' + context.issue.number;
             
             const pr = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Add test resource from issue #' + context.issue.number,
+              title: 'Add ' + name + ' to resources',
               head: branchName,
               base: 'main',
-              body: 'Auto-generated test PR from issue #' + context.issue.number
+              body: prBody
             });
             
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: '🎉 Created PR #' + pr.data.number
+              body: '🎉 Thanks for the suggestion!\n\nI have automatically created a Pull Request with this resource: #' + pr.data.number + '\n\nThe maintainer will review and merge it soon!'
             });
