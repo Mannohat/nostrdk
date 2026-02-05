@@ -75,13 +75,20 @@ jobs:
             });
             const defaultBranch = repo.default_branch;
             
-            const { data: refData } = await github.rest.git.getRef({
+            cconst { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const defaultBranch = repo.default_branch;
+            
+            const { data: mainBranch } = await github.rest.repos.getBranch({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'heads/' + defaultBranch
+              branch: defaultBranch
             });
             
-            const sha = refData.object.sha;
+            const sha = mainBranch.commit.sha;
+            console.log('Got SHA:', sha);
             
             try {
               await github.rest.git.createRef({
