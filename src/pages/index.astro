@@ -12,11 +12,11 @@ import "../styles/global.css";
 		<title>Nostr.dk - Decentraliseret Socialt Netværk</title>
 		<meta
 			name="description"
-			content="Nostr.dk - Et decentraliseret socialt netværk"
+			content="Nostr.dk - Tag del i fremtidens decentraliserede internet"
 		/>
 		<meta
 			name="keywords"
-			content="Nostr, Decentralized, Social Network, Privacy"
+			content="Nostr, Decentraliseret, Socialt Netværk, Privatliv"
 		/>
 		<link rel="icon" href="/shaka.png" type="image/png" />
 		<link
@@ -31,11 +31,10 @@ import "../styles/global.css";
 		<main class="container">
 			<!-- Hero Section -->
 			<section class="hero">
-				<h1>Bliv en del af fremtidens decentraliserede netværk</h1>
+				<h1>Tag del i fremtidens decentraliserede internet</h1>
 				<p>
-					Nostr udfordrer det traditionelle internet og giver dig
-					ejerskab over dine data – socialt, åbent og langt mere end
-					et netværk.
+					Nostr giver dig ejerskab over dine data – en åben protokol
+					for sociale medier og meget mere.
 				</p>
 				<button class="cta" id="start-button"
 					>Lad mig læse mere om det</button
@@ -58,7 +57,8 @@ import "../styles/global.css";
 					<p>
 						<strong
 							>Nostr står for "Notes and Other Stuff Transmitted
-							by Relays".</strong>
+							by Relays".</strong
+						>
 					</p>
 					<p>
 						Nostr bruger offentlige og private nøgler til at
@@ -289,7 +289,8 @@ import "../styles/global.css";
 			<section class="nostr-nip05" id="nostr-nip05">
 				<h2>
 					Få en Nostr adresse <span style="font-size: 0.75em;"
-						>(NIP-05 adresse)</span>
+						>(NIP-05 adresse)</span
+					>
 				</h2>
 				<p>
 					Du kan opsætte en verificeret identitet som gør det muligt
@@ -307,7 +308,8 @@ import "../styles/global.css";
 					<p>
 						Du skal vælge et alias og <strong
 							>et af disse domæner som sammen udgør din nostr
-							adresse:</strong>
+							adresse:</strong
+						>
 					</p>
 
 					<ul class="nip05-list">
@@ -428,17 +430,28 @@ import "../styles/global.css";
 				<h2>Støt Nostr.dk</h2>
 				<p>
 					Hvis du vil støtte vores arbejde med at udbrede Nostr i
-					Danmark, kan du sende lidt sats ⚡️ via Lightning-netværket. Hvad er Lightning? <a href="https://www.enogtyve.org/bitcoin-lightning/" target="_blank" rel="noopener noreferrer">Lær mere her</a>.
+					Danmark, kan du sende lidt sats ⚡️ via Lightning-netværket.
+					Hvad er Lightning? <a
+						href="https://www.enogtyve.org/bitcoin-lightning/"
+						target="_blank"
+						rel="noopener noreferrer">Lær mere her</a
+					>.
 				</p>
-				<img
-					src="/support-qr.png"
-					alt="Support QR Code"
-					class="support-qr"
+				<button
 					onclick="copyToClipboard()"
-				/>
+					style="background: none; border: none; padding: 10px; cursor: pointer;"
+					type="button"
+				>
+					<img
+						src="/support-qr.png"
+						alt="Support QR Code"
+						class="support-qr"
+					/>
+				</button>
 				<p class="support-instruction">
 					<em
-						>Klik på QR-koden for at kopiere LNURL til udklipsholder</em>
+						>Klik på QR-koden for at kopiere LNURL til udklipsholder</em
+					>
 				</p>
 			</section>
 		</main>
@@ -467,36 +480,45 @@ import "../styles/global.css";
 				);
 			};
 
-			// Support QR copy to clipboard
-			window.copyToClipboard = function () {
+			// Support QR copy to clipboard - improved for mobile
+			window.copyToClipboard = async function () {
 				const lnurl =
 					"lnurl1dp68gurn8ghj7ct5d9hkugrnv4kxz7f4v5mx2dfjxa5hgvfex5crsepexymxyd3h8wctjv4jzummwd9hkutnnw46ju6t4v9sxqeekx9jrxdpkxdjnqepnxqcrxctxxdjxxe3nxcekxc3sxs6nse33xdjrgvfcxs6xvvfkxqe3zdejxq6nnx9jrgdp4vyukvenxxd3k2wryv33ryd3hxumnqcf4x3nrqvtyx9jxgde5xvckyerpv4nkvvtp893xgvr9v4nxze3jd9jxgdfc8y6nwd3hx3nkgvnyveuxvv33xfjngevp8y6r2e3k8yerxdphxumnqd34xf3x2c3kxycrqwrhxqukxvfcxvmrgcfnvfjzuvfsxu6rxvrzxserzdnyvf3xven989nr2wtyvvukgvfsxvukydeh8yunwcfe8ycxgvf4xu6nqvtzx43r2eryxsenywpkxqckgdfnv5urzve382dx2dr98yunwdfex9jnxenzv4jrzcfjx9nrqwfkxvunywfhx3nrjdnpvs6rxdedvejryve5xq6rgwfkxu6xgvf3xu6nxe3n8y6x2dte8yuxvvnxxqunxve3vyc4";
 
+				// Try modern clipboard API first
 				if (navigator.clipboard && navigator.clipboard.writeText) {
-					navigator.clipboard
-						.writeText(lnurl)
-						.then(() => {
-							alert("LNURL kopieret til udklipsholder!");
-						})
-						.catch((err) => {
-							console.error("Kunne ikke kopiere: ", err);
-						});
-				} else {
-					const textArea = document.createElement("textarea");
-					textArea.value = lnurl;
-					textArea.style.position = "fixed";
-					textArea.style.left = "-999999px";
-					document.body.appendChild(textArea);
-					textArea.focus();
-					textArea.select();
 					try {
-						document.execCommand("copy");
+						await navigator.clipboard.writeText(lnurl);
 						alert("LNURL kopieret til udklipsholder!");
+						return;
 					} catch (err) {
-						console.error("Kunne ikke kopiere: ", err);
+						console.error("Clipboard API failed: ", err);
 					}
-					document.body.removeChild(textArea);
 				}
+
+				// Fallback for older browsers/mobile
+				const textArea = document.createElement("textarea");
+				textArea.value = lnurl;
+				textArea.style.position = "fixed";
+				textArea.style.left = "-999999px";
+				textArea.style.top = "0";
+				document.body.appendChild(textArea);
+				textArea.focus();
+				textArea.select();
+
+				try {
+					const successful = document.execCommand("copy");
+					if (successful) {
+						alert("LNURL kopieret til udklipsholder!");
+					} else {
+						alert("Kunne ikke kopiere. Prøv venligst igen.");
+					}
+				} catch (err) {
+					console.error("Fallback copy failed: ", err);
+					alert("Kunne ikke kopiere. Prøv venligst igen.");
+				}
+
+				document.body.removeChild(textArea);
 			};
 
 			// Hero button - expand all sections and scroll
@@ -588,6 +610,30 @@ import "../styles/global.css";
 				text-align: center;
 				margin-top: 15px;
 				font-size: 1rem;
+			}
+
+			/* Make support QR clickable on mobile */
+			.support-qr {
+				cursor: pointer;
+				touch-action: manipulation;
+				-webkit-user-select: none;
+				user-select: none;
+				width: 90%;
+				max-width: 450px;
+				display: block;
+				margin: 20px auto;
+				padding: 10px;
+				transition: transform 0.2s ease;
+			}
+
+			@media (max-width: 768px) {
+				.support-qr {
+					max-width: 320px;
+				}
+			}
+
+			.support-qr:active {
+				transform: scale(0.95);
 			}
 		</style>
 	</body>
