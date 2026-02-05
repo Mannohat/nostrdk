@@ -1,0 +1,162 @@
+name: Auto-Create Resource PR from Issue
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  create-resource-pr:
+    if: contains(github.event.issue.labels.*.name, 'ressource-forslag')
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Parse issue and create resource file
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const issueBody = issue.body;
+            
+            const parseField = (fieldName) => {
+              const regex = new RegExp(`### ${fieldName}\\s+([\\s\\S]*?)(?=###|$)`, 'i');
+              const match = issueBody.match(regex);
+              return match ? match[1].trim() : '';
+            };
+            
+            const name = parseField('Ressource Navn / Resource Name');
+            const url = parseField('URL');
+            const categoryRaw = parseField('Kategori / Category');
+            const section = parseField('Section Tag \\(valgfri / optional\\)') || '';
+            const description = parseField('Beskrivelse / Description');
+            
+            const categoryMap = {
+              '🔄 Nostr Alternativer (nostr-alternatives)': 'nostr-alternatives',
+              '⚡ Nostr Services (services)': 'services',
+              '🔌 Browser Udvidelser (extensions)': 'extensions',
+              '🛠️ Nostr Værktøjer (tools)': 'tools',
+              '🌐 Nostr Relays (relays)': 'relays'
+            };
+            
+            const category = categoryMap[categoryRaw] || 'nostr-alternatives';
+            
+            const filename = name
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '') + '.md';
+            
+            const finalDescription = description.endsWith('.') ? description : description + '.';
+            const finalUrl = url.endsWith('/') || url.includes('?') ? url : url + '/';
+            
+            const frontmatter = `---
+title: "${name}"
+description: "${finalDescription}"
+url: "${finalUrl}"
+category: "${category}"
+${section ? `section: "${section}"` : '# section: "Optional"'}
+order: 50
+published: true
+---
+`;
+            
+            const branchName = `add-resource-${filename.replace('.md', '')}`;
+            
+            const { data: repo } = await github.rest.repos.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            const defaultBranch = repo.default_branch;
+            
+            const { data: ref } = await github.rest.git.getRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `heads/${defaultBranch}`
+            });
+            
+            try {
+              await github.rest.git.createRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: `refs/heads/${branchName}`,
+                sha: ref.object.sha
+              });
+            } catch (error) {
+              console.log('Branch may already exist:', error.message);
+            }
+            
+            const filePath = `src/content/resources/${filename}`;
+            
+            try {
+              await github.rest.repos.createOrUpdateFileContents({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                path: filePath,
+                message: `Add ${name} resource from issue #${issue.number}`,
+                content: Buffer.from(frontmatter).toString('base64'),
+                branch: branchName
+              });
+              
+              const { data: pr } = await github.rest.pulls.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: `Add ${name} to resources`,
+                head: branchName,
+                base: defaultBranch,
+                body: `This PR adds **${name}** to the resources.
+
+**Auto-generated from issue #${issue.number}**
+
+## Resource Details
+- **Name:** ${name}
+- **URL:** ${finalUrl}
+- **Category:** ${category}
+${section ? `- **Section:** ${section}` : ''}
+- **Description:** ${finalDescription}
+
+## Review Checklist
+- [ ] URL is correct and works
+- [ ] Description is accurate
+- [ ] Category is appropriate
+- [ ] Filename follows convention (${filename})
+- [ ] Order value is reasonable (currently set to 50)
+
+---
+Closes #${issue.number}`
+              });
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `🎉 Thanks for the suggestion!
+
+I've automatically created a Pull Request with this resource: #${pr.number}
+
+The maintainer will review and merge it soon!`
+              });
+              
+              console.log(`Created PR #${pr.number} for resource: ${name}`);
+              
+            } catch (error) {
+              console.error('Error creating file or PR:', error);
+              
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: `⚠️ There was an issue automatically creating the PR. 
+
+Error: ${error.message}
+
+The maintainer will create this resource manually.`
+              });
+              
+              throw error;
+            }
