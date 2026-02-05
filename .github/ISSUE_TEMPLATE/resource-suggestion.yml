@@ -1,0 +1,81 @@
+name: Foreslå Ny Ressource / Suggest New Resource
+description: Foreslå en ny app eller tjeneste til Nostr.dk
+title: "[RESSOURCE] "
+labels: ["ressource-forslag", "needs-review"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tak for at foreslå en ny ressource! / Thanks for suggesting a new resource!
+        
+  - type: input
+    id: name
+    attributes:
+      label: Ressource Navn / Resource Name
+      description: Hvad hedder appen/tjenesten?
+      placeholder: f.eks. Primal, Damus, Alby
+    validations:
+      required: true
+
+  - type: input
+    id: url
+    attributes:
+      label: URL
+      description: Link til ressourcen
+      placeholder: https://example.com
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Kategori / Category
+      description: Hvilken kategori passer bedst?
+      options:
+        - �� Nostr Alternativer (nostr-alternatives)
+        - ⚡ Nostr Services (services)
+        - 🔌 Browser Udvidelser (extensions)
+        - 🛠️ Nostr Værktøjer (tools)
+        - 🌐 Nostr Relays (relays)
+    validations:
+      required: true
+
+  - type: input
+    id: section
+    attributes:
+      label: Section Tag (valgfri / optional)
+      description: F.eks. "Social Media", "Wallet", "Media Storage"
+      placeholder: Social Media
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Beskrivelse / Description
+      description: Kort beskrivelse på dansk (1-2 sætninger)
+      placeholder: En decentraliseret social media klient bygget på Nostr protokollen
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Hvorfor? / Why?
+      description: Hvorfor skal denne ressource tilføjes til Nostr.dk?
+      placeholder: Denne app gør det nemt for nye brugere at komme i gang med Nostr...
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: testing
+    attributes:
+      label: Har du testet ressourcen? / Have you tested the resource?
+      options:
+        - label: Ja, jeg har testet at ressourcen virker / Yes, I have tested that the resource works
+          required: true
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Yderligere Information / Additional Info
+      description: Eventuelle ekstra kommentarer
+      placeholder: Dette kunne også være relevant...
