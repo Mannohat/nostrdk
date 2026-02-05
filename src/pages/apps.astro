@@ -63,18 +63,7 @@ const resourcesByCategory = Object.keys(categories).reduce((acc, cat) => {
       <p>Stort set alle de services og virksomheder som f.eks. Youtube, Google, Facebook, Twitter osv. har dine data og kan lukke dig ude fra din konto. Nostr giver dig mulighed for at eje din egen data, sikrer dig adgang og beholde dine følgere på tværs af Nostr-baserede services.</p>
     </div>
 
-    <!-- Contribute Banner -->
-    <div class="contribute-banner">
-      <h2>📢 Mangler din favorit app?</h2>
-      <p>Hjælp os med at udvide listen! Foreslå en ny Nostr app eller tjeneste.</p>
-      <a href="https://github.com/Mannohat/nostrdk/issues/new?template=resource-suggestion.yml" 
-         target="_blank" 
-         class="contribute-button">
-        ➕ Foreslå en App
-      </a>
-    </div>
-
-    <!-- Search Bar -->
+    <!-- Search Bar with Subtle Contribute Link -->
     <div class="search-container">
       <input 
         type="text" 
@@ -82,6 +71,10 @@ const resourcesByCategory = Object.keys(categories).reduce((acc, cat) => {
         placeholder="🔍 Søg efter apps og tjenester..."
         class="search-input"
       />
+      <!-- Subtle Contribute Link -->
+      <div class="contribute-link">
+        <p>Mangler der noget? <a href="https://github.com/Mannohat/nostrdk/issues/new?template=resource-suggestion.yml" target="_blank">Foreslå App / Service →</a></p>
+      </div>
     </div>
 
     <!-- Resources by Category -->
@@ -126,7 +119,7 @@ const resourcesByCategory = Object.keys(categories).reduce((acc, cat) => {
         <a href="https://github.com/Mannohat/nostrdk/issues/new?template=resource-suggestion.yml" 
            target="_blank" 
            class="cta-button primary">
-          ➕ Foreslå en App →
+          ➕ Foreslå App / Service →
         </a>
         <a href="/podcasts" class="cta-button secondary">Se Podcasts →</a>
         <a href="/" class="cta-button secondary">Gå til Forsiden →</a>
@@ -232,47 +225,6 @@ const resourcesByCategory = Object.keys(categories).reduce((acc, cat) => {
       color: inherit !important;
     }
 
-    /* Contribute Banner */
-    .contribute-banner {
-      background: linear-gradient(135deg, rgba(108, 79, 150, 0.3), rgba(55, 26, 118, 0.3));
-      border: 2px solid #A084CA;
-      border-radius: 16px;
-      padding: 40px;
-      text-align: center;
-      margin: 40px auto 50px;
-      max-width: 900px;
-    }
-
-    .contribute-banner h2 {
-      font-size: 2rem;
-      margin-bottom: 15px;
-      color: #A084CA;
-    }
-
-    .contribute-banner p {
-      font-size: 1.15rem;
-      color: #c0c0c0;
-      margin-bottom: 25px;
-    }
-
-    .contribute-button {
-      display: inline-block;
-      background: #6C4F96;
-      color: #fff;
-      padding: 15px 40px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s;
-    }
-
-    .contribute-button:hover {
-      background: #563C73;
-      transform: scale(1.05);
-      box-shadow: 0 5px 20px rgba(160, 132, 202, 0.4);
-    }
-
     /* Search container */
     .search-container {
       max-width: 700px;
@@ -304,6 +256,29 @@ const resourcesByCategory = Object.keys(categories).reduce((acc, cat) => {
     .search-input::placeholder {
       color: rgba(255, 255, 255, 0.6);
       font-weight: 400;
+    }
+
+    /* Subtle Contribute Link */
+    .contribute-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .contribute-link p {
+      font-size: 0.95rem;
+      color: #999;
+    }
+
+    .contribute-link a {
+      color: #A084CA;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .contribute-link a:hover {
+      color: #C0A4E0;
+      text-decoration: underline;
     }
 
     .resource-section {
@@ -402,19 +377,6 @@ const resourcesByCategory = Object.keys(categories).reduce((acc, cat) => {
     }
 
     @media (max-width: 768px) {
-      .contribute-banner {
-        padding: 30px 20px;
-        margin: 30px auto 40px;
-      }
-
-      .contribute-banner h2 {
-        font-size: 1.6rem;
-      }
-
-      .contribute-banner p {
-        font-size: 1rem;
-      }
-
       .search-container {
         padding: 0 10px;
       }
@@ -422,6 +384,10 @@ const resourcesByCategory = Object.keys(categories).reduce((acc, cat) => {
       .search-input {
         padding: 16px 20px;
         font-size: 1rem;
+      }
+
+      .contribute-link p {
+        font-size: 0.9rem;
       }
 
       .cta-buttons {
