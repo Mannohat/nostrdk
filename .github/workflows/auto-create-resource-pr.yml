@@ -18,145 +18,57 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Parse issue and create resource file
+      - name: Create resource file and PR
+        run: |
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Parse issue body (simplified - just for testing)
+          BRANCH_NAME="add-resource-test-${{ github.event.issue.number }}"
+          FILENAME="test-resource-${{ github.event.issue.number }}.md"
+          
+          # Create new branch
+          git checkout -b "$BRANCH_NAME"
+          
+          # Create the resource file
+          cat > "src/content/resources/$FILENAME" << 'EOF'
+          ---
+          title: "Test Resource"
+          description: "This is a test resource from issue #${{ github.event.issue.number }}."
+          url: "https://example.com/"
+          category: "nostr-alternatives"
+          order: 50
+          published: true
+          ---
+          EOF
+          
+          # Commit and push
+          git add "src/content/resources/$FILENAME"
+          git commit -m "Add test resource from issue #${{ github.event.issue.number }}"
+          git push origin "$BRANCH_NAME"
+          
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create Pull Request
         uses: actions/github-script@v7
         with:
           script: |
-            const issue = context.payload.issue;
-            const issueBody = issue.body;
+            const branchName = 'add-resource-test-' + context.issue.number;
             
-            const parseField = (fieldName) => {
-              const regex = new RegExp('### ' + fieldName + '\\s+([\\s\\S]*?)(?=###|$)', 'i');
-              const match = issueBody.match(regex);
-              return match ? match[1].trim() : '';
-            };
+            const pr = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Add test resource from issue #' + context.issue.number,
+              head: branchName,
+              base: 'main',
+              body: 'Auto-generated test PR from issue #' + context.issue.number
+            });
             
-            const name = parseField('Ressource Navn / Resource Name');
-            const url = parseField('URL');
-            const categoryRaw = parseField('Kategori / Category');
-            const section = parseField('Section Tag \\(valgfri / optional\\)') || '';
-            const description = parseField('Beskrivelse / Description');
-            
-            const categoryMap = {
-              '🔄 Nostr Alternativer (nostr-alternatives)': 'nostr-alternatives',
-              '⚡ Nostr Services (services)': 'services',
-              '🔌 Browser Udvidelser (extensions)': 'extensions',
-              '🛠️ Nostr Værktøjer (tools)': 'tools',
-              '🌐 Nostr Relays (relays)': 'relays'
-            };
-            
-            const category = categoryMap[categoryRaw] || 'nostr-alternatives';
-            
-            const filename = name
-              .toLowerCase()
-              .replace(/[^a-z0-9]+/g, '-')
-              .replace(/^-+|-+$/g, '') + '.md';
-            
-            const finalDescription = description.endsWith('.') ? description : description + '.';
-            const finalUrl = url.endsWith('/') || url.includes('?') ? url : url + '/';
-            
-            let frontmatter = '---\n';
-            frontmatter += 'title: "' + name + '"\n';
-            frontmatter += 'description: "' + finalDescription + '"\n';
-            frontmatter += 'url: "' + finalUrl + '"\n';
-            frontmatter += 'category: "' + category + '"\n';
-            if (section) {
-              frontmatter += 'section: "' + section + '"\n';
-            }
-            frontmatter += 'order: 50\n';
-            frontmatter += 'published: true\n';
-            frontmatter += '---\n';
-            
-            const branchName = 'add-resource-' + filename.replace('.md', '');
-            const filePath = 'src/content/resources/' + filename;
-            
-            try {
-              const mainRef = await github.rest.git.getRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'heads/main'
-              });
-              
-              console.log('Main ref:', JSON.stringify(mainRef.data));
-              
-              await github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'refs/heads/' + branchName,
-                sha: mainRef.data.object.sha
-              });
-              
-              console.log('Created branch: ' + branchName);
-            } catch (error) {
-              if (error.message.includes('already exists')) {
-                console.log('Branch already exists, continuing...');
-              } else {
-                throw error;
-              }
-            }
-            
-            try {
-              await github.rest.repos.createOrUpdateFileContents({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                path: filePath,
-                message: 'Add ' + name + ' resource from issue #' + issue.number,
-                content: Buffer.from(frontmatter).toString('base64'),
-                branch: branchName
-              });
-              
-              const prBody = 'This PR adds **' + name + '** to the resources.\n\n' +
-                '**Auto-generated from issue #' + issue.number + '**\n\n' +
-                '## Resource Details\n' +
-                '- **Name:** ' + name + '\n' +
-                '- **URL:** ' + finalUrl + '\n' +
-                '- **Category:** ' + category + '\n' +
-                (section ? '- **Section:** ' + section + '\n' : '') +
-                '- **Description:** ' + finalDescription + '\n\n' +
-                '## Review Checklist\n' +
-                '- [ ] URL is correct and works\n' +
-                '- [ ] Description is accurate\n' +
-                '- [ ] Category is appropriate\n' +
-                '- [ ] Filename follows convention (' + filename + ')\n' +
-                '- [ ] Order value is reasonable (currently set to 50)\n\n' +
-                '---\n' +
-                'Closes #' + issue.number;
-              
-              const prResult = await github.rest.pulls.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: 'Add ' + name + ' to resources',
-                head: branchName,
-                base: 'main',
-                body: prBody
-              });
-              
-              const commentBody = '🎉 Thanks for the suggestion!\n\n' +
-                'I have automatically created a Pull Request with this resource: #' + prResult.data.number + '\n\n' +
-                'The maintainer will review and merge it soon!';
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                body: commentBody
-              });
-              
-              console.log('Created PR #' + prResult.data.number + ' for resource: ' + name);
-              
-            } catch (error) {
-              console.error('Error creating file or PR:', error);
-              
-              const errorComment = '⚠️ There was an issue automatically creating the PR.\n\n' +
-                'Error: ' + error.message + '\n\n' +
-                'The maintainer will create this resource manually.';
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                body: errorComment
-              });
-              
-              throw error;
-            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '🎉 Created PR #' + pr.data.number
+            });
