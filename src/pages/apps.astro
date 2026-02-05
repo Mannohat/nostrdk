@@ -1,405 +1,450 @@
 ---
-import { getCollection } from 'astro:content';
-import NostrHeader from '../components/NostrHeader.astro';
-import NostrFooter from '../components/NostrFooter.astro';
-import '../styles/global.css';
+import { getCollection } from "astro:content";
+import NostrHeader from "../components/NostrHeader.astro";
+import NostrFooter from "../components/NostrFooter.astro";
+import "../styles/global.css";
 
 // Get all published resources
-const allResources = await getCollection('resources', ({ data }) => {
+const allResources = await getCollection("resources", ({ data }) => {
   return data.published === true;
 });
 
 // Group by category
 const categories = {
-  'nostr-alternatives': {
-    title: '🔄 Nostr Alternativer til Centraliserede Tjenester',
-    description: 'Decentraliserede alternativer til populære services',
+  "nostr-alternatives": {
+    title: "🔄 Nostr Alternativer til Centraliserede Tjenester",
+    description: "Decentraliserede alternativer til populære services",
   },
-  'services': {
-    title: '⚡ Nostr Services',
-    description: 'Specialiserede tjenester bygget på Nostr',
+  services: {
+    title: "⚡ Nostr Services",
+    description: "Specialiserede tjenester bygget på Nostr",
   },
-  'extensions': {
-    title: '🔌 Browser Udvidelser',
-    description: 'Nøglestyring og signering i browseren',
+  extensions: {
+    title: "🔌 Browser Udvidelser",
+    description: "Nøglestyring og signering i browseren",
   },
-  'tools': {
-    title: '🛠️ Nostr Værktøjer',
-    description: 'Hjælpeværktøjer til at navigere i Nostr-økosystemet',
+  tools: {
+    title: "🛠️ Nostr Værktøjer",
+    description: "Hjælpeværktøjer til at navigere i Nostr-økosystemet",
   },
-  'relays': {
-    title: '🌐 Nostr Relays',
-    description: 'Find og administrer Nostr relays',
+  relays: {
+    title: "🌐 Nostr Relays",
+    description: "Find og administrer Nostr relays",
   },
 };
 
 // Sort resources by order within each category
-const resourcesByCategory = Object.keys(categories).reduce((acc, cat) => {
-  acc[cat] = allResources
-    .filter(r => r.data.category === cat)
-    .sort((a, b) => a.data.order - b.data.order);
-  return acc;
-}, {} as Record<string, typeof allResources>);
+const resourcesByCategory = Object.keys(categories).reduce(
+  (acc, cat) => {
+    acc[cat] = allResources
+      .filter((r) => r.data.category === cat)
+      .sort((a, b) => a.data.order - b.data.order);
+    return acc;
+  },
+  {} as Record<string, typeof allResources>,
+);
 ---
 
-<!DOCTYPE html>
+<!doctype html>
 <html lang="da">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nostr.dk Apps & Tjenester</title>
-  <meta name="description" content="Nostr.dk Apps & Tjenester">
-  <meta name="keywords" content="Nostr, Decentralized, Social Network, Apps, Tjenester">
-  <link rel="icon" href="/shaka.png" type="image/png">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nostr.dk Apps & Tjenester</title>
+    <meta name="description" content="Nostr.dk Apps & Tjenester" />
+    <meta
+      name="keywords"
+      content="Nostr, Decentralized, Social Network, Apps, Tjenester"
+    />
+    <link rel="icon" href="/shaka.png" type="image/png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
 
-<body>
-  <NostrHeader />
+  <body>
+    <NostrHeader />
 
-  <main class="container">
-    <div class="page-header">
-      <h1>Apps & Tjenester</h1>
-      <p>Stort set alle de services og virksomheder som f.eks. Youtube, Google, Facebook, Twitter osv. har dine data og kan lukke dig ude fra din konto. Nostr giver dig mulighed for at eje din egen data, sikrer dig adgang og beholde dine følgere på tværs af Nostr-baserede services.</p>
-    </div>
-
-    <!-- Search Bar with Subtle Contribute Link -->
-    <div class="search-container">
-      <input 
-        type="text" 
-        id="search-input" 
-        placeholder="🔍 Søg efter apps og tjenester..."
-        class="search-input"
-      />
-      <!-- Subtle Contribute Link -->
-      <div class="contribute-link">
-        <p>Mangler der noget? <a href="https://github.com/Mannohat/nostrdk/issues/new?template=resource-suggestion.yml" target="_blank">Foreslå App / Tjeneste →</a></p>
+    <main class="container">
+      <div class="page-header">
+        <h1>Apps & Tjenester</h1>
+        <p>
+          Stort set alle de services og virksomheder som f.eks. Youtube, Google,
+          Facebook, Twitter osv. har dine data og kan lukke dig ude fra din
+          konto. Nostr giver dig mulighed for at eje din egen data, sikrer dig
+          adgang og beholde dine følgere på tværs af Nostr-baserede services.
+        </p>
       </div>
-    </div>
 
-    <!-- Resources by Category -->
-    {Object.entries(categories).map(([categoryKey, categoryInfo]) => {
-      const resources = resourcesByCategory[categoryKey];
-      if (!resources || resources.length === 0) return null;
-      
-      return (
-        <section class="resource-section" data-category={categoryKey}>
-          <h2 class="section-title">{categoryInfo.title}</h2>
-          <p class="section-description">{categoryInfo.description}</p>
-          
-          <div class="resource-grid">
-            {resources.map(resource => (
-              <div class="resource-card" data-search-text={`${resource.data.title} ${resource.data.description} ${resource.data.section}`.toLowerCase()}>
-                <h3>{resource.data.title}</h3>
-                {resource.data.section && (
-                  <div class="resource-section-tag">{resource.data.section}</div>
-                )}
-                <p>{resource.data.description}</p>
-                <a href={resource.data.url} target="_blank" class="resource-link">
-                  Besøg {resource.data.title} →
-                </a>
+      <!-- Search Bar with Subtle Contribute Link -->
+      <div class="search-container">
+        <input
+          type="text"
+          id="search-input"
+          placeholder="🔍 Søg efter apps og tjenester..."
+          class="search-input"
+        />
+        <!-- Subtle Contribute Link -->
+        <div class="contribute-link">
+          <p>
+            Mangler der noget? <a
+              href="https://github.com/Mannohat/nostrdk/issues/new?template=resource-suggestion.yml"
+              target="_blank">Foreslå App / Tjeneste →</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- Resources by Category -->
+      {
+        Object.entries(categories).map(([categoryKey, categoryInfo]) => {
+          const resources = resourcesByCategory[categoryKey];
+          if (!resources || resources.length === 0) return null;
+
+          return (
+            <section class="resource-section" data-category={categoryKey}>
+              <h2 class="section-title">{categoryInfo.title}</h2>
+              <p class="section-description">{categoryInfo.description}</p>
+
+              <div class="resource-grid">
+                {resources.map((resource) => (
+                  <div
+                    class="resource-card"
+                    data-search-text={`${resource.data.title} ${resource.data.description} ${resource.data.section}`.toLowerCase()}
+                  >
+                    <h3>{resource.data.title}</h3>
+                    {resource.data.section && (
+                      <div class="resource-section-tag">
+                        {resource.data.section}
+                      </div>
+                    )}
+                    <p>{resource.data.description}</p>
+                    <a
+                      href={resource.data.url}
+                      target="_blank"
+                      class="resource-link"
+                    >
+                      Besøg {resource.data.title} →
+                    </a>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </section>
-      );
-    })}
+            </section>
+          );
+        })
+      }
 
-    <!-- No results message (hidden by default) -->
-    <div id="no-results" class="no-results" style="display: none;">
-      <h2>Ingen resultater fundet</h2>
-      <p>Prøv at søge efter noget andet.</p>
-    </div>
-
-    <!-- Updated CTA Section -->
-    <section class="cta-section">
-      <h2>Bidrag til Nostr.dk</h2>
-      <p>Hjælp os med at gøre listen bedre eller udforsk mere indhold om Nostr</p>
-      <div class="cta-buttons">
-        <a href="https://github.com/Mannohat/nostrdk/issues/new?template=resource-suggestion.yml" 
-           target="_blank" 
-           class="cta-button primary">
-          ➕ Foreslå App / Tjeneste →
-        </a>
-        <a href="/podcasts" class="cta-button secondary">Se Podcasts →</a>
-        <a href="/" class="cta-button secondary">Gå til Forsiden →</a>
+      <!-- No results message (hidden by default) -->
+      <div id="no-results" class="no-results" style="display: none;">
+        <h2>Ingen resultater fundet</h2>
+        <p>Prøv at søge efter noget andet.</p>
       </div>
-    </section>
-  </main>
 
-  <NostrFooter />
+      <!-- Updated CTA Section -->
+      <section class="cta-section">
+        <h2>Bidrag til Nostr.dk</h2>
+        <p>
+          Hjælp os med at gøre listen bedre eller udforsk mere indhold om Nostr
+        </p>
+        <div class="cta-buttons">
+          <a
+            href="https://github.com/Mannohat/nostrdk/issues/new?template=resource-suggestion.yml"
+            target="_blank"
+            class="cta-button primary"
+          >
+            ➕ Foreslå App / Tjeneste →
+          </a>
+          <a href="/podcasts" class="cta-button secondary">Se Podcasts →</a>
+          <a href="/" class="cta-button secondary">Gå til Forsiden →</a>
+        </div>
+      </section>
+    </main>
 
-  <script is:inline>
-    document.addEventListener('DOMContentLoaded', function() {
-      const searchInput = document.getElementById('search-input');
-      const resourceCards = document.querySelectorAll('.resource-card');
-      const resourceSections = document.querySelectorAll('.resource-section');
-      const noResults = document.getElementById('no-results');
+    <NostrFooter />
 
-      if (searchInput) {
-        searchInput.addEventListener('input', function(e) {
-          const searchTerm = this.value.toLowerCase().trim();
-          
-          let visibleCount = 0;
+    <script is:inline>
+      document.addEventListener("DOMContentLoaded", function () {
+        const searchInput = document.getElementById("search-input");
+        const resourceCards = document.querySelectorAll(".resource-card");
+        const resourceSections = document.querySelectorAll(".resource-section");
+        const noResults = document.getElementById("no-results");
 
-          resourceCards.forEach(function(card) {
-            const searchText = card.getAttribute('data-search-text') || '';
-            const matches = searchText.includes(searchTerm);
-            
-            if (matches || searchTerm === '') {
-              card.classList.remove('hidden');
-              visibleCount++;
-            } else {
-              card.classList.add('hidden');
-            }
-          });
+        if (searchInput) {
+          searchInput.addEventListener("input", function (e) {
+            const searchTerm = this.value.toLowerCase().trim();
 
-          resourceSections.forEach(function(section) {
-            const cardsInSection = section.querySelectorAll('.resource-card');
-            let hasVisible = false;
-            
-            cardsInSection.forEach(function(card) {
-              if (!card.classList.contains('hidden')) {
-                hasVisible = true;
+            let visibleCount = 0;
+
+            resourceCards.forEach(function (card) {
+              const searchText = card.getAttribute("data-search-text") || "";
+              const matches = searchText.includes(searchTerm);
+
+              if (matches || searchTerm === "") {
+                card.classList.remove("hidden");
+                visibleCount++;
+              } else {
+                card.classList.add("hidden");
               }
             });
-            
-            if (hasVisible) {
-              section.classList.remove('hidden');
-            } else {
-              section.classList.add('hidden');
+
+            resourceSections.forEach(function (section) {
+              const cardsInSection = section.querySelectorAll(".resource-card");
+              let hasVisible = false;
+
+              cardsInSection.forEach(function (card) {
+                if (!card.classList.contains("hidden")) {
+                  hasVisible = true;
+                }
+              });
+
+              if (hasVisible) {
+                section.classList.remove("hidden");
+              } else {
+                section.classList.add("hidden");
+              }
+            });
+
+            if (noResults) {
+              if (visibleCount === 0 && searchTerm !== "") {
+                noResults.style.display = "block";
+              } else {
+                noResults.style.display = "none";
+              }
             }
           });
+        }
+      });
+    </script>
 
-          if (noResults) {
-            if (visibleCount === 0 && searchTerm !== '') {
-              noResults.style.display = 'block';
-            } else {
-              noResults.style.display = 'none';
-            }
-          }
-        });
-      }
-    });
-  </script>
-
-  <style>
-    /* Completely disable text selection and highlighting */
-    * {
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
-
-    .search-input {
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
-      user-select: text;
-    }
-
-    /* Hidden class for search filtering */
-    .hidden {
-      display: none !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      height: 0 !important;
-      overflow: hidden !important;
-      margin: 0 !important;
-      padding: 0 !important;
-    }
-
-    ::selection {
-      background: transparent;
-      color: inherit;
-    }
-
-    ::-moz-selection {
-      background: transparent;
-      color: inherit;
-    }
-
-    mark {
-      background: none !important;
-      color: inherit !important;
-    }
-
-    /* Search container */
-    .search-container {
-      max-width: 700px;
-      margin: 50px auto 60px;
-      padding: 0 20px;
-    }
-
-    .search-input {
-      width: 100%;
-      padding: 20px 28px;
-      font-size: 1.15rem;
-      font-weight: 500;
-      border: 3px solid rgba(160, 132, 202, 0.4);
-      border-radius: 50px;
-      background: linear-gradient(135deg, rgba(108, 79, 150, 0.15), rgba(55, 26, 118, 0.15));
-      color: #fff;
-      transition: all 0.3s;
-      text-align: center;
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #A084CA;
-      background: linear-gradient(135deg, rgba(108, 79, 150, 0.25), rgba(55, 26, 118, 0.25));
-      box-shadow: 0 0 30px rgba(160, 132, 202, 0.4);
-      text-align: center;
-    }
-
-    .search-input::placeholder {
-      color: rgba(255, 255, 255, 0.6);
-      font-weight: 400;
-    }
-
-    /* Subtle Contribute Link */
-    .contribute-link {
-      text-align: center;
-      margin-top: 15px;
-    }
-
-    .contribute-link p {
-      font-size: 0.95rem;
-      color: #999;
-    }
-
-    .contribute-link a {
-      color: #A084CA;
-      text-decoration: none;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-
-    .contribute-link a:hover {
-      color: #C0A4E0;
-      text-decoration: underline;
-    }
-
-    .resource-section {
-      margin-bottom: 80px;
-    }
-
-    .section-description {
-      text-align: center;
-      font-size: 1.1rem;
-      color: #b0b0b0;
-      margin-bottom: 40px;
-    }
-
-    .resource-section-tag {
-      display: inline-block;
-      padding: 6px 12px;
-      background: rgba(160, 132, 202, 0.3);
-      color: #A084CA;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-
-    .no-results {
-      text-align: center;
-      padding: 80px 20px;
-    }
-
-    .no-results h2 {
-      font-size: 2rem;
-      margin-bottom: 15px;
-      color: #A084CA;
-    }
-
-    .no-results p {
-      font-size: 1.1rem;
-      color: #b0b0b0;
-    }
-
-    .cta-section {
-      text-align: center;
-      padding: 60px 20px;
-      background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
-      border-radius: 16px;
-      margin: 80px 0 40px;
-    }
-
-    .cta-section h2 {
-      font-size: 2.5rem;
-      margin-bottom: 20px;
-    }
-
-    .cta-section p {
-      font-size: 1.2rem;
-      color: #c0c0c0;
-      margin-bottom: 30px;
-    }
-
-    .cta-buttons {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .cta-button {
-      padding: 15px 35px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.3s;
-      display: inline-block;
-    }
-
-    .cta-button.primary {
-      background: #6C4F96;
-      color: #fff;
-    }
-
-    .cta-button.primary:hover {
-      background: #563C73;
-      transform: scale(1.05);
-    }
-
-    .cta-button.secondary {
-      background: transparent;
-      color: #A084CA;
-      border: 2px solid #A084CA;
-    }
-
-    .cta-button.secondary:hover {
-      background: rgba(160, 132, 202, 0.1);
-      transform: scale(1.05);
-    }
-
-    @media (max-width: 768px) {
-      .search-container {
-        padding: 0 10px;
+    <style>
+      /* Completely disable text selection and highlighting */
+      * {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
       }
 
       .search-input {
-        padding: 16px 20px;
-        font-size: 1rem;
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+      }
+
+      /* Hidden class for search filtering */
+      .hidden {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      ::selection {
+        background: transparent;
+        color: inherit;
+      }
+
+      ::-moz-selection {
+        background: transparent;
+        color: inherit;
+      }
+
+      mark {
+        background: none !important;
+        color: inherit !important;
+      }
+
+      /* Search container */
+      .search-container {
+        max-width: 700px;
+        margin: 50px auto 60px;
+        padding: 0 20px;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 20px 28px;
+        font-size: 1.15rem;
+        font-weight: 500;
+        border: 3px solid rgba(160, 132, 202, 0.4);
+        border-radius: 50px;
+        background: linear-gradient(
+          135deg,
+          rgba(108, 79, 150, 0.15),
+          rgba(55, 26, 118, 0.15)
+        );
+        color: #fff;
+        transition: all 0.3s;
+        text-align: center;
+      }
+
+      .search-input:focus {
+        outline: none;
+        border-color: #a084ca;
+        background: linear-gradient(
+          135deg,
+          rgba(108, 79, 150, 0.25),
+          rgba(55, 26, 118, 0.25)
+        );
+        box-shadow: 0 0 30px rgba(160, 132, 202, 0.4);
+        text-align: center;
+      }
+
+      .search-input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+        font-weight: 400;
+      }
+
+      /* Subtle Contribute Link */
+      .contribute-link {
+        text-align: center;
+        margin-top: 15px;
       }
 
       .contribute-link p {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
+        color: #999;
+      }
+
+      .contribute-link a {
+        color: #a084ca;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+
+      .contribute-link a:hover {
+        color: #c0a4e0;
+        text-decoration: underline;
+      }
+
+      .resource-section {
+        margin-bottom: 80px;
+      }
+
+      .section-description {
+        text-align: center;
+        font-size: 1.1rem;
+        color: #b0b0b0;
+        margin-bottom: 40px;
+      }
+
+      .resource-section-tag {
+        display: inline-block;
+        padding: 6px 12px;
+        background: rgba(160, 132, 202, 0.3);
+        color: #a084ca;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+
+      .no-results {
+        text-align: center;
+        padding: 80px 20px;
+      }
+
+      .no-results h2 {
+        font-size: 2rem;
+        margin-bottom: 15px;
+        color: #a084ca;
+      }
+
+      .no-results p {
+        font-size: 1.1rem;
+        color: #b0b0b0;
+      }
+
+      .cta-section {
+        text-align: center;
+        padding: 60px 20px;
+        background: linear-gradient(
+          135deg,
+          rgba(108, 79, 150, 0.2),
+          rgba(55, 26, 118, 0.2)
+        );
+        border-radius: 16px;
+        margin: 80px 0 40px;
+      }
+
+      .cta-section h2 {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+      }
+
+      .cta-section p {
+        font-size: 1.2rem;
+        color: #c0c0c0;
+        margin-bottom: 30px;
       }
 
       .cta-buttons {
-        flex-direction: column;
-        align-items: center;
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
       }
 
       .cta-button {
-        width: 100%;
-        max-width: 300px;
+        padding: 15px 35px;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+        display: inline-block;
       }
-    }
-  </style>
-</body>
+
+      .cta-button.primary {
+        background: #6c4f96;
+        color: #fff;
+      }
+
+      .cta-button.primary:hover {
+        background: #563c73;
+        transform: scale(1.05);
+      }
+
+      .cta-button.secondary {
+        background: transparent;
+        color: #a084ca;
+        border: 2px solid #a084ca;
+      }
+
+      .cta-button.secondary:hover {
+        background: rgba(160, 132, 202, 0.1);
+        transform: scale(1.05);
+      }
+
+      @media (max-width: 768px) {
+        .search-container {
+          padding: 0 10px;
+        }
+
+        .search-input {
+          padding: 16px 20px;
+          font-size: 1rem;
+        }
+
+        .contribute-link p {
+          font-size: 0.9rem;
+        }
+
+        .cta-buttons {
+          flex-direction: column;
+          align-items: center;
+        }
+
+        .cta-button {
+          width: 100%;
+          max-width: 300px;
+        }
+      }
+    </style>
+  </body>
 </html>
