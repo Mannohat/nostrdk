@@ -68,34 +68,32 @@ jobs:
             frontmatter += '---\n';
             
             const branchName = 'add-resource-' + filename.replace('.md', '');
-            
-            const repoInfo = await github.rest.repos.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-            const defaultBranch = repoInfo.data.default_branch;
-            
-            const branchInfo = await github.rest.repos.getBranch({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: defaultBranch
-            });
-            
-            const sha = branchInfo.data.commit.sha;
+            const filePath = 'src/content/resources/' + filename;
             
             try {
+              const mainRef = await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'heads/main'
+              });
+              
+              console.log('Main ref:', JSON.stringify(mainRef.data));
+              
               await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: 'refs/heads/' + branchName,
-                sha: sha
+                sha: mainRef.data.object.sha
               });
+              
               console.log('Created branch: ' + branchName);
             } catch (error) {
-              console.log('Branch may already exist:', error.message);
+              if (error.message.includes('already exists')) {
+                console.log('Branch already exists, continuing...');
+              } else {
+                throw error;
+              }
             }
-            
-            const filePath = 'src/content/resources/' + filename;
             
             try {
               await github.rest.repos.createOrUpdateFileContents({
@@ -129,7 +127,7 @@ jobs:
                 repo: context.repo.repo,
                 title: 'Add ' + name + ' to resources',
                 head: branchName,
-                base: defaultBranch,
+                base: 'main',
                 body: prBody
               });
               
