@@ -1,0 +1,12 @@
+name: Test Workflow
+
+on:
+  issues:
+    types: [opened, reopened]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print message
+        run: echo "Workflow triggered!"
