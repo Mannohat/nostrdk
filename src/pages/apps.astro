@@ -12,23 +12,23 @@ const allResources = await getCollection("resources", ({ data }) => {
 // Group by category
 const categories = {
   "nostr-alternatives": {
-    title: "🔄 Nostr Alternativer til Centraliserede Tjenester",
+    title: "Nostr Alternativer til Centraliserede Tjenester",
     description: "Decentraliserede alternativer til populære services",
   },
   services: {
-    title: "⚡ Nostr Services",
+    title: "Nostr Services",
     description: "Specialiserede tjenester bygget på Nostr",
   },
   extensions: {
-    title: "🔌 Browser Udvidelser",
+    title: "Browser Udvidelser",
     description: "Nøglestyring og signering i browseren",
   },
   tools: {
-    title: "🛠️ Nostr Værktøjer",
+    title: "Nostr Værktøjer",
     description: "Hjælpeværktøjer til at navigere i Nostr-økosystemet",
   },
   relays: {
-    title: "🌐 Nostr Relays",
+    title: "Nostr Relays",
     description: "Find og administrer Nostr relays",
   },
 };
@@ -54,7 +54,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
     <meta name="description" content="Nostr.dk Apps & Tjenester" />
     <meta
       name="keywords"
-      content="Nostr, Decentralized, Social Network, Apps, Tjenester"
+      content="Nostr, Decentraliseret, Socialt Netværk, Apps, Tjenester"
     />
     <link rel="icon" href="/shaka.png" type="image/png" />
     <link
