@@ -1,0 +1,41 @@
+---
+// Nostr.dk Footer
+---
+
+<footer>
+    <p>Nostr.dk 💜</p>
+    <p>
+      <a href="https://www.enogtyve.org" target="_blank">
+        Bitcoin blokhøjde: <span id="block-height">Loading...</span> — Klik her for at lære om Bitcoin 🧡
+      </a>
+    </p>
+  </footer>
+  
+  <style>
+  footer {
+    background-color: #2C2A3D;
+    color: #FFF;
+    text-align: center;
+    padding: 30px;
+    margin-top: auto;
+  }
+  </style>
+  
+  <script>
+    async function fetchBlockHeight() {
+      try {
+        const response = await fetch('https://mempool.space/api/blocks/tip/height');
+        if (!response.ok) throw new Error('Failed to fetch block height');
+        const blockHeight = await response.json();
+        const element = document.getElementById('block-height');
+        if (element) element.textContent = blockHeight;
+      } catch (error) {
+        console.error(error);
+        const element = document.getElementById('block-height');
+        if (element) element.textContent = 'Error loading data';
+      }
+    }
+  
+    window.addEventListener('load', fetchBlockHeight);
+    setInterval(fetchBlockHeight, 60000);
+  </script>

@@ -1,0 +1,167 @@
+---
+// Nostr.dk Header
+---
+
+<header>
+    <div class="logo-container">
+      <a href="/">
+        <img src="/shaka.png" alt="Nostr Logo" id="logo" />
+      </a>
+      <span class="logo-text">Nostr</span>
+    </div>
+    
+    <nav>
+      <ul>
+        <li><a href="#top">Hjem</a></li>
+        <li><a href="#nostr-nip05">Nostr adresse</a></li>
+        <li><a href="#nostr-ressourcer">Nostr Ressourcer</a></li>
+        <li><a href="#nostr-om">Om Nostr.dk</a></li>
+        <li><a href="#nostr-support">Support</a></li>
+      </ul>
+    </nav>
+  
+    <div class="burger-menu" id="burger-menu" aria-expanded="false">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  </header>
+  
+  <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+    <a href="#top">Hjem</a>
+    <a href="#nostr-nip05">Nostr adresse</a>
+    <a href="#nostr-ressourcer">Nostr Ressourcer</a>
+    <a href="#nostr-om">Om Nostr.dk</a>
+    <a href="#nostr-support">Support</a>
+  </div>
+  
+  <style>
+  header {
+    background: #2C2A3D;
+    color: #FFF;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .logo-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .logo-container img {
+    height: 40px;
+    transition: transform 0.5s ease;
+  }
+  
+  .logo-text {
+    font-size: 32px;
+    font-weight: 700;
+    color: #FFF;
+  }
+  
+  nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: 25px;
+  }
+  
+  nav ul li a {
+    color: #FFF;
+    font-size: 16px;
+    font-weight: 600;
+    transition: color 0.3s;
+  }
+  
+  nav ul li a:hover {
+    color: #A084CA;
+  }
+  
+  .burger-menu {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 20px;
+    cursor: pointer;
+  }
+  
+  .burger-menu div {
+    background-color: #FFF;
+    height: 3px;
+    width: 100%;
+    transition: all 0.3s;
+  }
+  
+  .mobile-menu {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    right: 0;
+    background-color: #2C2A3D;
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    z-index: 1000;
+  }
+  
+  .mobile-menu a {
+    padding: 10px;
+    color: #FFF;
+    font-size: 18px;
+    border-bottom: 1px solid #444;
+  }
+  
+  .mobile-menu.active {
+    display: flex;
+  }
+  
+  @media (max-width: 768px) {
+    nav {
+      display: none;
+    }
+    
+    .burger-menu {
+      display: flex;
+    }
+  }
+  </style>
+  
+  <script>
+    const burgerMenu = document.getElementById('burger-menu');
+    const mobileMenu = document.getElementById('mobile-menu');
+  
+    if (burgerMenu && mobileMenu) {
+      burgerMenu.addEventListener('click', () => {
+        const expanded = burgerMenu.getAttribute('aria-expanded') === 'true';
+        burgerMenu.setAttribute('aria-expanded', !expanded);
+        mobileMenu.setAttribute('aria-hidden', expanded);
+        mobileMenu.classList.toggle('active');
+      });
+    }
+  
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href');
+        if (targetId === '#top') {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            const headerHeight = 80;
+            const offset = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight;
+            window.scrollTo({ top: offset, behavior: 'smooth' });
+          }
+        }
+      });
+    });
+  </script>
