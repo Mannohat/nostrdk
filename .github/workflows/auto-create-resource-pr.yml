@@ -18,7 +18,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Parse issue and create resource file
+      - name: Parse issue and create resource
         uses: actions/github-script@v7
         with:
           script: |
@@ -67,98 +67,74 @@ jobs:
             frontmatter += 'published: true\n';
             frontmatter += '---\n';
             
-            const branchName = 'add-resource-' + filename.replace('.md', '');
+            core.exportVariable('RESOURCE_NAME', name);
+            core.exportVariable('RESOURCE_FILENAME', filename);
+            core.exportVariable('RESOURCE_CONTENT', frontmatter);
+            core.exportVariable('RESOURCE_URL', finalUrl);
+            core.exportVariable('RESOURCE_CATEGORY', category);
+            core.exportVariable('RESOURCE_SECTION', section);
+            core.exportVariable('RESOURCE_DESCRIPTION', finalDescription);
+      
+      - name: Create branch and file
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          BRANCH_NAME="add-resource-${RESOURCE_FILENAME%.md}"
+          
+          git checkout -b "$BRANCH_NAME"
+          
+          echo "$RESOURCE_CONTENT" > "src/content/resources/$RESOURCE_FILENAME"
+          
+          git add "src/content/resources/$RESOURCE_FILENAME"
+          git commit -m "Add $RESOURCE_NAME from issue #${{ github.event.issue.number }}"
+          git push origin "$BRANCH_NAME"
+          
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Create Pull Request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const name = process.env.RESOURCE_NAME;
+            const url = process.env.RESOURCE_URL;
+            const category = process.env.RESOURCE_CATEGORY;
+            const section = process.env.RESOURCE_SECTION;
+            const description = process.env.RESOURCE_DESCRIPTION;
+            const filename = process.env.RESOURCE_FILENAME;
+            const branchName = process.env.BRANCH_NAME;
             
-            const { data: repo } = await github.rest.repos.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-            const defaultBranch = repo.default_branch;
+            const prBody = 'This PR adds **' + name + '** to the resources.\n\n' +
+              '**Auto-generated from issue #' + context.issue.number + '**\n\n' +
+              '## Resource Details\n' +
+              '- **Name:** ' + name + '\n' +
+              '- **URL:** ' + url + '\n' +
+              '- **Category:** ' + category + '\n' +
+              (section ? '- **Section:** ' + section + '\n' : '') +
+              '- **Description:** ' + description + '\n\n' +
+              '## Review Checklist\n' +
+              '- [ ] URL is correct and works\n' +
+              '- [ ] Description is accurate\n' +
+              '- [ ] Category is appropriate\n' +
+              '- [ ] Filename follows convention (' + filename + ')\n' +
+              '- [ ] Order value is reasonable (currently set to 50)\n\n' +
+              '---\n' +
+              'Closes #' + context.issue.number;
             
-            const { data: refData } = await github.rest.git.getRef({
+            const pr = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              ref: 'heads/' + defaultBranch
+              title: 'Add ' + name + ' to resources',
+              head: branchName,
+              base: 'main',
+              body: prBody
             });
             
-            const sha = refData.object.sha;
-            
-            try {
-              await github.rest.git.createRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'refs/heads/' + branchName,
-                sha: sha
-              });
-              console.log('Created branch: ' + branchName);
-            } catch (error) {
-              console.log('Branch may already exist:', error.message);
-            }
-            
-            const filePath = 'src/content/resources/' + filename;
-            
-            try {
-              await github.rest.repos.createOrUpdateFileContents({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                path: filePath,
-                message: 'Add ' + name + ' resource from issue #' + issue.number,
-                content: Buffer.from(frontmatter).toString('base64'),
-                branch: branchName
-              });
-              
-              const prBody = 'This PR adds **' + name + '** to the resources.\n\n' +
-                '**Auto-generated from issue #' + issue.number + '**\n\n' +
-                '## Resource Details\n' +
-                '- **Name:** ' + name + '\n' +
-                '- **URL:** ' + finalUrl + '\n' +
-                '- **Category:** ' + category + '\n' +
-                (section ? '- **Section:** ' + section + '\n' : '') +
-                '- **Description:** ' + finalDescription + '\n\n' +
-                '## Review Checklist\n' +
-                '- [ ] URL is correct and works\n' +
-                '- [ ] Description is accurate\n' +
-                '- [ ] Category is appropriate\n' +
-                '- [ ] Filename follows convention (' + filename + ')\n' +
-                '- [ ] Order value is reasonable (currently set to 50)\n\n' +
-                '---\n' +
-                'Closes #' + issue.number;
-              
-              const { data: pr } = await github.rest.pulls.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: 'Add ' + name + ' to resources',
-                head: branchName,
-                base: defaultBranch,
-                body: prBody
-              });
-              
-              const commentBody = '🎉 Thanks for the suggestion!\n\n' +
-                'I have automatically created a Pull Request with this resource: #' + pr.number + '\n\n' +
-                'The maintainer will review and merge it soon!';
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                body: commentBody
-              });
-              
-              console.log('Created PR #' + pr.number + ' for resource: ' + name);
-              
-            } catch (error) {
-              console.error('Error creating file or PR:', error);
-              
-              const errorComment = '⚠️ There was an issue automatically creating the PR.\n\n' +
-                'Error: ' + error.message + '\n\n' +
-                'The maintainer will create this resource manually.';
-              
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issue.number,
-                body: errorComment
-              });
-              
-              throw error;
-            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '🎉 Thanks for the suggestion!\n\nI have automatically created a Pull Request with this resource: #' + pr.data.number + '\n\nThe maintainer will review and merge it soon!'
+            });
