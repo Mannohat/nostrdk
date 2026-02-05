@@ -16,4 +16,35 @@ const blog = defineCollection({
 		}),
 });
 
-export const collections = { blog };
+const podcasts = defineCollection({
+	// Load Markdown files in the `src/content/podcasts/` directory.
+	loader: glob({ base: './src/content/podcasts', pattern: '**/*.md' }),
+	// Type-check frontmatter using a schema
+	schema: z.object({
+		title: z.string(),
+		description: z.string(),
+		videoId: z.string().optional(),
+		imageUrl: z.string().optional(),
+		externalUrl: z.string().optional(),
+		category: z.enum(['featured', 'beginner', 'guides', 'series']),
+		order: z.number(),
+		published: z.boolean().default(true),
+	}),
+});
+
+const resources = defineCollection({
+	// Load Markdown files in the `src/content/resources/` directory.
+	loader: glob({ base: './src/content/resources', pattern: '**/*.md' }),
+	// Type-check frontmatter using a schema
+	schema: z.object({
+		title: z.string(),
+		description: z.string(),
+		url: z.string(),
+		category: z.string(), // e.g., "klienter", "extensions", "tools", etc.
+		section: z.string(), // For organizing within tables (e.g., "Twitter", "Youtube")
+		order: z.number(),
+		published: z.boolean().default(true),
+	}),
+});
+
+export const collections = { blog, podcasts, resources };

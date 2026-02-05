@@ -1,7 +1,30 @@
 ---
+import { getCollection } from 'astro:content';
 import NostrHeader from '../components/NostrHeader.astro';
 import NostrFooter from '../components/NostrFooter.astro';
 import '../styles/global.css';
+
+// Get all published podcasts
+const allPodcasts = await getCollection('podcasts', ({ data }) => {
+  return data.published === true;
+});
+
+// Sort by order and group by category
+const featured = allPodcasts
+  .filter(p => p.data.category === 'featured')
+  .sort((a, b) => a.data.order - b.data.order);
+
+const beginners = allPodcasts
+  .filter(p => p.data.category === 'beginner')
+  .sort((a, b) => a.data.order - b.data.order);
+
+const guides = allPodcasts
+  .filter(p => p.data.category === 'guides')
+  .sort((a, b) => a.data.order - b.data.order);
+
+const series = allPodcasts
+  .filter(p => p.data.category === 'series')
+  .sort((a, b) => a.data.order - b.data.order);
 ---
 
 <!DOCTYPE html>
@@ -25,90 +48,102 @@ import '../styles/global.css';
       <p>Her kan du finde spændende podcasts, der dækker forskellige aspekter af Nostr.</p>
     </div>
 
-    <!-- Featured wide card -->
-    <div class="card-grid">
-      <div class="card card-wide card-center">
-        <h3>Dansk introduktion til NOSTR</h3>
-        <p>Ytringsfrihed på NOSTR - et decentralt socialt medie</p>
-        <iframe src="https://www.youtube.com/embed/9AodRguSs94" allowfullscreen></iframe>
+    <!-- Featured videos - dynamically loaded -->
+    {featured.length > 0 && (
+      <div class="card-grid featured-grid">
+        {featured.map(podcast => (
+          <div class="card card-wide card-center">
+            <h3>{podcast.data.title}</h3>
+            <p>{podcast.data.description}</p>
+            {podcast.data.videoId && (
+              <div class="video-wrapper">
+                <iframe 
+                  src={`https://www.youtube.com/embed/${podcast.data.videoId}`} 
+                  allowfullscreen>
+                </iframe>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-    </div>
+    )}
 
-    <!-- Other podcast cards -->
-    <div class="card-grid">
-      <div class="card card-center">
-        <h3>Nostr for begyndere med Derek Ross</h3>
-        <p>En introduktion til Nostr for begyndere.</p>
-        <iframe src="https://www.youtube.com/embed/NVm_jGdwTjQ" allowfullscreen></iframe>
+    <!-- Beginner videos -->
+    {beginners.length > 0 && (
+      <div class="card-grid">
+        {beginners.map(podcast => (
+          <div class="card card-center">
+            <h3>{podcast.data.title}</h3>
+            <p>{podcast.data.description}</p>
+            {podcast.data.videoId && (
+              <div class="video-wrapper">
+                <iframe 
+                  src={`https://www.youtube.com/embed/${podcast.data.videoId}`} 
+                  allowfullscreen>
+                </iframe>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-      <div class="card card-center">
-        <h3>Hvad Nostr Gjorde med Ben Arc</h3>
-        <p>Diskussion om Nostr's potentiale med Ben Arc.</p>
-        <iframe src="https://www.youtube.com/embed/DRN-wdkhcO4" allowfullscreen></iframe>
-      </div>
-      <div class="card card-center">
-        <h3>Adskillelse af virksomheder og stat</h3>
-        <p>Nostr tilbyder en decentral løsning.</p>
-        <iframe src="https://www.youtube.com/embed/ddvHagjmRJY" allowfullscreen></iframe>
-      </div>
-      <div class="card card-center">
-        <h3>Nostr protokollen</h3>
-        <p>Gennemgang og hvordan du kommer igang med Nostr.</p>
-        <iframe src="https://www.youtube.com/embed/qn-Zp491t4Y" allowfullscreen></iframe>
-      </div>
-    </div>
+    )}
 
-    <h2 class="section-title">Vejledninger</h2>
-    <div class="card-grid">
-      <div class="card card-center">
-        <h3>Kom igang med Primal</h3>
-        <p>Lær hvordan du kommer i gang med Primal.</p>
-        <iframe src="https://www.youtube.com/embed/Qd4Po4i7wvc" allowfullscreen></iframe>
-      </div>
-      <div class="card card-center">
-        <h3>Kom igang med Damus</h3>
-        <p>lær hvordan du kommer igang med Damus.</p>
-        <iframe src="https://www.youtube.com/embed/fG1IDm-lQek" allowfullscreen></iframe>
-      </div>
-      <div class="card card-center">
-        <h3>Vejledning 3</h3>
-        <p>TBD</p>
-        <iframe src="https://www.youtube.com/embed/example3" allowfullscreen></iframe>
-      </div>
-      <div class="card card-center">
-        <h3>Vejledning 4</h3>
-        <p>TBD</p>
-        <iframe src="https://www.youtube.com/embed/example4" allowfullscreen></iframe>
-      </div>
-    </div>
+    <!-- Guides section -->
+    {guides.length > 0 && (
+      <>
+        <h2 class="section-title">Vejledninger</h2>
+        <div class="card-grid">
+          {guides.map(podcast => (
+            <div class="card card-center">
+              <h3>{podcast.data.title}</h3>
+              <p>{podcast.data.description}</p>
+              {podcast.data.videoId && (
+                <div class="video-wrapper">
+                  <iframe 
+                    src={`https://www.youtube.com/embed/${podcast.data.videoId}`} 
+                    allowfullscreen>
+                  </iframe>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </>
+    )}
 
-    <h2 class="section-title">Nostr Podcast Serier</h2>
-    <div class="card-grid">
-      <div class="card card-center">
-        <a href="https://nostrovia.org/" target="_blank">
-          <h3>Nostrovia</h3>
-        </a>
-        <p>Et dybdegående kig ind i Nostr's økosystem.</p>
-        <a href="https://nostrovia.org/" target="_blank">
-          <img src="https://user-images.githubusercontent.com/8143945/210556301-8cac9d9d-40bd-4e78-90a1-56909d589521.png" alt="Nostrovia Thumbnail">
-        </a>
-      </div>
-      <div class="card card-center">
-        <h3>Bitcoin & Nostr Digest</h3>
-        <p>Engelsk-sproget ugentlig podcast, der ser på verden gennem en Bitcoin- og Nostr-linse.</p>
-        <iframe src="https://www.youtube.com/embed/S4MaEwLdXEg" allowfullscreen></iframe>
-      </div>
-      <div class="card card-center">
-        <h3>Den Orange Tråd</h3>
-        <p>Sociale Medier uden Censurering. En snak om Nostr protokollen, censur og meget mere.</p>
-        <iframe src="https://youtube.com/embed/sX0ZatBEY6Y" allowfullscreen></iframe>
-      </div>
-      <div class="card card-center">
-        <h3>Soapbox Sessions</h3>
-        <p>Ugentlig podcast med seneste udvikling, værktøjer mv. i nostr universet.</p>
-        <iframe src="https://www.youtube.com/embed/c_LxrSyMpSI" allowfullscreen></iframe>
-      </div>
-    </div>
+    <!-- Series section -->
+    {series.length > 0 && (
+      <>
+        <h2 class="section-title">Nostr Podcast Serier</h2>
+        <div class="card-grid">
+          {series.map(podcast => (
+            <div class="card card-center">
+              {podcast.data.externalUrl ? (
+                <a href={podcast.data.externalUrl} target="_blank">
+                  <h3>{podcast.data.title}</h3>
+                </a>
+              ) : (
+                <h3>{podcast.data.title}</h3>
+              )}
+              <p>{podcast.data.description}</p>
+              {podcast.data.imageUrl && podcast.data.externalUrl && (
+                <a href={podcast.data.externalUrl} target="_blank">
+                  <img src={podcast.data.imageUrl} alt={`${podcast.data.title} Thumbnail`}>
+                </a>
+              )}
+              {podcast.data.videoId && (
+                <div class="video-wrapper">
+                  <iframe 
+                    src={`https://www.youtube.com/embed/${podcast.data.videoId}`} 
+                    allowfullscreen>
+                  </iframe>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </>
+    )}
   </main>
 
   <NostrFooter />

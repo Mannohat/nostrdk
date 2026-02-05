@@ -64,10 +64,10 @@
   }
   
   /* ===========================================
-	 LINKS
-	 =========================================== */
-  
-  a {
+   LINKS
+   =========================================== */
+
+a {
 	color: #ffffff;
 	font-weight: bold;
 	text-decoration: none;
@@ -109,6 +109,24 @@
 	background-color: #563C73;
 	transform: scale(1.05);
 	color: #FFF;
+  }
+  
+  /* ===========================================
+	 FORM INPUTS
+	 =========================================== */
+  
+  input[type="text"],
+  input[type="search"],
+  input[type="email"],
+  textarea {
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	font-size: 1rem;
+	color: #fff;
+  }
+  
+  input::placeholder,
+  textarea::placeholder {
+	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   }
   
   /* ===========================================
@@ -208,8 +226,28 @@
 	flex-grow: 0;
   }
   
-  /* Card with video/iframe */
-  .card iframe {
+  /* Card with video/iframe - proper 16:9 aspect ratio */
+  .card .video-wrapper {
+	position: relative;
+	padding-bottom: 56.25%; /* 16:9 aspect ratio */
+	height: 0;
+	overflow: hidden;
+	border-radius: 8px;
+	background: #000;
+	margin-top: auto;
+  }
+  
+  .card .video-wrapper iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: none;
+  }
+  
+  /* Fallback for iframes not wrapped in video-wrapper */
+  .card iframe:not(.video-wrapper iframe) {
 	width: 100%;
 	height: 200px;
 	border: none;
@@ -226,13 +264,18 @@
 	margin-top: auto;
   }
   
-  /* Wide card (spans 2 columns) */
-  .card-wide {
+  /* Wide card (spans 2 columns) - but only in standard grids */
+  .card-grid:not(.featured-grid) .card-wide {
 	grid-column: span 2;
   }
   
-  .card-wide iframe {
-	height: 300px;
+  .card-grid:not(.featured-grid) .card-wide .video-wrapper {
+	padding-bottom: 56.25%;
+  }
+  
+  /* Featured grid for side-by-side layout */
+  .featured-grid {
+	grid-template-columns: repeat(2, 1fr);
   }
   
   /* Centered content in card */
@@ -327,13 +370,17 @@
   }
   
   /* ===========================================
-	 HOMEPAGE SPECIFIC STYLES
+	 HOMEPAGE SPECIFIC STYLES - UPDATED TO MATCH OTHER PAGES
 	 =========================================== */
   
   .hero {
 	text-align: center;
-	padding: 100px 0 80px;
+	padding: 100px 40px 80px;
 	color: #FFF;
+	background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
+	border-radius: 12px;
+	margin: 40px 0;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
   }
   
   .hero h1 {
@@ -353,19 +400,21 @@
 	line-height: 1.6;
   }
   
+  /* Collapsible sections - match card styling */
   .collapsible-section {
-	background: linear-gradient(135deg, rgba(108, 79, 150, 0.5), rgba(55, 26, 118, 0.5));
-	border-radius: 10px;
+	background: linear-gradient(135deg, rgba(108, 79, 150, 0.3), rgba(55, 26, 118, 0.3));
+	border-radius: 12px;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 	margin: 20px 0;
 	padding: 20px;
-	transition: box-shadow 0.3s ease;
+	transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 	cursor: pointer;
   }
   
   .collapsible-section:hover {
-	background: linear-gradient(135deg, rgba(108, 79, 150, 0.7), rgba(55, 26, 118, 0.7));
-	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+	transform: translateY(-2px);
+	background: linear-gradient(135deg, rgba(108, 79, 150, 0.4), rgba(55, 26, 118, 0.4));
+	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
   }
   
   .collapsible-header {
@@ -393,19 +442,59 @@
 	padding-top: 10px;
   }
   
-  /* Homepage sections */
+  /* Homepage sections - updated to match card styling */
   .nostr-klienter,
   .nostr-nip05,
   .nostr-ressourcer,
   .nostr-om,
   .nostr-support {
-	background: linear-gradient(135deg, rgba(85, 37, 130, 0.7), rgba(108, 79, 150, 0.7));
+	background: linear-gradient(135deg, rgba(108, 79, 150, 0.3), rgba(55, 26, 118, 0.3));
 	padding: 60px 30px;
 	text-align: center;
 	color: #fff;
 	margin: 40px 0;
 	border-radius: 12px;
-	box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+  
+  .nostr-klienter h2,
+  .nostr-nip05 h2,
+  .nostr-ressourcer h2,
+  .nostr-om h2,
+  .nostr-support h2 {
+	font-size: 3rem;
+	margin-bottom: 30px;
+	font-weight: 800;
+	color: #ffffff;
+	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+  
+  .nostr-klienter h3,
+  .nostr-nip05 h3,
+  .nostr-ressourcer h3,
+  .nostr-om h3,
+  .nostr-support h3 {
+	margin-top: 20px;
+	font-size: 1.6rem;
+	font-weight: 700;
+	color: #ffffff;
+	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+  }
+  
+  .nostr-klienter p,
+  .nostr-nip05 p,
+  .nostr-ressourcer p,
+  .nostr-om p,
+  .nostr-support p {
+	font-size: 1.4rem;
+	margin-bottom: 40px;
+	line-height: 1.8;
+	max-width: 900px;
+	margin-left: auto;
+	margin-right: auto;
+	color: #dcdcdc;
+	text-align: justify;
+	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
   }
   
   .klient-container {
@@ -502,8 +591,30 @@
 	  font-size: 2rem;
 	}
   
+	.hero {
+	  padding: 60px 20px;
+	}
+  
 	.hero h1 {
 	  font-size: 2.5rem;
+	}
+  
+	/* Homepage section headings */
+	.nostr-klienter h2,
+	.nostr-nip05 h2,
+	.nostr-ressourcer h2,
+	.nostr-om h2,
+	.nostr-support h2 {
+	  font-size: 2rem;
+	}
+  
+	.nostr-klienter p,
+	.nostr-nip05 p,
+	.nostr-ressourcer p,
+	.nostr-om p,
+	.nostr-support p {
+	  font-size: 1.1rem;
+	  text-align: left;
 	}
   
 	/* Grids */
@@ -539,6 +650,11 @@
 	/* Wide cards become single column */
 	.card-wide {
 	  grid-column: span 1;
+	}
+  
+	/* Featured grid becomes single column on mobile */
+	.featured-grid {
+	  grid-template-columns: 1fr;
 	}
   }
   

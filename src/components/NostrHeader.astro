@@ -4,19 +4,21 @@
 
 <header>
     <div class="logo-container">
-      <a href="/">
+      <a href="/" class="logo-link">
         <img src="/shaka.png" alt="Nostr Logo" id="logo" />
+        <span class="logo-text">Nostr</span>
       </a>
-      <span class="logo-text">Nostr</span>
     </div>
     
     <nav>
       <ul>
-        <li><a href="#top">Hjem</a></li>
-        <li><a href="#nostr-nip05">Nostr adresse</a></li>
-        <li><a href="#nostr-ressourcer">Nostr Ressourcer</a></li>
-        <li><a href="#nostr-om">Om Nostr.dk</a></li>
-        <li><a href="#nostr-support">Support</a></li>
+        <li><a href="/">Hjem</a></li>
+        <li><a href="/#nostr-ressourcer">Ressourcer</a></li>
+        <li><a href="/#nostr-nip05">Nostr Adresse</a></li>
+        <li><a href="/podcasts">Podcasts</a></li>
+        <li><a href="/apps">Apps & Tjenester</a></li>
+        <li><a href="/#nostr-om">Om</a></li>
+        <li><a href="/#nostr-support">Support</a></li>
       </ul>
     </nav>
   
@@ -28,11 +30,12 @@
   </header>
   
   <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
-    <a href="#top">Hjem</a>
-    <a href="#nostr-nip05">Nostr adresse</a>
-    <a href="#nostr-ressourcer">Nostr Ressourcer</a>
-    <a href="#nostr-om">Om Nostr.dk</a>
-    <a href="#nostr-support">Support</a>
+    <a href="/">Hjem</a>
+    <a href="/#nostr-ressourcer">Ressourcer</a>
+    <a href="/#nostr-nip05">Nostr Adresse</a>
+    <a href="/#nostr-om">Om</a>
+    <a href="/podcasts">Podcasts</a>
+    <a href="/apps">Apps & Tjenester</a>
   </div>
   
   <style>
@@ -51,7 +54,18 @@
   .logo-container {
     display: flex;
     align-items: center;
+  }
+  
+  .logo-link {
+    display: flex;
+    align-items: center;
     gap: 10px;
+    text-decoration: none;
+    transition: opacity 0.3s;
+  }
+  
+  .logo-link:hover {
+    opacity: 0.8;
   }
   
   .logo-container img {
@@ -136,6 +150,7 @@
   </style>
   
   <script>
+    // Mobile menu toggle
     const burgerMenu = document.getElementById('burger-menu');
     const mobileMenu = document.getElementById('mobile-menu');
   
@@ -148,20 +163,43 @@
       });
     }
   
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const targetId = this.getAttribute('href');
-        if (targetId === '#top') {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          const targetElement = document.querySelector(targetId);
-          if (targetElement) {
-            const headerHeight = 80;
-            const offset = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight;
-            window.scrollTo({ top: offset, behavior: 'smooth' });
+    // Smooth scrolling for anchor links
+    function setupSmoothScroll() {
+      const headerHeight = 80;
+      
+      document.querySelectorAll('a[href^="/#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+          const href = this.getAttribute('href');
+          
+          // Check if we're on homepage
+          if (window.location.pathname === '/') {
+            e.preventDefault();
+            const targetId = href.substring(2); // Remove "/#"
+            
+            if (targetId === 'top') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+              const targetElement = document.getElementById(targetId);
+              if (targetElement) {
+                const offset = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight;
+                window.scrollTo({ top: offset, behavior: 'smooth' });
+                
+                // Close mobile menu if open
+                if (mobileMenu && mobileMenu.classList.contains('active')) {
+                  mobileMenu.classList.remove('active');
+                  burgerMenu.setAttribute('aria-expanded', 'false');
+                }
+              }
+            }
           }
-        }
+          // If not on homepage, let the link work normally to navigate there
+        });
       });
-    });
+    }
+  
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', setupSmoothScroll);
+    
+    // Also run after navigation (for SPAs, though Astro does full page loads)
+    document.addEventListener('astro:page-load', setupSmoothScroll);
   </script>
