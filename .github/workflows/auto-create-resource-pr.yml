@@ -1,3 +1,4 @@
+cat > .github/workflows/auto-create-resource-pr.yml << 'EOF'
 name: Auto-Create Resource PR from Issue
 
 on:
@@ -69,25 +70,31 @@ jobs:
             
             const branchName = 'add-resource-' + filename.replace('.md', '');
             
+            // Get the default branch
             const { data: repo } = await github.rest.repos.get({
               owner: context.repo.owner,
               repo: context.repo.repo
             });
             const defaultBranch = repo.default_branch;
             
-            const { data: ref } = await github.rest.git.getRef({
+            // Get the SHA of the default branch
+            const { data: refData } = await github.rest.git.getRef({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: 'heads/' + defaultBranch
             });
             
+            const sha = refData.object.sha;
+            
+            // Create new branch
             try {
               await github.rest.git.createRef({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: 'refs/heads/' + branchName,
-                sha: ref.object.sha
+                sha: sha
               });
+              console.log('Created branch: ' + branchName);
             } catch (error) {
               console.log('Branch may already exist:', error.message);
             }
@@ -159,3 +166,4 @@ jobs:
               
               throw error;
             }
+EOF
