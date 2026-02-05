@@ -69,26 +69,19 @@ jobs:
             
             const branchName = 'add-resource-' + filename.replace('.md', '');
             
-            const { data: repo } = await github.rest.repos.get({
+            const repoInfo = await github.rest.repos.get({
               owner: context.repo.owner,
               repo: context.repo.repo
             });
-            const defaultBranch = repo.default_branch;
+            const defaultBranch = repoInfo.data.default_branch;
             
-            cconst { data: repo } = await github.rest.repos.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-            const defaultBranch = repo.default_branch;
-            
-            const { data: mainBranch } = await github.rest.repos.getBranch({
+            const branchInfo = await github.rest.repos.getBranch({
               owner: context.repo.owner,
               repo: context.repo.repo,
               branch: defaultBranch
             });
             
-            const sha = mainBranch.commit.sha;
-            console.log('Got SHA:', sha);
+            const sha = branchInfo.data.commit.sha;
             
             try {
               await github.rest.git.createRef({
@@ -131,7 +124,7 @@ jobs:
                 '---\n' +
                 'Closes #' + issue.number;
               
-              const { data: pr } = await github.rest.pulls.create({
+              const prResult = await github.rest.pulls.create({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 title: 'Add ' + name + ' to resources',
@@ -141,7 +134,7 @@ jobs:
               });
               
               const commentBody = '🎉 Thanks for the suggestion!\n\n' +
-                'I have automatically created a Pull Request with this resource: #' + pr.number + '\n\n' +
+                'I have automatically created a Pull Request with this resource: #' + prResult.data.number + '\n\n' +
                 'The maintainer will review and merge it soon!';
               
               await github.rest.issues.createComment({
@@ -151,7 +144,7 @@ jobs:
                 body: commentBody
               });
               
-              console.log('Created PR #' + pr.number + ' for resource: ' + name);
+              console.log('Created PR #' + prResult.data.number + ' for resource: ' + name);
               
             } catch (error) {
               console.error('Error creating file or PR:', error);
