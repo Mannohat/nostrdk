@@ -1,9 +1,9 @@
 ---
 title: "Satlantis"
-description: "Decentral platform til at dele og opdage rejseindhold."
+description: "Event og billet app med nostr login mv."
 url: "https://www.satlantis.io"
 category: "nostr-alternatives"
-section: "Tripadvisor Alternative"
+section: "Events & Meetups"
 order: 1
 published: true
 ---
