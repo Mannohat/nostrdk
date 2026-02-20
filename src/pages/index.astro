@@ -1,34 +1,6 @@
 ---
-import NostrHeader from "../components/NostrHeader.astro";
-import NostrFooter from "../components/NostrFooter.astro";
-import "../styles/global.css";
 ---
 
-<!doctype html>
-<html lang="da">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Nostr.dk - Tag del i fremtidens decentraliserede internet</title>
-		<meta
-			name="description"
-			content="Nostr.dk - Tag del i fremtidens decentraliserede internet"
-		/>
-		<meta
-			name="keywords"
-			content="Nostr, Decentraliseret, Socialt Netværk, Privatliv"
-		/>
-		<link rel="icon" href="/shaka.png" type="image/png" />
-		<link
-			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-			rel="stylesheet"
-		/>
-	</head>
-
-	<body>
-		<NostrHeader />
-
-		<main class="container">
 			<!-- Hero Section -->
 			<section class="hero">
 				<h1>Tag del i fremtidens decentraliserede internet</h1>
@@ -458,9 +430,6 @@ import "../styles/global.css";
 					>
 				</p>
 			</section>
-		</main>
-
-		<NostrFooter />
 
 		<script is:inline>
 			// Toggle individual collapsible sections
@@ -640,5 +609,4 @@ import "../styles/global.css";
 				transform: scale(0.95);
 			}
 		</style>
-	</body>
-</html>
+</NostrLayout>
