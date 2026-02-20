@@ -1,0 +1,2 @@
+</NostrLayout> -i  2i\
+import NostrLayout from "../layouts/NostrLayout.astro"; src/pages/podcasts.astro

@@ -1,8 +1,6 @@
 ---
+import NostrLayout from "../layouts/NostrLayout.astro";
 import { getCollection } from "astro:content";
-import NostrHeader from "../components/NostrHeader.astro";
-import NostrFooter from "../components/NostrFooter.astro";
-import "../styles/global.css";
 
 // Get all published resources
 const allResources = await getCollection("resources", ({ data }) => {
@@ -45,29 +43,9 @@ const resourcesByCategory = Object.keys(categories).reduce(
 );
 ---
 
-<!doctype html>
-<html lang="da">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nostr.dk Apps & Tjenester</title>
-    <meta name="description" content="Nostr.dk Apps & Tjenester" />
-    <meta
-      name="keywords"
-      content="Nostr, Decentraliseret, Socialt Netværk, Apps, Tjenester"
-    />
-    <link rel="icon" href="/shaka.png" type="image/png" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
-  </head>
+<NostrLayout title="Apps & Tjenester | Nostr.dk" description="Oversigt over decentraliserede apps og tjenester bygget på Nostr – alternativer til YouTube, Twitter, Facebook og meget mere.">
 
-  <body>
-    <NostrHeader />
-
-    <main class="container">
-      <div class="page-header">
+  <div class="page-header">
         <h1>Apps & Tjenester</h1>
         <p>
           Stort set alle de services og virksomheder som f.eks. Youtube, Google,
@@ -158,9 +136,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
           <a href="/" class="cta-button secondary">Gå til Forsiden →</a>
         </div>
       </section>
-    </main>
 
-    <NostrFooter />
 
     <script is:inline>
       document.addEventListener("DOMContentLoaded", function () {
@@ -446,5 +422,4 @@ const resourcesByCategory = Object.keys(categories).reduce(
         }
       }
     </style>
-  </body>
-</html>
+ <NostrLayout></NostrLayout>
