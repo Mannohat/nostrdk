@@ -41,6 +41,7 @@ const series = allPodcasts
               <div class="video-wrapper">
                 <iframe
                   src={`https://www.youtube.com/embed/${podcast.data.videoId}`}
+                  loading="lazy"
                   allowfullscreen
                 ></iframe>
               </div>
@@ -62,6 +63,7 @@ const series = allPodcasts
               <div class="video-wrapper">
                 <iframe
                   src={`https://www.youtube.com/embed/${podcast.data.videoId}`}
+                  loading="lazy"
                   allowfullscreen
                 ></iframe>
               </div>
@@ -85,6 +87,7 @@ const series = allPodcasts
                 <div class="video-wrapper">
                   <iframe
                     src={`https://www.youtube.com/embed/${podcast.data.videoId}`}
+                    loading="lazy"
                     allowfullscreen
                   ></iframe>
                 </div>
@@ -116,6 +119,7 @@ const series = allPodcasts
                   <img
                     src={podcast.data.imageUrl}
                     alt={`${podcast.data.title} Thumbnail`}
+                    loading="lazy"
                   />
                 </a>
               )}
@@ -123,6 +127,7 @@ const series = allPodcasts
                 <div class="video-wrapper">
                   <iframe
                     src={`https://www.youtube.com/embed/${podcast.data.videoId}`}
+                    loading="lazy"
                     allowfullscreen
                   ></iframe>
                 </div>
