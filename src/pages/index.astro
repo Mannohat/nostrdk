@@ -15,7 +15,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	</section>
 
 	<!-- Collapsible Content Sections -->
-	<div class="collapsible-section" onclick="toggleSection(this)">
+	<div class="collapsible-section" role="button" tabindex="0" aria-expanded="false" onclick="toggleSection(this)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleSection(this)">
 		<div class="collapsible-header">1. Hvad er Nostr?</div>
 		<div class="collapsible-content">
 			<p>
@@ -46,7 +46,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</div>
 	</div>
 
-	<div class="collapsible-section" onclick="toggleSection(this)">
+	<div class="collapsible-section" role="button" tabindex="0" aria-expanded="false" onclick="toggleSection(this)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleSection(this)">
 		<div class="collapsible-header">2. Hvorfor er Nostr vigtigt?</div>
 		<div class="collapsible-content">
 			<p>
@@ -66,7 +66,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</div>
 	</div>
 
-	<div class="collapsible-section" onclick="toggleSection(this)">
+	<div class="collapsible-section" role="button" tabindex="0" aria-expanded="false" onclick="toggleSection(this)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleSection(this)">
 		<div class="collapsible-header">3. Hvordan fungerer Nostr?</div>
 		<div class="collapsible-content">
 			<p>
@@ -87,7 +87,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</div>
 	</div>
 
-	<div class="collapsible-section" onclick="toggleSection(this)">
+	<div class="collapsible-section" role="button" tabindex="0" aria-expanded="false" onclick="toggleSection(this)" onkeydown="if(event.key==='Enter'||event.key===' ')toggleSection(this)">
 		<div class="collapsible-header">4. Kom i gang med Nostr</div>
 		<div class="collapsible-content">
 			<p>
@@ -123,7 +123,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		<div class="klient-container">
 			<div class="klient-item">
 				<a href="https://primal.net" target="_blank" data-umami-event="klient-primal">
-					<img src="/primal.png" alt="Primal" />
+					<img src="/primal.png" alt="Primal" loading="lazy" />
 					<h3>Primal</h3>
 				</a>
 				<p class="klient-description">Android, iOS & Desktop</p>
@@ -131,7 +131,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			</div>
 			<div class="klient-item">
 				<a href="https://damus.io" target="_blank" data-umami-event="klient-damus">
-					<img src="/damus.png" alt="Damus" />
+					<img src="/damus.png" alt="Damus" loading="lazy" />
 					<h3>Damus</h3>
 				</a>
 				<p class="klient-description">iOS</p>
@@ -174,15 +174,15 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</p>
 		<div class="resource-container">
 			<a href="/podcasts" class="resource-item" data-umami-event="ressource-podcasts">
-				<img src="/podcasts.png" alt="Podcasts" class="resource-icon" />
+				<img src="/podcasts.png" alt="Podcasts" class="resource-icon" loading="lazy" />
 				<h3>Nostr Podcasts</h3>
 			</a>
 			<a href="/apps" class="resource-item" data-umami-event="ressource-apps">
-				<img src="/apps.png" alt="Apps & Tjenester" class="resource-icon" />
+				<img src="/apps.png" alt="Apps & Tjenester" class="resource-icon" loading="lazy" />
 				<h3>Apps & Tjenester</h3>
 			</a>
 			<a href="https://t.me/enogtyvedk/510" target="_blank" class="resource-item" data-umami-event="telegram-link">
-				<img src="/telegram.png" alt="Telegram" class="resource-icon" />
+				<img src="/telegram.png" alt="Telegram" class="resource-icon" loading="lazy" />
 				<h3>Nostr.dk Telegram</h3>
 			</a>
 		</div>
@@ -199,7 +199,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</p>
 		<div class="resource-container">
 			<a href="mailto:nostr@nostr.dk" data-umami-event="email-link">
-				<img src="/sendmail.png" alt="Send Email" class="resource-icon" />
+				<img src="/sendmail.png" alt="Send Email" class="resource-icon" loading="lazy" />
 				<h3>Send Email</h3>
 			</a>
 		</div>
@@ -211,8 +211,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		<p>
 			Hvis du vil støtte vores arbejde med at udbrede Nostr i Danmark, kan du sende lidt sats ⚡️ via Lightning-netværket. Hvad er Lightning? <a href="https://enogtyve.org/da/laer-mere/lightning/" target="_blank" rel="noopener noreferrer">Lær mere her</a>.
 		</p>
-		<button onclick="copyToClipboard()" style="background: none; border: none; padding: 10px; cursor: pointer;" type="button" data-umami-event="support-qr-click">
-			<img src="/support-qr.png" alt="Support QR Code" class="support-qr" />
+		<button onclick="copyToClipboard()" style="background: none; border: none; padding: 10px; cursor: pointer;" type="button" aria-label="Klik for at kopiere LNURL til udklipsholder" data-umami-event="support-qr-click">
+			<img src="/support-qr.png" alt="Support QR Code" class="support-qr" loading="lazy" />
 		</button>
 		<p class="support-instruction">
 			<em>Klik på QR-koden for at kopiere LNURL til udklipsholder</em>
@@ -222,6 +222,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	<script is:inline>
 		function toggleSection(element) {
 			element.classList.toggle("expanded");
+			const isExpanded = element.classList.contains("expanded");
+			element.setAttribute("aria-expanded", isExpanded ? "true" : "false");
 		}
 		window.toggleSection = toggleSection;
 
@@ -277,6 +279,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					const sections = document.querySelectorAll(".collapsible-section");
 					sections.forEach((section) => {
 						section.classList.add("expanded");
+						section.setAttribute("aria-expanded", "true");
 					});
 					setTimeout(() => {
 						const firstSection = sections[0];
