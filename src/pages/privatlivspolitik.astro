@@ -1,0 +1,75 @@
+---
+import NostrLayout from "../layouts/NostrLayout.astro";
+---
+
+<NostrLayout title="Privatlivspolitik | Nostr.dk" description="Privatlivspolitik for Nostr.dk – læs om hvordan vi håndterer dine data.">
+
+	<section class="policy">
+		<h1>Privatlivspolitik</h1>
+		<p class="last-updated">Sidst opdateret: februar 2026</p>
+
+		<h2>1. Hvem vi er</h2>
+		<p>Nostr.dk er en dansk informationsside om Nostr-protokollen. Du kan kontakte os på <a href="mailto:nostr@nostr.dk">nostr@nostr.dk</a>.</p>
+
+		<h2>2. Hvilke data vi indsamler</h2>
+		<p>Vi indsamler anonyme besøgsstatistikker via <a href="https://umami.is" target="_blank" rel="noopener noreferrer">Umami Analytics</a>. Umami indsamler ikke personlige oplysninger og sætter ingen tracking-cookies. De data der indsamles inkluderer:</p>
+		<ul>
+			<li>Antal sidevisninger</li>
+			<li>Hvilke sider der besøges</li>
+			<li>Omtrentlig geografisk placering (land/region)</li>
+			<li>Hvilken enhed og browser der bruges</li>
+		</ul>
+		<p>Vi indsamler ikke navn, email, IP-adresse eller andre personhenførbare oplysninger.</p>
+
+		<h2>3. Cookies</h2>
+		<p>Nostr.dk bruger ingen tracking-cookies. Umami Analytics er cookiefri og GDPR-kompatibel.</p>
+
+		<h2>4. Tredjepartstjenester</h2>
+		<p>Siden indeholder links til eksterne tjenester som Primal, Damus, Telegram og andre. Disse tjenester har deres egne privatlivspolitikker, som vi ikke er ansvarlige for.</p>
+
+		<h2>5. Dine rettigheder</h2>
+		<p>Da vi ikke indsamler persondata, er der ingen personlige oplysninger at tilgå, rette eller slette. Har du spørgsmål, er du velkommen til at kontakte os på <a href="mailto:nostr@nostr.dk">nostr@nostr.dk</a>.</p>
+	</section>
+
+	<style>
+		.policy {
+			max-width: 800px;
+			margin: 60px auto;
+			padding: 0 20px;
+		}
+		.policy h1 {
+			font-size: 2.5rem;
+			margin-bottom: 10px;
+		}
+		.last-updated {
+			color: rgba(255,255,255,0.5);
+			font-size: 0.9rem;
+			margin-bottom: 40px;
+		}
+		.policy h2 {
+			font-size: 1.4rem;
+			margin-top: 40px;
+			margin-bottom: 15px;
+			color: #a084ca;
+		}
+		.policy p, .policy li {
+			line-height: 1.7;
+			color: rgba(255,255,255,0.85);
+		}
+		.policy ul {
+			padding-left: 20px;
+			margin: 15px 0;
+		}
+		.policy li {
+			margin-bottom: 8px;
+		}
+		.policy a {
+			color: #a084ca;
+			text-decoration: none;
+		}
+		.policy a:hover {
+			text-decoration: underline;
+		}
+	</style>
+
+</NostrLayout>

@@ -1,612 +1,363 @@
 ---
+import NostrLayout from "../layouts/NostrLayout.astro";
 ---
 
-			<!-- Hero Section -->
-			<section class="hero">
-				<h1>Tag del i fremtidens decentraliserede internet</h1>
-				<p>
-					Nostr giver dig ejerskab over dine data – en åben protokol
-					for sociale medier og meget mere.
-				</p>
-				<button class="cta" id="start-button"
-					>Lad mig læse mere om det</button
-				>
-			</section>
+<NostrLayout title="Nostr.dk – Tag del i fremtidens decentraliserede internet" description="Din indgang til Nostr – den censurresistente, decentraliserede protokol for sociale medier og meget mere.">
 
-			<!-- Collapsible Content Sections -->
-			<div class="collapsible-section" onclick="toggleSection(this)">
-				<div class="collapsible-header">1. Hvad er Nostr?</div>
-				<div class="collapsible-content">
-					<p>
-						Nostr er en decentral protokol, der bl.a. giver brugerne
-						mulighed for at kommunikere og dele indhold uden at være
-						afhængige af central kontrol eller servere. Dette
-						betyder, at der ikke er nogen enkelt enhed, der ejer
-						eller styrer netværket, hvilket gør Nostr
-						censurresistent og mere robust end traditionelle sociale
-						platforme.
-					</p>
-					<p>
-						<strong
-							>Nostr står for "Notes and Other Stuff Transmitted
-							by Relays".</strong
-						>
-					</p>
-					<p>
-						Nostr bruger offentlige og private nøgler til at
-						identificere brugere. Hver bruger har et nøglepar og man
-						kan have flere hvis man ønsker det:
-					</p>
+	<!-- Hero Section -->
+	<section class="hero">
+		<h1>Tag del i fremtidens decentraliserede internet</h1>
+		<p>
+			Nostr giver dig ejerskab over dine data – en åben protokol
+			for sociale medier og meget mere.
+		</p>
+		<button class="cta" id="start-button" data-umami-event="hero-button">Lad mig læse mere om det</button>
+	</section>
+
+	<!-- Collapsible Content Sections -->
+	<div class="collapsible-section" onclick="toggleSection(this)">
+		<div class="collapsible-header">1. Hvad er Nostr?</div>
+		<div class="collapsible-content">
+			<p>
+				Nostr er en decentral protokol, der bl.a. giver brugerne
+				mulighed for at kommunikere og dele indhold uden at være
+				afhængige af central kontrol eller servere. Dette
+				betyder, at der ikke er nogen enkelt enhed, der ejer
+				eller styrer netværket, hvilket gør Nostr
+				censurresistent og mere robust end traditionelle sociale
+				platforme.
+			</p>
+			<p>
+				<strong>Nostr står for "Notes and Other Stuff Transmitted by Relays".</strong>
+			</p>
+			<p>
+				Nostr bruger offentlige og private nøgler til at
+				identificere brugere. Hver bruger har et nøglepar og man
+				kan have flere hvis man ønsker det:
+			</p>
+			<ul>
+				<li>
+					<strong>Offentlig nøgle (npub)</strong>: Denne fungerer som din identitet på Nostr og kan sammenlignes med et brugernavn. Din offentlige nøgle, også kaldet "npub", er synlig for alle og bruges til at identificere dig, når du sender beskeder eller opdaterer din profil.
+				</li>
+				<li>
+					<strong>Privat nøgle (nsec)</strong>: Dette er din adgangskode, som er yderst vigtig at beskytte. Din private nøgle, også kaldet "nsec", bruges til at signere alle dine beskeder og handlinger på Nostr. Hvis nogen får adgang til din private nøgle, kan de overtage din konto, og der er ingen måde at nulstille eller gendanne den på. Derfor er det vigtigt at opbevare din private nøgle sikkert, fx i en password manager.
+				</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="collapsible-section" onclick="toggleSection(this)">
+		<div class="collapsible-header">2. Hvorfor er Nostr vigtigt?</div>
+		<div class="collapsible-content">
+			<p>
+				Som nævnt er Nostr en protokol og man kan allerede en masse ting med protokollen som vi ikke afdækker i denne introduktion. MEEEEN! en væsentlig -og lige nu klart den mest udbredte brug af Nostr er inden for sociale netværk, da det løser nogle af de store udfordringer som eksisterende sociale medier står overfor:
+			</p>
+			<ul>
+				<li>
+					<strong>Censur</strong>: Traditionelle sociale medieplatforme er underlagt kontrol fra centraliserede myndigheder, som kan censurere eller slette indhold. På Nostr vælger brugerne selv, hvilke relæer de vil forbinde til, og ingen enkelt enhed kan styre, hvad der bliver postet.
+				</li>
+				<li>
+					<strong>Datasikkerhed</strong>: På centrale platforme som Facebook og Twitter opbevares alle dine data på deres servere, og du har ingen kontrol over, hvordan de bruges eller opbevares. På Nostr kan brugerne selv vælge, hvilke relæer deres data sendes til, og ingen tredjeparter har adgang til dine private nøgler eller beskeder.
+				</li>
+				<li>
+					<strong>Privatliv</strong>: Nostr giver dig fuld kontrol over dine handlinger og beskeder. Hver besked, du sender, og hver opdatering, du foretager på din profil, signeres med din private nøgle. Dette sikrer, at det kun er dig med din private nøgle (nsec) som kan udføre disse handlinger. Med en Nostr-adresse, som du kan læse mere om længere nede på siden her, har du mulighed for at sikrer dig og dem der vil følge dig at de finder den korrekte profil og altså ikke en kopi som måtte forsøge at udgive sig for at være dig.
+				</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="collapsible-section" onclick="toggleSection(this)">
+		<div class="collapsible-header">3. Hvordan fungerer Nostr?</div>
+		<div class="collapsible-content">
+			<p>
+				Nostr fungerer ved hjælp af et netværk af relæer, der videresender beskeder mellem brugere. Disse relæer opbevarer ikke dine data permanent, men distribuerer dem til andre brugere og applikationer, du er forbundet med. Alle som har de tekniske forudsætninger for at opsætte et nostr relæ kan gøre det men det er ikke nødvendigt for at du kan bruge nostr og langt de fleste klienter er allerede opsat med en række af relæer fra start. Man kan til enhver tid fjerne eller tilføje relæer.
+			</p>
+			<p><strong>Oprettelse af en Nostr-konto:</strong></p>
+			<ul>
+				<li>
+					<strong>Vælg en klient</strong>: For at bruge Nostr skal du vælge en klient. Klienter er de applikationer, der forbinder dig til Nostr-netværket. Der findes klienter til både web, desktop og mobil, så du kan vælge den, der passer bedst til dine behov.
+				</li>
+				<li>
+					<strong>Generer dine nøgler</strong>: Når du opretter en konto i en Nostr-klient, genereres der automatisk et offentligt og privat nøglepar. Din offentlige nøgle (npub) fungerer som dit "brugernavn", og din private nøgle (nsec) bruges til at signere dine handlinger.
+				</li>
+				<li>
+					<strong>Gem din private nøgle sikkert</strong>: Da din private nøgle fungerer som en adgangskode, er det vigtigt at opbevare den sikkert. Brug evt. en password manager til at beskytte din nøgle, så du ikke mister den.
+				</li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="collapsible-section" onclick="toggleSection(this)">
+		<div class="collapsible-header">4. Kom i gang med Nostr</div>
+		<div class="collapsible-content">
+			<p>
+				At komme i gang med Nostr er enkelt, men der er nogle vigtige skridt, du skal følge for at beskytte din konto og få den bedst mulige oplevelse:
+			</p>
+			<ul>
+				<li>
+					<strong>Vælg en klient</strong>: Vælg en Nostr-kompatibel klient, såsom:
 					<ul>
-						<li>
-							<strong>Offentlig nøgle (npub)</strong>: Denne
-							fungerer som din identitet på Nostr og kan
-							sammenlignes med et brugernavn. Din offentlige
-							nøgle, også kaldet "npub", er synlig for alle og
-							bruges til at identificere dig, når du sender
-							beskeder eller opdaterer din profil.
-						</li>
-						<li>
-							<strong>Privat nøgle (nsec)</strong>: Dette er din
-							adgangskode, som er yderst vigtig at beskytte. Din
-							private nøgle, også kaldet "nsec", bruges til at
-							signere alle dine beskeder og handlinger på Nostr.
-							Hvis nogen får adgang til din private nøgle, kan de
-							overtage din konto, og der er ingen måde at
-							nulstille eller gendanne den på. Derfor er det
-							vigtigt at opbevare din private nøgle sikkert, fx i
-							en password manager.
-						</li>
+						<li>Damus (iOS)</li>
+						<li>Primal (Android, iOS & Desktop)</li>
 					</ul>
-				</div>
+				</li>
+				<li>
+					<strong>Tilføj kontakter</strong>: Når du er sat op, kan du begynde at opbygge dit netværk ved at tilføje andre brugere som du vil følge. Du kan finde brugere ved at søge efter deres offentlige nøgle eller ved at tilføje deres NIP-05-identitet. For at finde andre danskere på Nostr kan du kigge på siden her <a href="https://find.nostr.dk" target="_blank" rel="noopener noreferrer">find.nostr.dk</a> ligesom du også kan følge hashtags i flere af de kendte klienter som f.eks. Damus og Primal.
+				</li>
+				<li>
+					<strong>Verifikation via NIP-05</strong>: Du kan opsætte en Nostr-adresse, der knytter en genkendelig identitet, som f.eks. 'alias@nostr.dk', til din offentlige nøgle. Dette gør det lettere for andre at finde dig og bekræfte ægtheden af din profil, da det forhindrer, at nogen laver en kopi for at udgive sig for dig.
+				</li>
+				<li>
+					<strong>Opsæt din Lightning-wallet (valgfrit)</strong>: Nostr understøtter betalinger via Lightning-netværket, hvilket gør det muligt at sende og modtage små donationer, kaldet 'zaps'. Dette er ikke nødvendigt for at bruge Nostr, men det er en spændende og sjov måde at betale folk på, hvis du f.eks. synes om et opslag, en artikel eller noget andet. Det giver også mulighed for, at andre kan betale dig. Denne model er kendt som Value4Value og bliver i stigende grad benyttet. For at bruge denne funktion skal du opsætte en Lightning-wallet, som kan forbindes til din Nostr-konto. Hvis du ikke er bekendt med Value4Value, Bitcoin eller Lightning-netværket, kan du besøge <a href="https://www.enogtyve.org" target="_blank" rel="noopener noreferrer">Enogtyve</a> for at lære mere.
+				</li>
+			</ul>
+		</div>
+	</div>
+
+	<!-- Nostr Klienter Section -->
+	<section class="nostr-klienter" id="nostr-klienter">
+		<h2>Nostr Klienter</h2>
+		<p>
+			Der findes mange Nostr-klienter og tjenester, men her er nogle forslag til at komme i gang. Primal og Damus minder om Twitter og viser informationer på en måde, du måske kender fra Twitter. Primal kan bruges på Android, iOS og desktop, mens Damus kun er tilgængelig på iOS. Hvis du vil lære mere om Bitcoin og Lightning eller prøve Value4Value-modellen, er Primal nok den nemmeste at starte med. Husk at man altid kan skifte til en anden klient og alle dine data vil følge med.
+		</p>
+		<div class="klient-container">
+			<div class="klient-item">
+				<a href="https://primal.net" target="_blank" data-umami-event="klient-primal">
+					<img src="/primal.png" alt="Primal" />
+					<h3>Primal</h3>
+				</a>
+				<p class="klient-description">Android, iOS & Desktop</p>
+				<a href="https://primal.net" target="_blank" class="klient-link" data-umami-event="klient-primal">Besøg Primal</a>
 			</div>
-
-			<div class="collapsible-section" onclick="toggleSection(this)">
-				<div class="collapsible-header">
-					2. Hvorfor er Nostr vigtigt?
-				</div>
-				<div class="collapsible-content">
-					<p>
-						Som nævnt er Nostr en protokol og man kan allerede en
-						masse ting med protokollen som vi ikke afdækker i denne
-						introduktion. MEEEEN! en væsentlig -og lige nu klart den
-						mest udbredte brug af Nostr er inden for sociale
-						netværk, da det løser nogle af de store udfordringer som
-						eksisterende sociale medier står overfor:
-					</p>
-					<ul>
-						<li>
-							<strong>Censur</strong>: Traditionelle sociale
-							medieplatforme er underlagt kontrol fra
-							centraliserede myndigheder, som kan censurere eller
-							slette indhold. På Nostr vælger brugerne selv,
-							hvilke relæer de vil forbinde til, og ingen enkelt
-							enhed kan styre, hvad der bliver postet.
-						</li>
-						<li>
-							<strong>Datasikkerhed</strong>: På centrale
-							platforme som Facebook og Twitter opbevares alle
-							dine data på deres servere, og du har ingen kontrol
-							over, hvordan de bruges eller opbevares. På Nostr
-							kan brugerne selv vælge, hvilke relæer deres data
-							sendes til, og ingen tredjeparter har adgang til
-							dine private nøgler eller beskeder.
-						</li>
-						<li>
-							<strong>Privatliv</strong>: Nostr giver dig fuld
-							kontrol over dine handlinger og beskeder. Hver
-							besked, du sender, og hver opdatering, du foretager
-							på din profil, signeres med din private nøgle. Dette
-							sikrer, at det kun er dig med din private nøgle
-							(nsec) som kan udføre disse handlinger. Med en
-							Nostr-adresse, som du kan læse mere om længere nede
-							på siden her, har du mulighed for at sikrer dig og
-							dem der vil følge dig at de finder den korrekte
-							profil og altså ikke en kopi som måtte forsøge at
-							udgive sig for at være dig.
-						</li>
-					</ul>
-				</div>
+			<div class="klient-item">
+				<a href="https://damus.io" target="_blank" data-umami-event="klient-damus">
+					<img src="/damus.png" alt="Damus" />
+					<h3>Damus</h3>
+				</a>
+				<p class="klient-description">iOS</p>
+				<a href="https://damus.io" target="_blank" class="klient-link" data-umami-event="klient-damus">Besøg Damus</a>
 			</div>
+		</div>
+	</section>
 
-			<div class="collapsible-section" onclick="toggleSection(this)">
-				<div class="collapsible-header">3. Hvordan fungerer Nostr?</div>
-				<div class="collapsible-content">
-					<p>
-						Nostr fungerer ved hjælp af et netværk af relæer, der
-						videresender beskeder mellem brugere. Disse relæer
-						opbevarer ikke dine data permanent, men distribuerer dem
-						til andre brugere og applikationer, du er forbundet med.
-						Alle som har de tekniske forudsætninger for at opsætte
-						et nostr relæ kan gøre det men det er ikke nødvendigt
-						for at du kan bruge nostr og langt de fleste klienter er
-						allerede opsat med en række af relæer fra start. Man kan
-						til enhver tid fjerne eller tilføje relæer.
-					</p>
-					<p><strong>Oprettelse af en Nostr-konto:</strong></p>
-					<ul>
-						<li>
-							<strong>Vælg en klient</strong>: For at bruge Nostr
-							skal du vælge en klient. Klienter er de
-							applikationer, der forbinder dig til
-							Nostr-netværket. Der findes klienter til både web,
-							desktop og mobil, så du kan vælge den, der passer
-							bedst til dine behov.
-						</li>
-						<li>
-							<strong>Generer dine nøgler</strong>: Når du
-							opretter en konto i en Nostr-klient, genereres der
-							automatisk et offentligt og privat nøglepar. Din
-							offentlige nøgle (npub) fungerer som dit
-							"brugernavn", og din private nøgle (nsec) bruges til
-							at signere dine handlinger.
-						</li>
-						<li>
-							<strong>Gem din private nøgle sikkert</strong>: Da
-							din private nøgle fungerer som en adgangskode, er
-							det vigtigt at opbevare den sikkert. Brug evt. en
-							password manager til at beskytte din nøgle, så du
-							ikke mister den.
-						</li>
-					</ul>
-				</div>
+	<!-- NIP-05 Section -->
+	<section class="nostr-nip05" id="nostr-nip05">
+		<h2>Få en Nostr adresse <span style="font-size: 0.75em;">(NIP-05 adresse)</span></h2>
+		<p>
+			Du kan opsætte en verificeret identitet som gør det muligt at knytte en genkendelig adresse (f.eks. "alias@nostr.dk") til din offentlige nøgle. Dette gør det nemmere for andre at finde dig og bekræfte, at din profil er din og ikke nogen der udgiver sig for at være dig. Det kan altså være særligt nyttigt, hvis du ønsker at øge din troværdighed og gøre det lettere for dine følgere at genkende dig. Herunder kan du se de domæner du kan vælge for din nostr adsresse her på siden.
+		</p>
+		<div class="nip05-info">
+			<h3>Vælg dit alias og domæne</h3>
+			<p>Du skal vælge et alias og <strong>et af disse domæner som sammen udgør din nostr adresse:</strong></p>
+			<ul class="nip05-list">
+				<li>✓ <em>satoshi</em>@nostr.dk</li>
+				<li>✓ <em>satoshi</em>@npub.dk</li>
+				<li>✓ <em>satoshi</em>@enogtyve.org</li>
+			</ul>
+			<h3>Sådan opretter du en adresse</h3>
+			<p>Klik på <strong>"Få en Nostr adresse"</strong> nedenfor og følg disse trin:</p>
+			<div class="nip05-steps">
+				<p><strong>1. Alias + domæne:</strong> I det første felt "Your name" skriver du dit ønskede alias og domæne.</p>
+				<p><strong>2. Email (valgfrit):</strong> Indtast din email for at modtage bekræftelse, når din adresse er klar.</p>
+				<p><strong>3. Npub:</strong> I det sidste størrere felt indsætter du din offentlige nøgle <strong>(npub)</strong>.</p>
 			</div>
+			<p>Klik "SUBMIT" og betal 2.100 sats via Lightning. Din adresse vil være aktiv inden for 48 timer, typisk hurtigere. Ved du ikke hvad Lightning er, kan du besøge <a href="https://enogtyve.org/da/laer-mere/lightning/" target="_blank" rel="noopener noreferrer">Enogtyve</a> for at lære mere.</p>
+		</div>
+		<button class="cta" onclick="openSmallWindow()" data-umami-event="nip05-button">Få en Nostr adresse</button>
+	</section>
 
-			<div class="collapsible-section" onclick="toggleSection(this)">
-				<div class="collapsible-header">4. Kom i gang med Nostr</div>
-				<div class="collapsible-content">
-					<p>
-						At komme i gang med Nostr er enkelt, men der er nogle
-						vigtige skridt, du skal følge for at beskytte din konto
-						og få den bedst mulige oplevelse:
-					</p>
-					<ul>
-						<li>
-							<strong>Vælg en klient</strong>: Vælg en
-							Nostr-kompatibel klient, såsom:
-							<ul>
-								<li>Damus (iOS)</li>
-								<li>Primal (Android, iOS & Desktop)</li>
-							</ul>
-						</li>
-						<li>
-							<strong>Tilføj kontakter</strong>: Når du er sat op,
-							kan du begynde at opbygge dit netværk ved at tilføje
-							andre brugere som du vil følge. Du kan finde brugere
-							ved at søge efter deres offentlige nøgle eller ved
-							at tilføje deres NIP-05-identitet. For at finde
-							andre danskere på Nostr kan du kigge på siden her <a
-								href="https://find.nostr.dk"
-								target="_blank"
-								rel="noopener noreferrer">find.nostr.dk</a
-							> ligesom du også kan følge hashtags i flere af de kendte
-							klienter som f.eks. Damus og Primal.
-						</li>
-						<li>
-							<strong>Verifikation via NIP-05</strong>: Du kan
-							opsætte en Nostr-adresse, der knytter en genkendelig
-							identitet, som f.eks. 'alias@nostr.dk', til din
-							offentlige nøgle. Dette gør det lettere for andre at
-							finde dig og bekræfte ægtheden af din profil, da det
-							forhindrer, at nogen laver en kopi for at udgive sig
-							for dig.
-						</li>
-						<li>
-							<strong
-								>Opsæt din Lightning-wallet (valgfrit)</strong
-							>: Nostr understøtter betalinger via
-							Lightning-netværket, hvilket gør det muligt at sende
-							og modtage små donationer, kaldet 'zaps'. Dette er
-							ikke nødvendigt for at bruge Nostr, men det er en
-							spændende og sjov måde at betale folk på, hvis du
-							f.eks. synes om et opslag, en artikel eller noget
-							andet. Det giver også mulighed for, at andre kan
-							betale dig. Denne model er kendt som Value4Value og
-							bliver i stigende grad benyttet. For at bruge denne
-							funktion skal du opsætte en Lightning-wallet, som
-							kan forbindes til din Nostr-konto. Hvis du ikke er
-							bekendt med Value4Value, Bitcoin eller
-							Lightning-netværket, kan du besøge <a
-								href="https://www.enogtyve.org"
-								target="_blank"
-								rel="noopener noreferrer">Enogtyve</a
-							> for at lære mere.
-						</li>
-					</ul>
-				</div>
-			</div>
+	<!-- Nostr Ressourcer Section -->
+	<section class="nostr-ressourcer" id="nostr-ressourcer">
+		<h2>Nostr Ressourcer</h2>
+		<p>
+			De fleste tjenester og virksomheder som YouTube, Google, Facebook, Twitter, Instagram, Meetups.com, Pinterest osv. har adgang til dine data og kan lukke din konto, hvis de ønsker det. Med Nostr får du mulighed for at eje dine egne data, hvilket sikrer, at du altid har adgang til din konto. Du kan også bevare dine opslag, følgere og dem, du følger, på tværs af alle Nostr-baserede tjenester. Det betyder også at du nemt kan skifte til en anden platform/klient.
+		</p>
+		<div class="resource-container">
+			<a href="/podcasts" class="resource-item" data-umami-event="ressource-podcasts">
+				<img src="/podcasts.png" alt="Podcasts" class="resource-icon" />
+				<h3>Nostr Podcasts</h3>
+			</a>
+			<a href="/apps" class="resource-item" data-umami-event="ressource-apps">
+				<img src="/apps.png" alt="Apps & Tjenester" class="resource-icon" />
+				<h3>Apps & Tjenester</h3>
+			</a>
+			<a href="https://t.me/enogtyvedk/510" target="_blank" class="resource-item" data-umami-event="telegram-link">
+				<img src="/telegram.png" alt="Telegram" class="resource-icon" />
+				<h3>Nostr.dk Telegram</h3>
+			</a>
+		</div>
+	</section>
 
-			<!-- Nostr Klienter Section -->
-			<section class="nostr-klienter" id="nostr-klienter">
-				<h2>Nostr Klienter</h2>
-				<p>
-					Der findes mange Nostr-klienter og tjenester, men her er
-					nogle forslag til at komme i gang. Primal og Damus minder om
-					Twitter og viser informationer på en måde, du måske kender
-					fra Twitter. Primal kan bruges på Android, iOS og desktop,
-					mens Damus kun er tilgængelig på iOS. Hvis du vil lære mere
-					om Bitcoin og Lightning eller prøve Value4Value-modellen, er
-					Primal nok den nemmeste at starte med. Husk at man altid kan
-					skifte til en anden klient og alle dine data vil følge med.
-				</p>
-				<div class="klient-container">
-					<div class="klient-item">
-						<a href="https://primal.net" target="_blank">
-							<img src="/primal.png" alt="Primal" />
-							<h3>Primal</h3>
-						</a>
-						<p class="klient-description">Android, iOS & Desktop</p>
-						<a
-							href="https://primal.net"
-							target="_blank"
-							class="klient-link">Besøg Primal</a
-						>
-					</div>
-					<div class="klient-item">
-						<a href="https://damus.io" target="_blank">
-							<img src="/damus.png" alt="Damus" />
-							<h3>Damus</h3>
-						</a>
-						<p class="klient-description">iOS</p>
-						<a
-							href="https://damus.io"
-							target="_blank"
-							class="klient-link">Besøg Damus</a
-						>
-					</div>
-				</div>
-			</section>
+	<!-- Om Section -->
+	<section class="nostr-om" id="nostr-om">
+		<h2>Om Nostr.dk</h2>
+		<p>
+			Formålet med Nostr.dk er at være en dansk ressource, der hjælper nysgerrige med at opnå en overordnet forståelse af protokollen samt nemt komme i gang med at bruge fremtidens protokol for social interaktion. Der findes masser af gode ressourcer på engelsk, som du nemt kan finde ved at søge på Nostr.
+		</p>
+		<p>
+			Har du spørgsmål så hop ind i telegram gruppen som du finder link til herover. Ønsker du at komme i kontakt med Nostr.dk så send os gerne en Email.
+		</p>
+		<div class="resource-container">
+			<a href="mailto:nostr@nostr.dk" data-umami-event="email-link">
+				<img src="/sendmail.png" alt="Send Email" class="resource-icon" />
+				<h3>Send Email</h3>
+			</a>
+		</div>
+	</section>
 
-			<!-- NIP-05 Section -->
-			<section class="nostr-nip05" id="nostr-nip05">
-				<h2>
-					Få en Nostr adresse <span style="font-size: 0.75em;"
-						>(NIP-05 adresse)</span
-					>
-				</h2>
-				<p>
-					Du kan opsætte en verificeret identitet som gør det muligt
-					at knytte en genkendelig adresse (f.eks. "alias@nostr.dk")
-					til din offentlige nøgle. Dette gør det nemmere for andre at
-					finde dig og bekræfte, at din profil er din og ikke nogen
-					der udgiver sig for at være dig. Det kan altså være særligt
-					nyttigt, hvis du ønsker at øge din troværdighed og gøre det
-					lettere for dine følgere at genkende dig. Herunder kan du se
-					de domæner du kan vælge for din nostr adsresse her på siden.
-				</p>
+	<!-- Support Section -->
+	<section class="nostr-support" id="nostr-support">
+		<h2>Støt op om Nostr.dk</h2>
+		<p>
+			Hvis du vil støtte vores arbejde med at udbrede Nostr i Danmark, kan du sende lidt sats ⚡️ via Lightning-netværket. Hvad er Lightning? <a href="https://enogtyve.org/da/laer-mere/lightning/" target="_blank" rel="noopener noreferrer">Lær mere her</a>.
+		</p>
+		<button onclick="copyToClipboard()" style="background: none; border: none; padding: 10px; cursor: pointer;" type="button" data-umami-event="support-qr-click">
+			<img src="/support-qr.png" alt="Support QR Code" class="support-qr" />
+		</button>
+		<p class="support-instruction">
+			<em>Klik på QR-koden for at kopiere LNURL til udklipsholder</em>
+		</p>
+	</section>
 
-				<div class="nip05-info">
-					<h3>Vælg dit alias og domæne</h3>
-					<p>
-						Du skal vælge et alias og <strong
-							>et af disse domæner som sammen udgør din nostr
-							adresse:</strong
-						>
-					</p>
+	<script is:inline>
+		function toggleSection(element) {
+			element.classList.toggle("expanded");
+		}
+		window.toggleSection = toggleSection;
 
-					<ul class="nip05-list">
-						<li>✓ <em>satoshi</em>@nostr.dk</li>
-						<li>✓ <em>satoshi</em>@npub.dk</li>
-						<li>✓ <em>satoshi</em>@enogtyve.org</li>
-					</ul>
+		window.openSmallWindow = function () {
+			const width = 600;
+			const height = 800;
+			const left = screen.width / 2 - width / 2;
+			const top = screen.height / 2 - height / 2;
+			window.open(
+				"https://demo.lnpiggy.com/lnticket/RwNqpMp9RgQQE5HQ9ZFJfb",
+				"nip05Window",
+				`width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`,
+			);
+		};
 
-					<h3>Sådan opretter du en adresse</h3>
-					<p>
-						Klik på <strong>"Få en Nostr adresse"</strong> nedenfor og
-						følg disse trin:
-					</p>
-					<div class="nip05-steps">
-						<p>
-							<strong>1. Alias + domæne:</strong> I det første felt
-							"Your name" skriver du dit ønskede alias og domæne.
-						</p>
-						<p>
-							<strong>2. Email (valgfrit):</strong> Indtast din email
-							for at modtage bekræftelse, når din adresse er klar.
-						</p>
-						<p>
-							<strong>3. Npub:</strong> I det sidste størrere felt
-							indsætter du din offentlige nøgle <strong
-								>(npub)</strong
-							>.
-						</p>
-					</div>
-					<p>
-						Klik "SUBMIT" og betal 2.100 sats via Lightning. Din
-						adresse vil være aktiv inden for 48 timer, typisk
-						hurtigere. Ved du ikke hvad Lightning er, kan du besøge <a
-							href="https://enogtyve.org/da/laer-mere/lightning/"
-							target="_blank"
-							rel="noopener noreferrer">Enogtyve</a
-						> for at lære mere.
-					</p>
-				</div>
-
-				<button class="cta" onclick="openSmallWindow()"
-					>Få en Nostr adresse</button
-				>
-			</section>
-
-			<!-- Nostr Ressourcer Section -->
-			<section class="nostr-ressourcer" id="nostr-ressourcer">
-				<h2>Nostr Ressourcer</h2>
-				<p>
-					De fleste tjenester og virksomheder som YouTube, Google,
-					Facebook, Twitter, Instagram, Meetups.com, Pinterest osv.
-					har adgang til dine data og kan lukke din konto, hvis de
-					ønsker det. Med Nostr får du mulighed for at eje dine egne
-					data, hvilket sikrer, at du altid har adgang til din konto.
-					Du kan også bevare dine opslag, følgere og dem, du følger,
-					på tværs af alle Nostr-baserede tjenester. Det betyder også
-					at du nemt kan skifte til en anden platform/klient.
-				</p>
-				<div class="resource-container">
-					<a href="/podcasts" class="resource-item">
-						<img
-							src="/podcasts.png"
-							alt="Podcasts"
-							class="resource-icon"
-						/>
-						<h3>Nostr Podcasts</h3>
-					</a>
-					<a href="/apps" class="resource-item">
-						<img
-							src="/apps.png"
-							alt="Apps & Tjenester"
-							class="resource-icon"
-						/>
-						<h3>Apps & Tjenester</h3>
-					</a>
-					<a
-						href="https://t.me/enogtyvedk/510"
-						target="_blank"
-						class="resource-item"
-					>
-						<img
-							src="/telegram.png"
-							alt="Telegram"
-							class="resource-icon"
-						/>
-						<h3>Nostr.dk Telegram</h3>
-					</a>
-				</div>
-			</section>
-
-			<!-- Om Section -->
-			<section class="nostr-om" id="nostr-om">
-				<h2>Om Nostr.dk</h2>
-				<p>
-					Formålet med Nostr.dk er at være en dansk ressource, der
-					hjælper nysgerrige med at opnå en overordnet forståelse af
-					protokollen samt nemt komme i gang med at bruge fremtidens
-					protokol for social interaktion. Der findes masser af gode
-					ressourcer på engelsk, som du nemt kan finde ved at søge på
-					Nostr.
-				</p>
-				<p>
-					Har du spørgsmål så hop ind i telegram gruppen som du finder
-					link til herover. Ønsker du
-					at komme i kontakt med Nostr.dk så send os gerne en Email</a
-					>.
-				</p>
-				<div class="resource-container">
-					<a href="mailto:nostr@nostr.dk">
-						<img
-							src="/sendmail.png"
-							alt="Send Email"
-							class="resource-icon"
-						/>
-						<h3>Send Email</h3>
-					</a>
-				</div>
-			</section>
-
-			<!-- Support Section -->
-			<section class="nostr-support" id="nostr-support">
-				<h2>Støt op om Nostr.dk</h2>
-				<p>
-					Hvis du vil støtte vores arbejde med at udbrede Nostr i
-					Danmark, kan du sende lidt sats ⚡️ via Lightning-netværket.
-					Hvad er Lightning? <a
-						href="https://enogtyve.org/da/laer-mere/lightning/"
-						target="_blank"
-						rel="noopener noreferrer">Lær mere her</a
-					>.
-				</p>
-				<button
-					onclick="copyToClipboard()"
-					style="background: none; border: none; padding: 10px; cursor: pointer;"
-					type="button"
-				>
-					<img
-						src="/support-qr.png"
-						alt="Support QR Code"
-						class="support-qr"
-					/>
-				</button>
-				<p class="support-instruction">
-					<em
-						>Klik på QR-koden for at kopiere LNURL til udklipsholder</em
-					>
-				</p>
-			</section>
-
-		<script is:inline>
-			// Toggle individual collapsible sections
-			function toggleSection(element) {
-				element.classList.toggle("expanded");
-			}
-
-			// Make it globally available
-			window.toggleSection = toggleSection;
-
-			// NIP-05 popup window
-			window.openSmallWindow = function () {
-				const width = 600;
-				const height = 800;
-				const left = screen.width / 2 - width / 2;
-				const top = screen.height / 2 - height / 2;
-				window.open(
-					"https://demo.lnpiggy.com/lnticket/RwNqpMp9RgQQE5HQ9ZFJfb",
-					"nip05Window",
-					`width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`,
-				);
-			};
-
-			// Support QR copy to clipboard - improved for mobile
-			window.copyToClipboard = async function () {
-				const lnurl =
-					"LNURL1DP68GURN8GHJ7ER9D4HJUMRWWP5KWEME9E3K7MF0D3H82UNVWQH4JAR4DYM5XKGH6R5";
-
-				// Try modern clipboard API first
-				if (navigator.clipboard && navigator.clipboard.writeText) {
-					try {
-						await navigator.clipboard.writeText(lnurl);
-						alert("LNURL kopieret til udklipsholder!");
-						return;
-					} catch (err) {
-						console.error("Clipboard API failed: ", err);
-					}
-				}
-
-				// Fallback for older browsers/mobile
-				const textArea = document.createElement("textarea");
-				textArea.value = lnurl;
-				textArea.style.position = "fixed";
-				textArea.style.left = "-999999px";
-				textArea.style.top = "0";
-				document.body.appendChild(textArea);
-				textArea.focus();
-				textArea.select();
-
+		window.copyToClipboard = async function () {
+			const lnurl = "LNURL1DP68GURN8GHJ7ER9D4HJUMRWWP5KWEME9E3K7MF0D3H82UNVWQH4JAR4DYM5XKGH6R5";
+			if (navigator.clipboard && navigator.clipboard.writeText) {
 				try {
-					const successful = document.execCommand("copy");
-					if (successful) {
-						alert("LNURL kopieret til udklipsholder!");
-					} else {
-						alert("Kunne ikke kopiere. Prøv venligst igen.");
-					}
+					await navigator.clipboard.writeText(lnurl);
+					alert("LNURL kopieret til udklipsholder!");
+					return;
 				} catch (err) {
-					console.error("Fallback copy failed: ", err);
+					console.error("Clipboard API failed: ", err);
+				}
+			}
+			const textArea = document.createElement("textarea");
+			textArea.value = lnurl;
+			textArea.style.position = "fixed";
+			textArea.style.left = "-999999px";
+			textArea.style.top = "0";
+			document.body.appendChild(textArea);
+			textArea.focus();
+			textArea.select();
+			try {
+				const successful = document.execCommand("copy");
+				if (successful) {
+					alert("LNURL kopieret til udklipsholder!");
+				} else {
 					alert("Kunne ikke kopiere. Prøv venligst igen.");
 				}
+			} catch (err) {
+				console.error("Fallback copy failed: ", err);
+				alert("Kunne ikke kopiere. Prøv venligst igen.");
+			}
+			document.body.removeChild(textArea);
+		};
 
-				document.body.removeChild(textArea);
-			};
-
-			// Hero button - expand all sections and scroll
-			document.addEventListener("DOMContentLoaded", function () {
-				const startButton = document.getElementById("start-button");
-
-				if (startButton) {
-					startButton.addEventListener("click", function () {
-						const sections = document.querySelectorAll(
-							".collapsible-section",
-						);
-
-						// Expand all sections
-						sections.forEach((section) => {
-							section.classList.add("expanded");
-						});
-
-						// Scroll to first section after brief delay
-						setTimeout(() => {
-							const firstSection = sections[0];
-							if (firstSection) {
-								const headerHeight = 80;
-								const sectionTop =
-									firstSection.getBoundingClientRect().top +
-									window.scrollY -
-									headerHeight;
-								window.scrollTo({
-									top: sectionTop,
-									behavior: "smooth",
-								});
-							}
-						}, 300);
+		document.addEventListener("DOMContentLoaded", function () {
+			const startButton = document.getElementById("start-button");
+			if (startButton) {
+				startButton.addEventListener("click", function () {
+					const sections = document.querySelectorAll(".collapsible-section");
+					sections.forEach((section) => {
+						section.classList.add("expanded");
 					});
-				}
-			});
-		</script>
-
-		<style>
-			/* Subtle client descriptions */
-			.klient-description {
-				font-size: 0.85rem;
-				color: rgba(255, 255, 255, 0.5);
-				margin: 8px 0;
-				font-weight: 400;
+					setTimeout(() => {
+						const firstSection = sections[0];
+						if (firstSection) {
+							const headerHeight = 80;
+							const sectionTop =
+								firstSection.getBoundingClientRect().top +
+								window.scrollY -
+								headerHeight;
+							window.scrollTo({ top: sectionTop, behavior: "smooth" });
+						}
+					}, 300);
+				});
 			}
+		});
+	</script>
 
-			/* NIP-05 section styling */
-			.nip05-info {
-				text-align: left;
-				max-width: 900px;
-				margin: 30px auto;
-			}
-
-			.nip05-info h3 {
-				font-size: 1.6rem;
-				font-weight: 700;
-				color: #ffffff;
-				text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-				margin-top: 25px;
-				margin-bottom: 15px;
-			}
-
-			.nip05-info p {
-				line-height: 1.6;
-				margin-bottom: 15px;
-			}
-
-			/* NIP-05 list with aligned checkmarks */
-			.nip05-list {
-				list-style: none;
-				padding: 0;
-				margin: 20px 0;
-				font-size: 1.2rem;
-				line-height: 1.6;
-			}
-
-			.nip05-list li {
-				margin-bottom: 8px;
-				padding-left: 0;
-			}
-
-			.nip05-steps p {
-				margin-bottom: 12px;
-				line-height: 1.5;
-			}
-
-			/* Center support instruction text */
-			.support-instruction {
-				text-align: center;
-				margin-top: 15px;
-				font-size: 1rem;
-			}
-
-			/* Make support QR clickable on mobile */
+	<style>
+		.klient-description {
+			font-size: 0.85rem;
+			color: rgba(255, 255, 255, 0.5);
+			margin: 8px 0;
+			font-weight: 400;
+		}
+		.nip05-info {
+			text-align: left;
+			max-width: 900px;
+			margin: 30px auto;
+		}
+		.nip05-info h3 {
+			font-size: 1.6rem;
+			font-weight: 700;
+			color: #ffffff;
+			text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+			margin-top: 25px;
+			margin-bottom: 15px;
+		}
+		.nip05-info p {
+			line-height: 1.6;
+			margin-bottom: 15px;
+		}
+		.nip05-list {
+			list-style: none;
+			padding: 0;
+			margin: 20px 0;
+			font-size: 1.2rem;
+			line-height: 1.6;
+		}
+		.nip05-list li {
+			margin-bottom: 8px;
+			padding-left: 0;
+		}
+		.nip05-steps p {
+			margin-bottom: 12px;
+			line-height: 1.5;
+		}
+		.support-instruction {
+			text-align: center;
+			margin-top: 15px;
+			font-size: 1rem;
+		}
+		.support-qr {
+			cursor: pointer;
+			touch-action: manipulation;
+			-webkit-user-select: none;
+			user-select: none;
+			width: 90%;
+			max-width: 450px;
+			display: block;
+			margin: 20px auto;
+			padding: 10px;
+			transition: transform 0.2s ease;
+		}
+		@media (max-width: 768px) {
 			.support-qr {
-				cursor: pointer;
-				touch-action: manipulation;
-				-webkit-user-select: none;
-				user-select: none;
-				width: 90%;
-				max-width: 450px;
-				display: block;
-				margin: 20px auto;
-				padding: 10px;
-				transition: transform 0.2s ease;
+				max-width: 320px;
 			}
+		}
+		.support-qr:active {
+			transform: scale(0.95);
+		}
+	</style>
 
-			@media (max-width: 768px) {
-				.support-qr {
-					max-width: 320px;
-				}
-			}
-
-			.support-qr:active {
-				transform: scale(0.95);
-			}
-		</style>
 </NostrLayout>
