@@ -15,37 +15,46 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   <div class="register-wrap">
     <div class="card register-card">
 
-      <div class="field">
-        <label for="name">Vælg din nostr adresse</label>
-        <div class="name-row" id="nameRow">
-          <input
-            type="text"
-            id="name"
-            placeholder="alice"
-            autocomplete="off"
-            autocapitalize="none"
-            spellcheck="false"
-          />
-          <span class="name-suffix">@nostr.dk</span>
+      <!-- Trin 1: Tjek navn -->
+      <div id="step1">
+        <div class="field">
+          <label for="name">Vælg din nostr adresse</label>
+          <div class="name-row" id="nameRow">
+            <input
+              type="text"
+              id="name"
+              placeholder="alice"
+              autocomplete="off"
+              autocapitalize="none"
+              spellcheck="false"
+            />
+            <span class="name-suffix">@nostr.dk</span>
+          </div>
+          <div class="status" id="nameStatus"></div>
         </div>
-        <div class="status" id="nameStatus"></div>
+
+        <p class="price-note">Engangsgebyr: <strong>2100 sats</strong> via Lightning ⚡</p>
+
+        <button id="proceedBtn" class="cta" disabled style="margin-top: 20px;">Fortsæt til betaling</button>
       </div>
 
-      <div class="field">
-        <label for="pubkey">Din Nostr public key</label>
-        <input
-          type="text"
-          id="pubkey"
-          placeholder="npub1… eller hex"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <p class="help">Starter med npub1… eller er en 64-tegns hex-streng</p>
+      <!-- Trin 2: Navn er ledigt - vis vejledning -->
+      <div id="step2" style="display: none;">
+        <div class="confirmed-name" id="confirmedName"></div>
+
+        <div class="instructions">
+          <p>Dit navn er ledigt! Udfyld nu felterne i betalingsformularen:</p>
+          <ol>
+            <li>Skriv <strong id="nameReminder"></strong> i feltet <em>"Din nostr adresse"</em></li>
+            <li>Indsæt din Nostr public key (npub1… eller hex) i det andet felt</li>
+            <li>Betal 2100 sats via Lightning</li>
+          </ol>
+        </div>
+
+        <a id="btcpayLink" href="#" class="cta" style="margin-top: 20px; text-align: center;">Gå til betaling ⚡</a>
+
+        <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
       </div>
-
-      <p class="price-note">Betal: <strong>2100 sats</strong> via Lightning ⚡</p>
-
-      <button id="payBtn" class="cta" disabled style="margin-top: 20px;">Betal</button>
 
     </div>
   </div>
@@ -62,8 +71,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   .register-card {
     width: 100%;
     max-width: 480px;
-    /* Inherits .card gradient, border-radius, box-shadow from global.css */
-    /* Override hover lift since this is a form, not a link card */
     transition: none;
   }
 
@@ -114,7 +121,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     border: none;
     outline: none;
     padding: 0.7rem 0.9rem;
-    /* colour and font from global.css input rules */
   }
 
   .name-suffix {
@@ -128,21 +134,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     align-items: center;
   }
 
-  input#pubkey {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    padding: 0.7rem 0.9rem;
-    font-family: monospace;
-    transition: border-color 0.2s;
-  }
-
-  input#pubkey:focus {
-    outline: none;
-    border-color: rgba(108, 79, 150, 0.8);
-  }
-
   .status {
     font-size: 0.82rem;
     margin-top: 0.4rem;
@@ -154,12 +145,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   .status.taken     { color: #e05050; }
   .status.error     { color: #e08050; }
 
-  .help {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.4);
-    margin-top: 0.4rem;
-  }
-
   .price-note {
     font-size: 0.9rem;
     color: rgba(255, 255, 255, 0.6);
@@ -170,11 +155,64 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     color: #fff;
   }
 
-  /* Disabled state for .cta */
   .cta:disabled {
     opacity: 0.3;
     cursor: not-allowed;
     transform: none;
+  }
+
+  .confirmed-name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #4caf50;
+    margin-bottom: 1.2rem;
+    text-align: center;
+  }
+
+  .instructions {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .instructions p {
+    font-size: 0.9rem;
+    color: #e0e0e0;
+    margin-bottom: 0.8rem;
+  }
+
+  .instructions ol {
+    padding-left: 1.2rem;
+    color: #d0d0d0;
+    font-size: 0.88rem;
+    line-height: 1.8;
+  }
+
+  .instructions strong {
+    color: #fff;
+  }
+
+  .instructions em {
+    color: rgba(255, 255, 255, 0.6);
+    font-style: normal;
+  }
+
+  .back-btn {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.82rem;
+    cursor: pointer;
+    margin-top: 1rem;
+    padding: 0;
+    display: block;
+    transition: color 0.2s;
+  }
+
+  .back-btn:hover {
+    color: rgba(255, 255, 255, 0.7);
   }
 
   @media (max-width: 768px) {
@@ -187,11 +225,16 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 <script>
   const BTCPAY_FORM_URL = "https://btcpay.ideasarelikeflames.org/forms/322ff6ea-8e6b-448f-85f8-ddb5bc5687b6";
 
-  const nameInput   = document.getElementById("name") as HTMLInputElement;
-  const nameRow     = document.getElementById("nameRow")!;
-  const nameStatus  = document.getElementById("nameStatus")!;
-  const pubkeyInput = document.getElementById("pubkey") as HTMLInputElement;
-  const payBtn      = document.getElementById("payBtn") as HTMLButtonElement;
+  const nameInput     = document.getElementById("name") as HTMLInputElement;
+  const nameRow       = document.getElementById("nameRow")!;
+  const nameStatus    = document.getElementById("nameStatus")!;
+  const proceedBtn    = document.getElementById("proceedBtn") as HTMLButtonElement;
+  const step1         = document.getElementById("step1")!;
+  const step2         = document.getElementById("step2")!;
+  const confirmedName = document.getElementById("confirmedName")!;
+  const nameReminder  = document.getElementById("nameReminder")!;
+  const btcpayLink    = document.getElementById("btcpayLink") as HTMLAnchorElement;
+  const backBtn       = document.getElementById("backBtn")!;
 
   let nameAvailable = false;
   let checkTimeout: ReturnType<typeof setTimeout>;
@@ -207,7 +250,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     nameStatus.textContent = "";
     nameRow.className = "name-row";
     nameAvailable = false;
-    updateButton();
+    proceedBtn.disabled = true;
   }
 
   async function checkAvailability(name: string) {
@@ -216,7 +259,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     if (!/^[a-z0-9_-]+$/.test(name)) {
       setStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
       nameAvailable = false;
-      updateButton();
+      proceedBtn.disabled = true;
       return;
     }
 
@@ -229,16 +272,17 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       if (data.available) {
         setStatus("available", "✓", "Ledigt!");
         nameAvailable = true;
+        proceedBtn.disabled = false;
       } else {
         setStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
         nameAvailable = false;
+        proceedBtn.disabled = true;
       }
     } catch {
       setStatus("error", "!", "Kunne ikke tjekke — prøv igen");
       nameAvailable = false;
+      proceedBtn.disabled = true;
     }
-
-    updateButton();
   }
 
   nameInput.addEventListener("input", () => {
@@ -251,22 +295,21 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     checkTimeout = setTimeout(() => checkAvailability(val), 500);
   });
 
-  pubkeyInput.addEventListener("input", updateButton);
+  proceedBtn.addEventListener("click", () => {
+    if (!nameAvailable) return;
+    const name = nameInput.value.trim();
 
-  function updateButton() {
-    const pubkey = pubkeyInput.value.trim();
-    const pubkeyValid = pubkey.startsWith("npub1") || /^[0-9a-fA-F]{64}$/.test(pubkey);
-    payBtn.disabled = !(nameAvailable && pubkeyValid);
-  }
+    // Vis trin 2 med vejledning
+    confirmedName.textContent = `✓ ${name}@nostr.dk er ledigt`;
+    nameReminder.textContent = name;
+    btcpayLink.href = BTCPAY_FORM_URL;
 
-  payBtn.addEventListener("click", () => {
-    const name   = nameInput.value.trim();
-    const pubkey = pubkeyInput.value.trim();
-    if (!nameAvailable || !name || !pubkey) return;
+    step1.style.display = "none";
+    step2.style.display = "block";
+  });
 
-    const url = new URL(BTCPAY_FORM_URL);
-    url.searchParams.set("nip05name",   name);
-    url.searchParams.set("nip05pubkey", pubkey);
-    window.location.href = url.toString();
+  backBtn.addEventListener("click", () => {
+    step2.style.display = "none";
+    step1.style.display = "block";
   });
 </script>
