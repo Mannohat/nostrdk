@@ -20,7 +20,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       <div id="step1">
         <div class="field">
           <label for="name">Vælg din nostr adresse</label>
-          <div class="name-row" id="nameRow">
+          <div class="nip05-name-row" id="nameRow">
             <input
               type="text"
               id="name"
@@ -29,7 +29,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
               autocapitalize="none"
               spellcheck="false"
             />
-            <span class="name-suffix">@nostr.dk</span>
+            <span class="nip05-suffix">@nostr.dk</span>
           </div>
           <div class="status" id="nameStatus"></div>
         </div>
@@ -60,7 +60,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
             <li>Betal 2.100 sats via Lightning</li>
           </ol>
         </div>
-        <button id="payBtn" class="cta" style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
+        <button id="payBtn" class="cta" data-umami-event="nip05-betal" style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
         <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
       </div>
 
@@ -101,7 +101,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     letter-spacing: 0.05em;
   }
 
-  .name-row {
+  .nip05-name-row {
     display: flex;
     align-items: stretch;
     background: rgba(0, 0, 0, 0.3);
@@ -111,19 +111,19 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     transition: border-color 0.2s;
   }
 
-  .name-row:focus-within {
+  .nip05-name-row:focus-within {
     border-color: rgba(108, 79, 150, 0.8);
   }
 
-  .name-row.valid {
+  .nip05-name-row.valid {
     border-color: #4caf50;
   }
 
-  .name-row.taken {
+  .nip05-name-row.taken {
     border-color: #e05050;
   }
 
-  .name-row input[type="text"] {
+  .nip05-name-row input[type="text"] {
     flex: 1;
     background: transparent;
     border: none;
@@ -131,7 +131,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     padding: 0.7rem 0.9rem;
   }
 
-  .name-suffix {
+  .nip05-suffix {
     padding: 0 0.75rem;
     color: rgba(255, 255, 255, 0.4);
     font-size: 0.9rem;
@@ -256,14 +256,14 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     nameStatus.className = `status ${type}`;
     nameStatus.textContent = `${icon} ${text}`;
     nameRow.className =
-      "name-row " +
+      "nip05-name-row " +
       (type === "available" ? "valid" : type === "taken" ? "taken" : "");
   }
 
   function clearStatus() {
     nameStatus.className = "status";
     nameStatus.textContent = "";
-    nameRow.className = "name-row";
+    nameRow.className = "nip05-name-row";
     nameAvailable = false;
     proceedBtn.disabled = true;
   }

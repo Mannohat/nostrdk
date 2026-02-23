@@ -656,6 +656,17 @@ a {
 	.featured-grid {
 	  grid-template-columns: 1fr;
 	}
+
+	/* NIP-05 navn-felt på mobil */
+	.nip05-name-row input {
+	  min-width: 0;
+	  flex: 1;
+	}
+
+	.nip05-suffix {
+	  font-size: 0.75rem;
+	  padding: 0 0.5rem;
+	}
   }
   
   @media (max-width: 900px) {
