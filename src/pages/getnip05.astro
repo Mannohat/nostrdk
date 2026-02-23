@@ -6,10 +6,11 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   title="Få din NIP-05 identitet | nostr.dk"
   description="Registrer en NIP-05 adresse på nostr.dk og verificer din Nostr-identitet."
 >
-
   <div class="page-header">
     <h1>Få din Nostr-identitet</h1>
-    <p>Registrer en NIP-05 adresse på nostr.dk og verificer din Nostr-profil.</p>
+    <p>
+      Registrer en NIP-05 adresse på nostr.dk og verificer din Nostr-profil.
+    </p>
   </div>
 
   <div class="register-wrap">
@@ -33,26 +34,35 @@ import NostrLayout from "../layouts/NostrLayout.astro";
           <div class="status" id="nameStatus"></div>
         </div>
 
-        <p class="price-note">Engangsgebyr: <strong>2100 sats</strong> via Lightning ⚡</p>
+        <p class="price-note">
+          @nostr.dk NIP-05 adresse for kun <strong>2.100 sats</strong> via
+          <a
+            href="https://enogtyve.org/da/laer-mere/lightning/"
+            target="_blank"
+            rel="noopener noreferrer">Lightning</a
+          > ⚡
+        </p>
 
-        <button id="proceedBtn" class="cta" disabled style="margin-top: 20px;">Fortsæt til betaling</button>
+        <button id="proceedBtn" class="cta" disabled style="margin-top: 20px;">Næste</button>
       </div>
 
       <!-- Trin 2: Navn er ledigt - vis vejledning -->
       <div id="step2" style="display: none;">
         <div class="confirmed-name" id="confirmedName"></div>
-
         <div class="instructions">
-          <p>Dit navn er ledigt! Udfyld nu felterne i betalingsformularen:</p>
+          <p>Udfyld felterne i betalingsformularen som åbner i et nyt vindue:</p>
           <ol>
-            <li>Skriv <strong id="nameReminder"></strong> i feltet <em>"Din nostr adresse"</em></li>
-            <li>Indsæt din Nostr public key (npub1… eller hex) i det andet felt</li>
-            <li>Betal 2100 sats via Lightning</li>
+            <li>
+              Skriv <strong id="nameReminder"></strong> i feltet
+              <em>"Din nostr adresse @nostr.dk"</em> — kun navnet, ikke @nostr.dk
+            </li>
+            <li>Indsæt din Nostr public key (npub1… eller hex)</li>
+            <li>Betal 2.100 sats via Lightning</li>
           </ol>
         </div>
-
-        <a id="btcpayLink" href="#" class="cta" style="margin-top: 20px; text-align: center;">Gå til betaling ⚡</a>
-
+        <a id="btcpayLink" href="#" target="_blank" rel="noopener noreferrer">
+          <button class="cta" style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
+        </a>
         <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
       </div>
 
@@ -155,6 +165,10 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     color: #fff;
   }
 
+  .price-note a {
+    color: rgba(255, 255, 255, 0.6);
+  }
+
   .cta:disabled {
     opacity: 0.3;
     cursor: not-allowed;
@@ -199,6 +213,11 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     font-style: normal;
   }
 
+  #btcpayLink {
+    display: block;
+    text-decoration: none;
+  }
+
   .back-btn {
     background: none;
     border: none;
@@ -223,7 +242,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 </style>
 
 <script>
-  const BTCPAY_FORM_URL = "https://btcpay.ideasarelikeflames.org/forms/322ff6ea-8e6b-448f-85f8-ddb5bc5687b6";
+  const BTCPAY_FORM_URL =
+    "https://btcpay.ideasarelikeflames.org/forms/322ff6ea-8e6b-448f-85f8-ddb5bc5687b6";
 
   const nameInput     = document.getElementById("name") as HTMLInputElement;
   const nameRow       = document.getElementById("nameRow")!;
@@ -242,7 +262,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   function setStatus(type: string, icon: string, text: string) {
     nameStatus.className = `status ${type}`;
     nameStatus.textContent = `${icon} ${text}`;
-    nameRow.className = "name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
+    nameRow.className =
+      "name-row " +
+      (type === "available" ? "valid" : type === "taken" ? "taken" : "");
   }
 
   function clearStatus() {
@@ -266,7 +288,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     setStatus("checking", "…", "Tjekker tilgængelighed…");
 
     try {
-      const res = await fetch(`/.netlify/functions/check-name?name=${encodeURIComponent(name)}`);
+      const res = await fetch(
+        `/.netlify/functions/check-name?name=${encodeURIComponent(name)}`
+      );
       const data = await res.json();
 
       if (data.available) {
@@ -299,7 +323,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     if (!nameAvailable) return;
     const name = nameInput.value.trim();
 
-    // Vis trin 2 med vejledning
     confirmedName.textContent = `✓ ${name}@nostr.dk er ledigt`;
     nameReminder.textContent = name;
     btcpayLink.href = BTCPAY_FORM_URL;
