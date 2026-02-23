@@ -60,9 +60,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
             <li>Betal 2.100 sats via Lightning</li>
           </ol>
         </div>
-        <a id="btcpayLink" href="#" target="_blank" rel="noopener noreferrer">
-          <button class="cta" style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
-        </a>
+        <button id="payBtn" class="cta" style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
         <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
       </div>
 
@@ -213,11 +211,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     font-style: normal;
   }
 
-  #btcpayLink {
-    display: block;
-    text-decoration: none;
-  }
-
   .back-btn {
     background: none;
     border: none;
@@ -253,7 +246,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   const step2         = document.getElementById("step2")!;
   const confirmedName = document.getElementById("confirmedName")!;
   const nameReminder  = document.getElementById("nameReminder")!;
-  const btcpayLink    = document.getElementById("btcpayLink") as HTMLAnchorElement;
+  const payBtn        = document.getElementById("payBtn") as HTMLButtonElement;
   const backBtn       = document.getElementById("backBtn")!;
 
   let nameAvailable = false;
@@ -325,7 +318,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
     confirmedName.textContent = `✓ ${name}@nostr.dk er ledigt`;
     nameReminder.textContent = name;
-    btcpayLink.href = BTCPAY_FORM_URL;
+    payBtn.onclick = () => {
+      window.open(BTCPAY_FORM_URL, "btcpay", "width=600,height=700,resizable=yes");
+    };
 
     step1.style.display = "none";
     step2.style.display = "block";
