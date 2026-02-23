@@ -1,0 +1,96 @@
+name: Tilføj NIP-05 Identitet
+
+on:
+  repository_dispatch:
+    types: [add-nip05]
+
+jobs:
+  add-nip05:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Tilføj entry til nostr.json
+        env:
+          NAME: ${{ github.event.client_payload.name }}
+          PUBKEY: ${{ github.event.client_payload.pubkey }}
+        run: |
+          python3 << 'EOF'
+          import json, os, sys
+
+          BECH32_CHARSET = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+
+          def bech32_decode(bech):
+              bech = bech.lower()
+              if bech.rfind("1") < 1:
+                  return None, None
+              hrp, data_str = bech[:bech.rfind("1")], bech[bech.rfind("1")+1:]
+              data = [BECH32_CHARSET.find(c) for c in data_str]
+              if any(d == -1 for d in data):
+                  return None, None
+              return hrp, data[:-6]
+
+          def convertbits(data, frombits, tobits, pad=True):
+              acc, bits, result, maxv = 0, 0, [], (1 << tobits) - 1
+              for value in data:
+                  acc = ((acc << frombits) | value) & 0xFFFFFFFF
+                  bits += frombits
+                  while bits >= tobits:
+                      bits -= tobits
+                      result.append((acc >> bits) & maxv)
+              if pad and bits:
+                  result.append((acc << (tobits - bits)) & maxv)
+              return result
+
+          def npub_to_hex(npub):
+              hrp, data = bech32_decode(npub)
+              if hrp != "npub" or data is None:
+                  return None
+              decoded = convertbits(data, 5, 8, False)
+              if decoded is None or len(decoded) != 32:
+                  return None
+              return bytes(decoded).hex()
+
+          name = os.environ["NAME"].lower().strip()
+          pubkey_raw = os.environ["PUBKEY"].strip()
+
+          if pubkey_raw.startswith("npub1"):
+              pubkey = npub_to_hex(pubkey_raw)
+              if pubkey is None:
+                  print(f"FEJL: Kunne ikke dekode npub: {pubkey_raw}")
+                  sys.exit(1)
+              print(f"Konverterede npub til hex: {pubkey}")
+          else:
+              pubkey = pubkey_raw.lower()
+              if len(pubkey) != 64 or not all(c in "0123456789abcdef" for c in pubkey):
+                  print(f"FEJL: Ugyldig hex pubkey: {pubkey}")
+                  sys.exit(1)
+
+          path = "public/.well-known/nostr.json"
+
+          with open(path, "r") as f:
+              data = json.load(f)
+
+          if "names" not in data:
+              data["names"] = {}
+
+          if name in data["names"]:
+              print(f"FEJL: Navnet '{name}' er allerede taget.")
+              sys.exit(1)
+
+          data["names"][name] = pubkey
+          print(f"Registreret: {name} -> {pubkey}")
+
+          with open(path, "w") as f:
+              json.dump(data, f, indent=2)
+          EOF
+
+      - name: Commit og push
+        run: |
+          git config user.name "nip05-bot"
+          git config user.email "nip05-bot@users.noreply.github.com"
+          git add public/.well-known/nostr.json
+          git diff --staged --quiet || git commit -m "NIP-05: tilføj ${{ github.event.client_payload.name }}"
+          git push
