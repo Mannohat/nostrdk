@@ -1,0 +1,272 @@
+---
+import NostrLayout from "../layouts/NostrLayout.astro";
+---
+
+<NostrLayout
+  title="Få din NIP-05 identitet | nostr.dk"
+  description="Registrer en NIP-05 adresse på nostr.dk og verificer din Nostr-identitet."
+>
+
+  <div class="page-header">
+    <h1>Få din Nostr-identitet</h1>
+    <p>Registrer en NIP-05 adresse på nostr.dk og verificer din Nostr-profil.</p>
+  </div>
+
+  <div class="register-wrap">
+    <div class="card register-card">
+
+      <div class="field">
+        <label for="name">Vælg din nostr adresse</label>
+        <div class="name-row" id="nameRow">
+          <input
+            type="text"
+            id="name"
+            placeholder="alice"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+          />
+          <span class="name-suffix">@nostr.dk</span>
+        </div>
+        <div class="status" id="nameStatus"></div>
+      </div>
+
+      <div class="field">
+        <label for="pubkey">Din Nostr public key</label>
+        <input
+          type="text"
+          id="pubkey"
+          placeholder="npub1… eller hex"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <p class="help">Starter med npub1… eller er en 64-tegns hex-streng</p>
+      </div>
+
+      <p class="price-note">Betal: <strong>2100 sats</strong> via Lightning ⚡</p>
+
+      <button id="payBtn" class="cta" disabled style="margin-top: 20px;">Betal</button>
+
+    </div>
+  </div>
+
+</NostrLayout>
+
+<style>
+  .register-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 0 0 60px;
+  }
+
+  .register-card {
+    width: 100%;
+    max-width: 480px;
+    /* Inherits .card gradient, border-radius, box-shadow from global.css */
+    /* Override hover lift since this is a form, not a link card */
+    transition: none;
+  }
+
+  .register-card:hover {
+    transform: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .field {
+    margin-bottom: 1.4rem;
+  }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #e0e0e0;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .name-row {
+    display: flex;
+    align-items: stretch;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .name-row:focus-within {
+    border-color: rgba(108, 79, 150, 0.8);
+  }
+
+  .name-row.valid {
+    border-color: #4caf50;
+  }
+
+  .name-row.taken {
+    border-color: #e05050;
+  }
+
+  .name-row input[type="text"] {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 0.7rem 0.9rem;
+    /* colour and font from global.css input rules */
+  }
+
+  .name-suffix {
+    padding: 0 0.75rem;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.9rem;
+    white-space: nowrap;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+  }
+
+  input#pubkey {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.7rem 0.9rem;
+    font-family: monospace;
+    transition: border-color 0.2s;
+  }
+
+  input#pubkey:focus {
+    outline: none;
+    border-color: rgba(108, 79, 150, 0.8);
+  }
+
+  .status {
+    font-size: 0.82rem;
+    margin-top: 0.4rem;
+    min-height: 1.1em;
+  }
+
+  .status.checking  { color: rgba(255, 255, 255, 0.4); }
+  .status.available { color: #4caf50; }
+  .status.taken     { color: #e05050; }
+  .status.error     { color: #e08050; }
+
+  .help {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-top: 0.4rem;
+  }
+
+  .price-note {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0.5rem 0 0;
+  }
+
+  .price-note strong {
+    color: #fff;
+  }
+
+  /* Disabled state for .cta */
+  .cta:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  @media (max-width: 768px) {
+    .register-wrap {
+      padding: 0 0 40px;
+    }
+  }
+</style>
+
+<script>
+  const BTCPAY_FORM_URL = "https://btcpay.example.com/i/YOUR_FORM_ID";
+
+  const nameInput   = document.getElementById("name") as HTMLInputElement;
+  const nameRow     = document.getElementById("nameRow")!;
+  const nameStatus  = document.getElementById("nameStatus")!;
+  const pubkeyInput = document.getElementById("pubkey") as HTMLInputElement;
+  const payBtn      = document.getElementById("payBtn") as HTMLButtonElement;
+
+  let nameAvailable = false;
+  let checkTimeout: ReturnType<typeof setTimeout>;
+
+  function setStatus(type: string, icon: string, text: string) {
+    nameStatus.className = `status ${type}`;
+    nameStatus.textContent = `${icon} ${text}`;
+    nameRow.className = "name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
+  }
+
+  function clearStatus() {
+    nameStatus.className = "status";
+    nameStatus.textContent = "";
+    nameRow.className = "name-row";
+    nameAvailable = false;
+    updateButton();
+  }
+
+  async function checkAvailability(name: string) {
+    if (!name) { clearStatus(); return; }
+
+    if (!/^[a-z0-9_-]+$/.test(name)) {
+      setStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
+      nameAvailable = false;
+      updateButton();
+      return;
+    }
+
+    setStatus("checking", "…", "Tjekker tilgængelighed…");
+
+    try {
+      const res = await fetch(`/.netlify/functions/check-name?name=${encodeURIComponent(name)}`);
+      const data = await res.json();
+
+      if (data.available) {
+        setStatus("available", "✓", "Ledigt!");
+        nameAvailable = true;
+      } else {
+        setStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
+        nameAvailable = false;
+      }
+    } catch {
+      setStatus("error", "!", "Kunne ikke tjekke — prøv igen");
+      nameAvailable = false;
+    }
+
+    updateButton();
+  }
+
+  nameInput.addEventListener("input", () => {
+    const val = nameInput.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    if (nameInput.value !== val) nameInput.value = val;
+
+    clearTimeout(checkTimeout);
+    if (!val) { clearStatus(); return; }
+
+    checkTimeout = setTimeout(() => checkAvailability(val), 500);
+  });
+
+  pubkeyInput.addEventListener("input", updateButton);
+
+  function updateButton() {
+    const pubkey = pubkeyInput.value.trim();
+    const pubkeyValid = pubkey.startsWith("npub1") || /^[0-9a-fA-F]{64}$/.test(pubkey);
+    payBtn.disabled = !(nameAvailable && pubkeyValid);
+  }
+
+  payBtn.addEventListener("click", () => {
+    const name   = nameInput.value.trim();
+    const pubkey = pubkeyInput.value.trim();
+    if (!nameAvailable || !name || !pubkey) return;
+
+    const url = new URL(BTCPAY_FORM_URL);
+    url.searchParams.set("nip05name",   name);
+    url.searchParams.set("nip05pubkey", pubkey);
+    window.location.href = url.toString();
+  });
+</script>
