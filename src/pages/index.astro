@@ -578,6 +578,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					teaserGrid.style.justifyContent = "center";
 					teaserGrid.style.gap = "8px 10px";
 					teaserGrid.style.alignItems = "flex-start";
+					teaserGrid.style.paddingBottom = "40px";
 
 					const profileRes = await fetch(
 						`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`,
@@ -587,6 +588,11 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					const withPicture = entries
 						.filter(([, pubkey]) => profiles[pubkey]?.picture)
 						.slice(0, 11);
+
+					const isMobile = window.innerWidth < 768;
+					const colWidth = isMobile ? "56px" : "72px";
+					const imgSize = isMobile ? "48px" : "64px";
+					const staggerOffset = isMobile ? "28px" : "36px";
 
 					let colIndex = 0;
 					let col = null;
@@ -601,16 +607,16 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 							col.style.flexDirection = "column";
 							col.style.alignItems = "center";
 							col.style.gap = "10px";
-							col.style.flex = "0 0 72px";
+							col.style.flex = `0 0 ${colWidth}`;
 							if (colIndex % 2 === 1)
-								col.style.marginTop = "36px";
+								col.style.marginTop = staggerOffset;
 							teaserGrid.appendChild(col);
 							colIndex++;
 							cardsInCol = 0;
 						}
 						const img = document.createElement("img");
-						img.style.width = "64px";
-						img.style.height = "64px";
+						img.style.width = imgSize;
+						img.style.height = imgSize;
 						img.style.borderRadius = "50%";
 						img.style.objectFit = "cover";
 						img.style.border = "2px solid rgba(108, 79, 150, 0.6)";
