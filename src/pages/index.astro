@@ -570,14 +570,22 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 						document.getElementById("nip05TeaserGrid");
 					if (!teaserGrid) return;
 
-					// Byg staggered kolonner — 2 per kolonne, hver anden forskudt
-					const placeholders = {};
-					const CARDS_PER_COL = 2;
+					const profileRes = await fetch(
+						`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`,
+					);
+					const profiles = await profileRes.json();
+
+					const withPicture = entries.filter(
+						([, pubkey]) => profiles[pubkey]?.picture,
+					);
+
 					let colIndex = 0;
 					let col = null;
 					let cardsInCol = 0;
+					const CARDS_PER_COL = 2;
 
-					for (const [, pubkey] of entries) {
+					for (const [, pubkey] of withPicture) {
+						const profile = profiles[pubkey];
 						if (!col || cardsInCol >= CARDS_PER_COL) {
 							col = document.createElement("div");
 							col.className =
@@ -587,25 +595,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 							colIndex++;
 							cardsInCol = 0;
 						}
-						const placeholder = document.createElement("div");
-						placeholder.className = "teaser-avatar-placeholder";
-						col.appendChild(placeholder);
-						placeholders[pubkey] = placeholder;
-						cardsInCol++;
-					}
-
-					const profileRes = await fetch(
-						`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`,
-					);
-					const profiles = await profileRes.json();
-
-					for (const [pubkey, profile] of Object.entries(profiles)) {
-						if (!profile.picture) continue;
-						const placeholder = placeholders[pubkey];
-						if (!placeholder) continue;
-
 						const img = document.createElement("img");
-						img.className = "teaser-avatar";
 						img.style.width = "64px";
 						img.style.height = "64px";
 						img.style.borderRadius = "50%";
@@ -616,7 +606,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 						img.alt = "";
 						img.loading = "lazy";
 						img.onerror = () => {};
-						placeholder.replaceWith(img);
+						col.appendChild(img);
+						cardsInCol++;
 					}
 				} catch {}
 			})();
