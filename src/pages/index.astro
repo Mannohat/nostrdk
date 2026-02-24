@@ -287,15 +287,17 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	<section class="nostr-nip05" id="nostr-nip05">
 		<h2>
 			Få en Nostr adresse <span style="font-size: 0.75em;"
-				>(NIP-05 adresse)</span>
+				>(NIP-05 adresse)</span
+			>
 		</h2>
 		<p>
 			Du kan opsætte en verificeret identitet som gør det muligt at knytte
 			en genkendelig adresse (f.eks. "alias@nostr.dk") til din offentlige
 			nøgle. Dette gør det nemmere for andre at finde dig og bekræfte, at
 			din profil er din og ikke nogen der udgiver sig for at være dig.
-			Tjek om dit ønskede navn er ledigt herunder, følg anvisningerne og betal 2.100 sats via
-			Lightning — din adresse er aktiv inden for få minutter.
+			Tjek om dit ønskede navn er ledigt herunder, følg anvisningerne og
+			betal 2.100 sats via Lightning — din adresse er aktiv inden for få
+			minutter.
 		</p>
 
 		<!-- Profil teaser -->
@@ -323,7 +325,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					<div class="nip05-status" id="nip05Status"></div>
 				</div>
 				<p class="nip05-price">
-					@nostr.dk nip-05 adresse for kun <strong>2.100 sats</strong> via
+					@nostr.dk nip-05 adresse for kun <strong>2.100 sats</strong>
+					via
 					<a
 						href="https://enogtyve.org/da/laer-mere/lightning/"
 						target="_blank"
@@ -343,12 +346,14 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 				<div class="nip05-confirmed" id="nip05Confirmed"></div>
 				<div class="nip05-instructions">
 					<p>
-						Udfyld felterne i betalingsformularen som åbner i et nyt vindue:
+						Udfyld felterne i betalingsformularen som åbner i et nyt
+						vindue:
 					</p>
 					<ol>
 						<li>
 							Skriv <strong id="nip05NameReminder"></strong> i feltet
-							<em>"Din nostr adresse @nostr.dk"</em> — kun navnet, ikke @nostr.dk
+							<em>"Din nostr adresse @nostr.dk"</em> — kun navnet,
+							ikke @nostr.dk
 						</li>
 						<li>Indsæt din Nostr public key (npub1… eller hex)</li>
 						<li>Betal 2.100 sats via Lightning</li>
@@ -561,7 +566,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 						.slice(0, 11);
 
 					const pubkeys = entries.map(([, pubkey]) => pubkey);
-					const teaserGrid = document.getElementById("nip05TeaserGrid");
+					const teaserGrid =
+						document.getElementById("nip05TeaserGrid");
 					if (!teaserGrid) return;
 
 					// Byg staggered kolonner — 2 per kolonne, hver anden forskudt
@@ -574,7 +580,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					for (const [, pubkey] of entries) {
 						if (!col || cardsInCol >= CARDS_PER_COL) {
 							col = document.createElement("div");
-							col.className = "teaser-col" + (colIndex % 2 === 1 ? " staggered" : "");
+							col.className =
+								"teaser-col" +
+								(colIndex % 2 === 1 ? " staggered" : "");
 							teaserGrid.appendChild(col);
 							colIndex++;
 							cardsInCol = 0;
@@ -587,7 +595,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					}
 
 					const profileRes = await fetch(
-						`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`
+						`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`,
 					);
 					const profiles = await profileRes.json();
 
@@ -598,6 +606,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
 						const img = document.createElement("img");
 						img.className = "teaser-avatar";
+						img.style.width = "64px";
+						img.style.height = "64px";
 						img.src = profile.picture;
 						img.alt = "";
 						img.loading = "lazy";
@@ -832,7 +842,11 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			height: 64px;
 			border-radius: 50%;
 			border: 2px solid rgba(108, 79, 150, 0.3);
-			background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
+			background: linear-gradient(
+				135deg,
+				rgba(108, 79, 150, 0.2),
+				rgba(55, 26, 118, 0.2)
+			);
 			display: block;
 		}
 
