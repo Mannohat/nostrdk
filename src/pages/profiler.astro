@@ -18,7 +18,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
 </NostrLayout>
 
-<style>
+<style is:global>
   .profiler-wrap {
     padding: 0 0 80px;
   }
@@ -32,8 +32,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
   .profiler-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 20px;
     margin-top: 10px;
   }
 
@@ -45,98 +45,77 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     text-decoration: none;
     color: inherit;
     cursor: pointer;
-    padding: 8px;
+    padding: 16px 8px 12px;
     border-radius: 12px;
     transition: transform 0.2s ease, background 0.2s ease;
   }
 
   .profil-card:hover {
     transform: translateY(-4px);
-    background: rgba(108, 79, 150, 0.15);
-  }
-
-  .avatar-wrap {
-    position: relative;
-    width: 96px;
-    height: 96px;
-    margin-bottom: 12px;
+    background: rgba(108, 79, 150, 0.2);
   }
 
   .profil-avatar {
-    width: 96px;
-    height: 96px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgba(108, 79, 150, 0.6);
-    background: linear-gradient(135deg, rgba(108, 79, 150, 0.4), rgba(55, 26, 118, 0.4));
+    background: linear-gradient(135deg, rgba(108, 79, 150, 0.3), rgba(55, 26, 118, 0.3));
     display: block;
+    margin-bottom: 10px;
   }
 
   .profil-avatar-placeholder {
-    width: 96px;
-    height: 96px;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
-    border: 2px solid rgba(108, 79, 150, 0.6);
-    background: linear-gradient(135deg, rgba(108, 79, 150, 0.4), rgba(55, 26, 118, 0.4));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.2rem;
-    color: rgba(255, 255, 255, 0.3);
-    font-weight: 700;
-    letter-spacing: -1px;
+    border: 2px solid rgba(108, 79, 150, 0.4);
+    background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
+    display: block;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+  }
+
+  .profil-nip05 {
+    font-size: 0.72rem;
+    line-height: 1.4;
+    word-break: break-all;
   }
 
   .profil-name {
-    font-size: 0.72rem;
     font-weight: 500;
-    color: rgba(160, 132, 202, 0.9);
-    line-height: 1.3;
-    word-break: break-all;
-    margin-top: 10px;
+    color: rgba(200, 180, 230, 0.85);
   }
 
   .profil-domain {
-    font-size: 0.68rem;
     color: rgba(255, 255, 255, 0.2);
-    margin-top: 1px;
     letter-spacing: 0.02em;
   }
 
   @media (max-width: 768px) {
     .profiler-grid {
-      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 12px;
     }
 
-    .avatar-wrap,
     .profil-avatar,
     .profil-avatar-placeholder {
-      width: 72px;
-      height: 72px;
-    }
-
-    .profil-avatar-placeholder {
-      font-size: 1.6rem;
+      width: 64px;
+      height: 64px;
     }
   }
 </style>
 
 <script>
-  const RELAYS = [
-    "wss://nos.lol",
-    "wss://relay.nostr.band",
-    "wss://relay.primal.net",
-  ];
   const NOSTR_JSON_URL = "https://nostr.dk/.well-known/nostr.json";
+  const PRIMAL_API = "https://api.primal.net/v1";
 
   const grid = document.getElementById("grid")!;
   const loading = document.getElementById("loading")!;
 
-  const cards: Record<string, HTMLAnchorElement> = {};
-  const resolved = new Set<string>();
-
   async function init() {
+    // Hent nostr.json
     let names: Record<string, string> = {};
     try {
       const res = await fetch(NOSTR_JSON_URL);
@@ -147,7 +126,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       return;
     }
 
-    const entries = Object.entries(names);
+    const entries = Object.entries(names).sort(() => Math.random() - 0.5);
     if (entries.length === 0) {
       loading.textContent = "Ingen profiler endnu.";
       return;
@@ -155,6 +134,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
     loading.style.display = "none";
 
+    // Opret kort med placeholder cirkel
+    const cards: Record<string, HTMLAnchorElement> = {};
     for (const [name, pubkey] of entries) {
       const card = document.createElement("a");
       card.className = "profil-card";
@@ -162,63 +143,48 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       card.target = "_blank";
       card.rel = "noopener noreferrer";
 
-      card.innerHTML = `
-        <div class="avatar-wrap">
-          <div class="profil-avatar-placeholder"></div>
-        </div>
-        <span class="profil-name">${name}</span>
-        <span class="profil-domain">@nostr.dk</span>
-      `;
+      const placeholder = document.createElement("div");
+      placeholder.className = "profil-avatar-placeholder";
 
+      const nip05Div = document.createElement("div");
+      nip05Div.className = "profil-nip05";
+      nip05Div.innerHTML = `<span class="profil-name">${name}</span><span class="profil-domain">@nostr.dk</span>`;
+
+      card.appendChild(placeholder);
+      card.appendChild(nip05Div);
       grid.appendChild(card);
       cards[pubkey] = card;
     }
 
+    // Hent profiler fra Primal HTTP API
     const pubkeys = entries.map(([, pubkey]) => pubkey);
-    for (const relay of RELAYS) {
-      fetchProfiles(pubkeys, relay);
+    try {
+      const res = await fetch(PRIMAL_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(["user_infos", { pubkeys }]),
+      });
+      const data = await res.json();
+
+      for (const item of data) {
+        if (!item?.pubkey || !item?.picture) continue;
+        const card = cards[item.pubkey];
+        if (!card) continue;
+
+        const placeholder = card.querySelector(".profil-avatar-placeholder");
+        if (!placeholder) continue;
+
+        const img = document.createElement("img");
+        img.className = "profil-avatar";
+        img.alt = item.display_name || item.name || "";
+        img.loading = "lazy";
+        img.onerror = () => {};
+        img.src = item.picture;
+        placeholder.replaceWith(img);
+      }
+    } catch {
+      // Profiler vises med placeholder ved fejl
     }
-  }
-
-  function handleEvent(msg: any) {
-    try {
-      if (msg[0] !== "EVENT" || msg[2].kind !== 0) return;
-      const pubkey = msg[2].pubkey;
-      if (resolved.has(pubkey)) return;
-
-      const profile = JSON.parse(msg[2].content);
-      const card = cards[pubkey];
-      if (!card || !profile.picture) return;
-
-      const placeholder = card.querySelector(".profil-avatar-placeholder");
-      if (!placeholder) return;
-
-      const img = document.createElement("img");
-      img.className = "profil-avatar";
-      img.alt = profile.display_name || profile.name || "";
-      img.loading = "lazy";
-      img.onerror = () => {};
-      img.src = profile.picture;
-      placeholder.replaceWith(img);
-      resolved.add(pubkey);
-    } catch {}
-  }
-
-  function fetchProfiles(pubkeys: string[], relayUrl: string) {
-    try {
-      const ws = new WebSocket(relayUrl);
-      ws.onopen = () => {
-        ws.send(JSON.stringify(["REQ", "profiles", { kinds: [0], authors: pubkeys }]));
-      };
-      ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          if (msg[0] === "EOSE") { ws.close(); return; }
-          handleEvent(msg);
-        } catch {}
-      };
-      ws.onerror = () => {};
-    } catch {}
   }
 
   init();
