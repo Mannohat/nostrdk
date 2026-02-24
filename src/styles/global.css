@@ -7,9 +7,9 @@
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
-  }
-  
-  body {
+}
+
+body {
 	margin: 0;
 	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	color: #fff;
@@ -19,51 +19,53 @@
 	font-size: 16px;
 	display: flex;
 	flex-direction: column;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 TYPOGRAPHY
 	 =========================================== */
-  
-  h1 {
+
+h1 {
 	font-size: 3rem;
 	font-weight: 700;
 	line-height: 1.2;
 	margin-bottom: 20px;
 	color: #fff;
-  }
-  
-  h2 {
+}
+
+h2 {
 	font-size: 2.5rem;
 	font-weight: 700;
 	margin-bottom: 20px;
 	color: #fff;
-  }
-  
-  h3 {
+}
+
+h3 {
 	font-size: 1.5rem;
 	font-weight: 600;
 	margin-bottom: 15px;
 	color: #fff;
-  }
-  
-  p {
+}
+
+p {
 	line-height: 1.6;
 	margin-bottom: 20px;
 	color: #e0e0e0;
-  }
-  
-  ul, ol {
+}
+
+ul,
+ol {
 	line-height: 1.6;
 	margin-bottom: 20px;
 	color: #e0e0e0;
-  }
-  
-  ul li, ol li {
+}
+
+ul li,
+ol li {
 	margin-bottom: 10px;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
    LINKS
    =========================================== */
 
@@ -72,25 +74,25 @@ a {
 	font-weight: bold;
 	text-decoration: none;
 	transition: color 0.3s;
-  }
-  
-  a:hover {
+}
+
+a:hover {
 	color: #A084CA;
-  }
-  
-  /* Remove default nav list styling */
-  nav ul,
-  nav ol {
+}
+
+/* Remove default nav list styling */
+nav ul,
+nav ol {
 	padding: 0;
 	margin: 0;
 	list-style: none;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 BUTTONS
 	 =========================================== */
-  
-  .cta {
+
+.cta {
 	background-color: #6C4F96;
 	color: #FFF;
 	padding: 18px 36px;
@@ -103,100 +105,100 @@ a {
 	margin-top: 40px;
 	display: inline-block;
 	text-decoration: none;
-  }
-  
-  .cta:hover {
+}
+
+.cta:hover {
 	background-color: #563C73;
 	transform: scale(1.05);
 	color: #FFF;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 FORM INPUTS
 	 =========================================== */
-  
-  input[type="text"],
-  input[type="search"],
-  input[type="email"],
-  textarea {
+
+input[type="text"],
+input[type="search"],
+input[type="email"],
+textarea {
 	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 	font-size: 1rem;
 	color: #fff;
-  }
-  
-  input::placeholder,
-  textarea::placeholder {
+}
+
+input::placeholder,
+textarea::placeholder {
 	font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 LAYOUT UTILITIES - SINGLE SOURCE OF TRUTH
 	 =========================================== */
-  
-  .text-center {
+
+.text-center {
 	text-align: center;
-  }
-  
-  /* Main container - USE THIS ON EVERY PAGE */
-  .container {
+}
+
+/* Main container - USE THIS ON EVERY PAGE */
+.container {
 	max-width: 1400px;
 	margin: 0 auto;
 	padding: 0 40px;
 	width: 100%;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 PAGE HEADER
 	 =========================================== */
-  
-  .page-header {
+
+.page-header {
 	text-align: center;
 	padding: 60px 0 40px;
 	max-width: 900px;
 	margin: 0 auto;
-  }
-  
-  .page-header h1 {
+}
+
+.page-header h1 {
 	font-size: 2.5rem;
 	margin-bottom: 20px;
-  }
-  
-  .page-header p {
+}
+
+.page-header p {
 	font-size: 1.125rem;
 	color: #e0e0e0;
 	margin-bottom: 0;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 SECTIONS
 	 =========================================== */
-  
-  .content-section {
+
+.content-section {
 	margin: 60px 0;
-  }
-  
-  .section-title {
+}
+
+.section-title {
 	text-align: center;
 	font-size: 2rem;
 	margin-bottom: 40px;
 	margin-top: 60px;
 	color: #fff;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 CARD GRID SYSTEM
 	 =========================================== */
-  
-  .card-grid {
+
+.card-grid {
 	margin: 40px 0;
 	padding: 0;
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 	gap: 25px;
-  }
-  
-  /* Standard Card */
-  .card {
+}
+
+/* Standard Card */
+.card {
 	background: linear-gradient(135deg, rgba(108, 79, 150, 0.3), rgba(55, 26, 118, 0.3));
 	padding: 25px;
 	border-radius: 12px;
@@ -204,155 +206,156 @@ a {
 	transition: transform 0.3s ease, box-shadow 0.3s ease;
 	display: flex;
 	flex-direction: column;
-  }
-  
-  .card:hover {
+}
+
+.card:hover {
 	transform: translateY(-8px);
 	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-  }
-  
-  .card h3 {
+}
+
+.card h3 {
 	font-size: 1.3rem;
 	margin-bottom: 12px;
 	color: #fff;
 	font-weight: 600;
-  }
-  
-  .card p {
+}
+
+.card p {
 	font-size: 0.95rem;
 	line-height: 1.5;
 	color: #d0d0d0;
 	margin-bottom: 15px;
 	flex-grow: 0;
-  }
-  
-  /* Card with video/iframe - proper 16:9 aspect ratio */
-  .card .video-wrapper {
+}
+
+/* Card with video/iframe - proper 16:9 aspect ratio */
+.card .video-wrapper {
 	position: relative;
-	padding-bottom: 56.25%; /* 16:9 aspect ratio */
+	padding-bottom: 56.25%;
+	/* 16:9 aspect ratio */
 	height: 0;
 	overflow: hidden;
 	border-radius: 8px;
 	background: #000;
 	margin-top: auto;
-  }
-  
-  .card .video-wrapper iframe {
+}
+
+.card .video-wrapper iframe {
 	position: absolute;
 	top: 0;
 	left: 0;
 	width: 100%;
 	height: 100%;
 	border: none;
-  }
-  
-  /* Fallback for iframes not wrapped in video-wrapper */
-  .card iframe:not(.video-wrapper iframe) {
+}
+
+/* Fallback for iframes not wrapped in video-wrapper */
+.card iframe:not(.video-wrapper iframe) {
 	width: 100%;
 	height: 200px;
 	border: none;
 	border-radius: 8px;
 	margin-top: auto;
-  }
-  
-  /* Card with image */
-  .card img {
+}
+
+/* Card with image */
+.card img {
 	width: 100%;
 	height: 180px;
 	object-fit: cover;
 	border-radius: 8px;
 	margin-top: auto;
-  }
-  
-  /* Wide card (spans 2 columns) - but only in standard grids */
-  .card-grid:not(.featured-grid) .card-wide {
+}
+
+/* Wide card (spans 2 columns) - but only in standard grids */
+.card-grid:not(.featured-grid) .card-wide {
 	grid-column: span 2;
-  }
-  
-  .card-grid:not(.featured-grid) .card-wide .video-wrapper {
+}
+
+.card-grid:not(.featured-grid) .card-wide .video-wrapper {
 	padding-bottom: 56.25%;
-  }
-  
-  /* Featured grid for side-by-side layout */
-  .featured-grid {
+}
+
+/* Featured grid for side-by-side layout */
+.featured-grid {
 	grid-template-columns: repeat(2, 1fr);
-  }
-  
-  /* Centered content in card */
-  .card-center {
+}
+
+/* Centered content in card */
+.card-center {
 	text-align: center;
-  }
-  
-  .card-center p {
+}
+
+.card-center p {
 	text-align: center;
-  }
-  
-  /* Card links */
-  .card a {
+}
+
+/* Card links */
+.card a {
 	color: inherit;
 	text-decoration: none;
 	transition: color 0.3s;
-  }
-  
-  .card a:hover h3 {
+}
+
+.card a:hover h3 {
 	color: #A084CA;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 RESOURCE CARDS (for resource pages)
 	 =========================================== */
-  
-  .resource-section {
+
+.resource-section {
 	margin-bottom: 80px;
-  }
-  
-  .resource-section h2 {
+}
+
+.resource-section h2 {
 	font-size: 2rem;
 	margin-bottom: 30px;
 	text-align: center;
 	color: #fff;
-  }
-  
-  .resource-grid {
+}
+
+.resource-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
 	gap: 30px;
 	margin: 30px 0;
-  }
-  
-  .resource-card {
+}
+
+.resource-card {
 	background: linear-gradient(135deg, rgba(108, 79, 150, 0.3), rgba(55, 26, 118, 0.3));
 	border-radius: 12px;
 	padding: 30px;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 	transition: transform 0.3s, box-shadow 0.3s;
-  }
-  
-  .resource-card:hover {
+}
+
+.resource-card:hover {
 	transform: translateY(-5px);
 	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
 	background: linear-gradient(135deg, rgba(108, 79, 150, 0.5), rgba(55, 26, 118, 0.5));
-  }
-  
-  .resource-card h3 {
+}
+
+.resource-card h3 {
 	font-size: 1.5rem;
 	margin-bottom: 15px;
 	color: #fff;
-  }
-  
-  .resource-card p {
+}
+
+.resource-card p {
 	margin-bottom: 20px;
 	line-height: 1.6;
 	color: #e0e0e0;
 	padding-left: 0;
-  }
-  
-  .resource-card ul {
+}
+
+.resource-card ul {
 	color: #e0e0e0;
 	line-height: 1.8;
-  }
-  
-  .resource-link {
+}
+
+.resource-link {
 	display: inline-block;
 	padding: 12px 24px;
 	background-color: #6C4F96;
@@ -361,19 +364,19 @@ a {
 	font-weight: 600;
 	transition: background-color 0.3s, transform 0.2s;
 	text-decoration: none;
-  }
-  
-  .resource-link:hover {
+}
+
+.resource-link:hover {
 	background-color: #563C73;
 	transform: scale(1.05);
 	color: #FFF;
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 HOMEPAGE SPECIFIC STYLES - UPDATED TO MATCH OTHER PAGES
 	 =========================================== */
-  
-  .hero {
+
+.hero {
 	text-align: center;
 	padding: 100px 40px 80px;
 	color: #FFF;
@@ -381,27 +384,27 @@ a {
 	border-radius: 12px;
 	margin: 40px 0;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  }
-  
-  .hero h1 {
+}
+
+.hero h1 {
 	font-size: 3rem;
 	line-height: 1.2;
 	margin-bottom: 20px;
 	font-weight: 700;
 	max-width: 100%;
-  }
-  
-  .hero p {
+}
+
+.hero p {
 	font-size: 1.25rem;
 	margin-bottom: 40px;
 	max-width: 800px;
 	margin-left: auto;
 	margin-right: auto;
 	line-height: 1.6;
-  }
-  
-  /* Collapsible sections - match card styling */
-  .collapsible-section {
+}
+
+/* Collapsible sections - match card styling */
+.collapsible-section {
 	background: linear-gradient(135deg, rgba(108, 79, 150, 0.3), rgba(55, 26, 118, 0.3));
 	border-radius: 12px;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
@@ -409,45 +412,45 @@ a {
 	padding: 20px;
 	transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 	cursor: pointer;
-  }
-  
-  .collapsible-section:hover {
+}
+
+.collapsible-section:hover {
 	transform: translateY(-2px);
 	background: linear-gradient(135deg, rgba(108, 79, 150, 0.4), rgba(55, 26, 118, 0.4));
 	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-  }
-  
-  .collapsible-header {
+}
+
+.collapsible-header {
 	font-size: 28px;
 	font-weight: 600;
 	color: #fff;
-  }
-  
-  .collapsible-content {
+}
+
+.collapsible-content {
 	font-size: 18px;
 	line-height: 1.6;
 	max-height: 0;
 	overflow: hidden;
 	transition: max-height 0.5s ease, padding 0.5s ease;
 	padding-top: 0;
-  }
-  
-  .collapsible-content p,
-  .collapsible-content ul {
+}
+
+.collapsible-content p,
+.collapsible-content ul {
 	padding-left: 0;
-  }
-  
-  .expanded .collapsible-content {
+}
+
+.expanded .collapsible-content {
 	max-height: none;
 	padding-top: 10px;
-  }
-  
-  /* Homepage sections - updated to match card styling */
-  .nostr-klienter,
-  .nostr-nip05,
-  .nostr-ressourcer,
-  .nostr-om,
-  .nostr-support {
+}
+
+/* Homepage sections - updated to match card styling */
+.nostr-klienter,
+.nostr-nip05,
+.nostr-ressourcer,
+.nostr-om,
+.nostr-support {
 	background: linear-gradient(135deg, rgba(108, 79, 150, 0.3), rgba(55, 26, 118, 0.3));
 	padding: 60px 30px;
 	text-align: center;
@@ -455,37 +458,37 @@ a {
 	margin: 40px 0;
 	border-radius: 12px;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-  }
-  
-  .nostr-klienter h2,
-  .nostr-nip05 h2,
-  .nostr-ressourcer h2,
-  .nostr-om h2,
-  .nostr-support h2 {
+}
+
+.nostr-klienter h2,
+.nostr-nip05 h2,
+.nostr-ressourcer h2,
+.nostr-om h2,
+.nostr-support h2 {
 	font-size: 3rem;
 	margin-bottom: 30px;
 	font-weight: 800;
 	color: #ffffff;
 	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  }
-  
-  .nostr-klienter h3,
-  .nostr-nip05 h3,
-  .nostr-ressourcer h3,
-  .nostr-om h3,
-  .nostr-support h3 {
+}
+
+.nostr-klienter h3,
+.nostr-nip05 h3,
+.nostr-ressourcer h3,
+.nostr-om h3,
+.nostr-support h3 {
 	margin-top: 20px;
 	font-size: 1.6rem;
 	font-weight: 700;
 	color: #ffffff;
 	text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-  }
-  
-  .nostr-klienter p,
-  .nostr-nip05 p,
-  .nostr-ressourcer p,
-  .nostr-om p,
-  .nostr-support p {
+}
+
+.nostr-klienter p,
+.nostr-nip05 p,
+.nostr-ressourcer p,
+.nostr-om p,
+.nostr-support p {
 	font-size: 1.4rem;
 	margin-bottom: 40px;
 	line-height: 1.8;
@@ -495,29 +498,29 @@ a {
 	color: #dcdcdc;
 	text-align: justify;
 	text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  }
-  
-  .klient-container {
+}
+
+.klient-container {
 	display: flex;
 	justify-content: center;
 	gap: 40px;
 	margin-top: 40px;
 	flex-wrap: wrap;
-  }
-  
-  .klient-item {
+}
+
+.klient-item {
 	text-align: center;
 	max-width: 200px;
-  }
-  
-  .klient-item img {
+}
+
+.klient-item img {
 	width: 100px;
 	height: 100px;
 	border-radius: 20px;
 	margin-bottom: 15px;
-  }
-  
-  .klient-link {
+}
+
+.klient-link {
 	display: inline-block;
 	margin-top: 10px;
 	padding: 10px 20px;
@@ -526,174 +529,183 @@ a {
 	transition: background-color 0.3s;
 	text-decoration: none;
 	color: #FFF;
-  }
-  
-  .klient-link:hover {
+}
+
+.klient-link:hover {
 	background-color: #563C73;
-  }
-  
-  .resource-container {
+}
+
+.resource-container {
 	display: flex;
 	justify-content: center;
 	gap: 40px;
 	margin-top: 40px;
 	flex-wrap: wrap;
-  }
-  
-  .resource-item {
+}
+
+.resource-item {
 	text-align: center;
 	max-width: 200px;
 	transition: transform 0.3s;
 	text-decoration: none;
 	color: inherit;
-  }
-  
-  .resource-item:hover {
+}
+
+.resource-item:hover {
 	transform: scale(1.05);
-  }
-  
-  .resource-icon {
+}
+
+.resource-icon {
 	width: 100px;
 	height: 100px;
 	border-radius: 20px;
 	margin-bottom: 15px;
-  }
-  
-  .support-qr {
+}
+
+.support-qr {
 	width: 30%;
 	max-width: 300px;
 	height: auto;
 	cursor: pointer;
 	margin: 20px auto;
 	display: block;
-  }
+}
 
-  /* ===========================================
+/* ===========================================
 	 PROFIL TEASER
 	 =========================================== */
 
-  .teaser-see-more {
+.nip05-teaser .teaser-see-more {
 	text-align: center;
-	margin-top: 16px;
-	margin-bottom: 0;
 	font-size: 0.78rem;
-  }
+	text-shadow: none;
+	max-width: none;
+	margin-left: 0;
+	margin-right: 0;
+}
 
-  .teaser-see-more a {
+.teaser-see-more a {
 	color: rgba(255, 255, 255, 0.3);
 	text-decoration: none;
 	letter-spacing: 0.03em;
 	font-weight: normal;
 	transition: color 0.2s;
-  }
+}
 
-  .teaser-see-more a:hover {
+.teaser-see-more a:hover {
 	color: rgba(255, 255, 255, 0.6);
-  }
-  
-  /* ===========================================
+}
+
+/* ===========================================
 	 RESPONSIVE DESIGN
 	 =========================================== */
-  
-  @media (max-width: 768px) {
+
+@media (max-width: 768px) {
+
 	/* Container mobile padding */
 	.container {
-	  padding: 0 20px;
+		padding: 0 20px;
 	}
-  
+
 	/* Typography */
 	h1 {
-	  font-size: 2rem;
+		font-size: 2rem;
 	}
-  
+
 	h2 {
-	  font-size: 1.8rem;
+		font-size: 1.8rem;
 	}
-  
+
 	.page-header h1 {
-	  font-size: 2rem;
+		font-size: 2rem;
 	}
-  
+
 	.hero {
-	  padding: 60px 20px;
+		padding: 60px 20px;
 	}
-  
+
 	.hero h1 {
-	  font-size: 2.5rem;
+		font-size: 2.5rem;
 	}
-  
+
 	/* Homepage section headings */
 	.nostr-klienter h2,
 	.nostr-nip05 h2,
 	.nostr-ressourcer h2,
 	.nostr-om h2,
 	.nostr-support h2 {
-	  font-size: 2rem;
+		font-size: 2rem;
 	}
-  
+
 	.nostr-klienter p,
 	.nostr-nip05 p,
 	.nostr-ressourcer p,
 	.nostr-om p,
 	.nostr-support p {
-	  font-size: 1.1rem;
-	  text-align: left;
+		font-size: 1.1rem;
+		text-align: left;
 	}
-  
+
 	/* Grids */
 	.card-grid {
-	  grid-template-columns: 1fr;
+		grid-template-columns: 1fr;
 	}
-  
+
 	.resource-grid {
-	  grid-template-columns: 1fr;
+		grid-template-columns: 1fr;
 	}
-  
+
 	.card {
-	  padding: 20px;
+		padding: 20px;
 	}
-  
+
 	.section-title {
-	  font-size: 1.8rem;
+		font-size: 1.8rem;
 	}
-  
+
 	/* Homepage sections */
 	.nostr-klienter,
 	.nostr-nip05,
 	.nostr-ressourcer,
 	.nostr-om,
 	.nostr-support {
-	  padding: 40px 20px;
+		padding: 40px 20px;
 	}
-  
+
 	.collapsible-section {
-	  margin: 20px 0;
+		margin: 20px 0;
 	}
-  
+
 	/* Wide cards become single column */
 	.card-wide {
-	  grid-column: span 1;
+		grid-column: span 1;
 	}
-  
+
 	/* Featured grid becomes single column on mobile */
 	.featured-grid {
-	  grid-template-columns: 1fr;
+		grid-template-columns: 1fr;
 	}
 
 	/* NIP-05 navn-felt på mobil */
 	.nip05-name-row input {
-	  min-width: 0;
-	  flex: 1;
+		min-width: 0;
+		flex: 1;
 	}
 
 	.nip05-suffix {
-	  font-size: 0.75rem;
-	  padding: 0 0.5rem;
+		font-size: 0.75rem;
+		padding: 0 0.5rem;
 	}
-  }
-  
-  @media (max-width: 900px) {
+
+	/* Teaser see more link */
+	.nip05-teaser .teaser-see-more {
+		text-align: center;
+		font-size: 0.78rem;
+	}
+}
+
+@media (max-width: 900px) {
 	.card-wide {
-	  grid-column: span 1;
+		grid-column: span 1;
 	}
-  }
+}
