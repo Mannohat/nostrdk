@@ -18,6 +18,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
   <!-- NIP-05 registrering -->
   <div class="register-wrap">
+    <!-- Trin 1: Tjek navn -->
     <div id="step1" class="register-form">
       <div class="field">
         <label for="name">Vælg din nostr adresse</label>
@@ -48,24 +49,40 @@ import NostrLayout from "../layouts/NostrLayout.astro";
         style="margin-top: 20px; width: 100%;">Næste</button>
     </div>
 
+    <!-- Trin 2: Indtast npub og betal -->
     <div id="step2" class="register-form" style="display: none;">
       <div class="confirmed-name" id="confirmedName"></div>
+
+      <div class="field">
+        <label for="pubkey">Din Nostr public key</label>
+        <input
+          type="text"
+          id="pubkey"
+          placeholder="npub1… eller hex"
+          autocomplete="off"
+          autocapitalize="none"
+          spellcheck="false"
+          class="pubkey-input"
+        />
+        <div class="status" id="pubkeyStatus"></div>
+      </div>
+
       <div class="instructions">
-        <p>Udfyld felterne i betalingsformularen som åbner i et nyt vindue:</p>
+        <p>Hvad sker der næste:</p>
         <ol>
-          <li>
-            Skriv <strong id="nameReminder"></strong> i feltet
-            <em>"Din nostr adresse @nostr.dk"</em> — kun navnet, ikke @nostr.dk
-          </li>
-          <li>Indsæt din Nostr public key (npub1… eller hex)</li>
+          <li>Klik "Gå til betaling ⚡"</li>
           <li>Betal 2.100 sats via Lightning</li>
+          <li>Din NIP-05 adresse aktiveres automatisk</li>
         </ol>
       </div>
+
       <button
         id="payBtn"
         class="cta"
+        disabled
         data-umami-event="nip05-profiler-betal"
         style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
+      <div class="status" id="payStatus"></div>
       <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
     </div>
   </div>
@@ -160,7 +177,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     color: rgba(255, 255, 255, 0.2);
   }
 
-  /* ---- Formular (identisk med getnip05.astro) ---- */
+  /* ---- Formular ---- */
   .register-wrap {
     max-width: 480px;
     margin: 0 auto;
@@ -195,17 +212,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     transition: border-color 0.2s;
   }
 
-  .nip05-name-row:focus-within {
-    border-color: rgba(108, 79, 150, 0.8);
-  }
-
-  .nip05-name-row.valid {
-    border-color: #4caf50;
-  }
-
-  .nip05-name-row.taken {
-    border-color: #e05050;
-  }
+  .nip05-name-row:focus-within { border-color: rgba(108, 79, 150, 0.8); }
+  .nip05-name-row.valid { border-color: #4caf50; }
+  .nip05-name-row.taken { border-color: #e05050; }
 
   .nip05-name-row input[type="text"] {
     flex: 1;
@@ -225,6 +234,21 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     display: flex;
     align-items: center;
   }
+
+  .pubkey-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.7rem 0.9rem;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+
+  .pubkey-input:focus { border-color: rgba(108, 79, 150, 0.8); }
 
   .status {
     font-size: 0.82rem;
@@ -296,32 +320,14 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     transition: color 0.2s;
   }
 
-  .back-btn:hover {
-    color: rgba(255, 255, 255, 0.7);
-  }
+  .back-btn:hover { color: rgba(255, 255, 255, 0.7); }
 
   @media (max-width: 768px) {
-    .profil-col {
-      flex: 0 0 80px;
-    }
-
-    .profil-card {
-      width: 80px;
-    }
-
-    .profil-avatar,
-    .profil-avatar-placeholder {
-      width: 64px;
-      height: 64px;
-    }
-
-    .profil-col.staggered {
-      margin-top: 36px;
-    }
-
-    .register-wrap {
-      padding: 0 0 40px;
-    }
+    .profil-col { flex: 0 0 80px; }
+    .profil-card { width: 80px; }
+    .profil-avatar, .profil-avatar-placeholder { width: 64px; height: 64px; }
+    .profil-col.staggered { margin-top: 36px; }
+    .register-wrap { padding: 0 0 40px; }
   }
 </style>
 
@@ -369,22 +375,19 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
     loading.style.display = "none";
 
-    const CARDS_PER_COL = 2;
     const cards: Record<string, HTMLElement> = {};
-
     let colIndex = 0;
     let col: HTMLDivElement | null = null;
     let cardsInCol = 0;
 
     for (const [name, pubkey] of entries) {
-      if (!col || cardsInCol >= CARDS_PER_COL) {
+      if (!col || cardsInCol >= 2) {
         col = document.createElement("div");
         col.className = "profil-col" + (colIndex % 2 === 1 ? " staggered" : "");
         grid.appendChild(col);
         colIndex++;
         cardsInCol = 0;
       }
-
       const card = makeCard(name, pubkey);
       col.appendChild(card);
       cards[pubkey] = card;
@@ -393,19 +396,15 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
     const pubkeys = entries.map(([, pubkey]) => pubkey);
     try {
-      const res = await fetch(
-        `/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`
-      );
+      const res = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
       const profiles = await res.json();
 
       for (const [pubkey, profile] of Object.entries(profiles) as [string, any][]) {
         if (!profile?.picture) continue;
         const card = cards[pubkey];
         if (!card) continue;
-
         const placeholder = card.querySelector(".profil-avatar-placeholder");
         if (!placeholder) continue;
-
         const img = document.createElement("img");
         img.className = "profil-avatar";
         img.alt = profile.display_name || "";
@@ -420,78 +419,139 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   init();
 </script>
 
-<script is:inline>
-  (function () {
-    const BTCPAY_FORM_URL = "https://btcpay.ideasarelikeflames.org/forms/322ff6ea-8e6b-448f-85f8-ddb5bc5687b6";
-    let nameAvailable = false;
-    let checkTimeout;
+<script>
+  const nameInput = document.getElementById("name") as HTMLInputElement;
+  const nameRow = document.getElementById("nameRow")!;
+  const nameStatus = document.getElementById("nameStatus")!;
+  const proceedBtn = document.getElementById("proceedBtn") as HTMLButtonElement;
+  const step1 = document.getElementById("step1")!;
+  const step2 = document.getElementById("step2")!;
+  const confirmedNameEl = document.getElementById("confirmedName")!;
+  const backBtn = document.getElementById("backBtn")!;
+  const pubkeyInput = document.getElementById("pubkey") as HTMLInputElement;
+  const pubkeyStatus = document.getElementById("pubkeyStatus")!;
+  const payBtn = document.getElementById("payBtn") as HTMLButtonElement;
+  const payStatus = document.getElementById("payStatus")!;
 
-    function setStatus(type, icon, text) {
-      document.getElementById("nameStatus").className = "status " + type;
-      document.getElementById("nameStatus").textContent = icon + " " + text;
-      document.getElementById("nameRow").className = "nip05-name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
-    }
+  let nameAvailable = false;
+  let checkTimeout: ReturnType<typeof setTimeout>;
+  let confirmedName = "";
 
-    function clearStatus() {
-      document.getElementById("nameStatus").className = "status";
-      document.getElementById("nameStatus").textContent = "";
-      document.getElementById("nameRow").className = "nip05-name-row";
+  function validatePubkey(val: string) {
+    return /^npub1[a-z0-9]{58}$/.test(val) || /^[0-9a-f]{64}$/.test(val);
+  }
+
+  function setStatus(type: string, icon: string, text: string) {
+    nameStatus.className = `status ${type}`;
+    nameStatus.textContent = `${icon} ${text}`;
+    nameRow.className = "nip05-name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
+  }
+
+  function clearStatus() {
+    nameStatus.className = "status";
+    nameStatus.textContent = "";
+    nameRow.className = "nip05-name-row";
+    nameAvailable = false;
+    proceedBtn.disabled = true;
+  }
+
+  async function checkAvailability(name: string) {
+    if (!name) { clearStatus(); return; }
+    if (!/^[a-z0-9_-]+$/.test(name)) {
+      setStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
       nameAvailable = false;
-      document.getElementById("proceedBtn").disabled = true;
+      proceedBtn.disabled = true;
+      return;
     }
-
-    async function checkAvailability(name) {
-      if (!name) { clearStatus(); return; }
-      if (!/^[a-z0-9_-]+$/.test(name)) {
-        setStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
+    setStatus("checking", "…", "Tjekker tilgængelighed…");
+    try {
+      const res = await fetch(`/.netlify/functions/check-name?name=${encodeURIComponent(name)}`);
+      const data = await res.json();
+      if (data.available) {
+        setStatus("available", "✓", "Ledigt!");
+        nameAvailable = true;
+        proceedBtn.disabled = false;
+      } else {
+        setStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
         nameAvailable = false;
-        document.getElementById("proceedBtn").disabled = true;
-        return;
+        proceedBtn.disabled = true;
       }
-      setStatus("checking", "…", "Tjekker tilgængelighed…");
-      try {
-        const res = await fetch("/.netlify/functions/check-name?name=" + encodeURIComponent(name));
-        const data = await res.json();
-        if (data.available) {
-          setStatus("available", "✓", "Ledigt!");
-          nameAvailable = true;
-          document.getElementById("proceedBtn").disabled = false;
-        } else {
-          setStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
-          nameAvailable = false;
-          document.getElementById("proceedBtn").disabled = true;
-        }
-      } catch {
-        setStatus("error", "!", "Kunne ikke tjekke — prøv igen");
-        nameAvailable = false;
-        document.getElementById("proceedBtn").disabled = true;
-      }
+    } catch {
+      setStatus("error", "!", "Kunne ikke tjekke — prøv igen");
+      nameAvailable = false;
+      proceedBtn.disabled = true;
     }
+  }
 
-    document.getElementById("name").addEventListener("input", function () {
-      const val = this.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
-      if (this.value !== val) this.value = val;
-      clearTimeout(checkTimeout);
-      if (!val) { clearStatus(); return; }
-      checkTimeout = setTimeout(() => checkAvailability(val), 500);
-    });
+  nameInput.addEventListener("input", () => {
+    const val = nameInput.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+    if (nameInput.value !== val) nameInput.value = val;
+    clearTimeout(checkTimeout);
+    if (!val) { clearStatus(); return; }
+    checkTimeout = setTimeout(() => checkAvailability(val), 500);
+  });
 
-    document.getElementById("proceedBtn").addEventListener("click", function () {
-      if (!nameAvailable) return;
-      const name = document.getElementById("name").value.trim();
-      document.getElementById("confirmedName").textContent = "✓ " + name + "@nostr.dk er ledigt";
-      document.getElementById("nameReminder").textContent = name;
-      document.getElementById("step1").style.display = "none";
-      document.getElementById("step2").style.display = "block";
-    });
+  proceedBtn.addEventListener("click", () => {
+    if (!nameAvailable) return;
+    confirmedName = nameInput.value.trim();
+    confirmedNameEl.textContent = `✓ ${confirmedName}@nostr.dk er ledigt`;
+    step1.style.display = "none";
+    step2.style.display = "block";
+  });
 
-    document.getElementById("payBtn").addEventListener("click", function () {
-      window.open(BTCPAY_FORM_URL, "btcpay", "width=600,height=700,resizable=yes");
-    });
+  backBtn.addEventListener("click", () => {
+    step2.style.display = "none";
+    step1.style.display = "block";
+  });
 
-    document.getElementById("backBtn").addEventListener("click", function () {
-      document.getElementById("step2").style.display = "none";
-      document.getElementById("step1").style.display = "block";
-    });
-  })();
+  pubkeyInput.addEventListener("input", function () {
+    const val = this.value.trim();
+    if (!val) {
+      pubkeyStatus.className = "status";
+      pubkeyStatus.textContent = "";
+      pubkeyInput.style.borderColor = "rgba(255,255,255,0.1)";
+      payBtn.disabled = true;
+      return;
+    }
+    if (validatePubkey(val)) {
+      pubkeyStatus.className = "status available";
+      pubkeyStatus.textContent = "✓ Gyldig public key";
+      pubkeyInput.style.borderColor = "#4caf50";
+      payBtn.disabled = false;
+    } else {
+      pubkeyStatus.className = "status taken";
+      pubkeyStatus.textContent = "✗ Skal være npub1… (63 tegn) eller hex (64 tegn)";
+      pubkeyInput.style.borderColor = "#e05050";
+      payBtn.disabled = true;
+    }
+  });
+
+  payBtn.addEventListener("click", async () => {
+    const pubkey = pubkeyInput.value.trim();
+    if (!validatePubkey(pubkey)) return;
+
+    payBtn.disabled = true;
+    payBtn.textContent = "Opretter betaling…";
+    payStatus.className = "status checking";
+    payStatus.textContent = "… Forbinder til BTCPay…";
+
+    try {
+      const res = await fetch("/.netlify/functions/create-nip05-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: confirmedName, pubkey }),
+      });
+      const data = await res.json();
+      if (data.checkoutLink) {
+        window.location.href = data.checkoutLink;
+      } else {
+        throw new Error("Intet checkout link");
+      }
+    } catch {
+      payStatus.className = "status error";
+      payStatus.textContent = "! Noget gik galt — prøv igen";
+      payBtn.disabled = false;
+      payBtn.textContent = "Gå til betaling ⚡";
+    }
+  });
 </script>

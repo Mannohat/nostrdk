@@ -57,26 +57,41 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       >
     </div>
 
-    <!-- Trin 2: Navn er ledigt - vis vejledning -->
+    <!-- Trin 2: Indtast npub og betal -->
     <div id="step2" class="register-form" style="display: none;">
       <div class="confirmed-name" id="confirmedName"></div>
+
+      <div class="field">
+        <label for="pubkey">Din Nostr public key</label>
+        <input
+          type="text"
+          id="pubkey"
+          placeholder="npub1… eller hex"
+          autocomplete="off"
+          autocapitalize="none"
+          spellcheck="false"
+          class="pubkey-input"
+        />
+        <div class="status" id="pubkeyStatus"></div>
+      </div>
+
       <div class="instructions">
-        <p>Udfyld felterne i betalingsformularen som åbner i et nyt vindue:</p>
+        <p>Hvad sker der næste:</p>
         <ol>
-          <li>
-            Skriv <strong id="nameReminder"></strong> i feltet
-            <em>"Din nostr adresse @nostr.dk"</em> — kun navnet, ikke @nostr.dk
-          </li>
-          <li>Indsæt din Nostr public key (npub1… eller hex)</li>
+          <li>Klik "Gå til betaling ⚡"</li>
           <li>Betal 2.100 sats via Lightning</li>
+          <li>Din NIP-05 adresse aktiveres automatisk</li>
         </ol>
       </div>
+
       <button
         id="payBtn"
         class="cta"
+        disabled
         data-umami-event="nip05-betal"
         style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button
       >
+      <div class="status" id="payStatus"></div>
       <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
     </div>
   </div>
@@ -163,13 +178,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     border-color: rgba(108, 79, 150, 0.8);
   }
 
-  .nip05-name-row.valid {
-    border-color: #4caf50;
-  }
-
-  .nip05-name-row.taken {
-    border-color: #e05050;
-  }
+  .nip05-name-row.valid { border-color: #4caf50; }
+  .nip05-name-row.taken { border-color: #e05050; }
 
   .nip05-name-row input[type="text"] {
     flex: 1;
@@ -188,6 +198,23 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     background: rgba(0, 0, 0, 0.2);
     display: flex;
     align-items: center;
+  }
+
+  .pubkey-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 0.7rem 0.9rem;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+    box-sizing: border-box;
+  }
+
+  .pubkey-input:focus {
+    border-color: rgba(108, 79, 150, 0.8);
   }
 
   .status {
@@ -246,11 +273,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   }
 
   .instructions strong { color: #fff; }
-
-  .instructions em {
-    color: rgba(255, 255, 255, 0.6);
-    font-style: normal;
-  }
+  .instructions em { color: rgba(255, 255, 255, 0.6); font-style: normal; }
 
   .back-btn {
     background: none;
@@ -276,22 +299,26 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 </style>
 
 <script>
-  const BTCPAY_FORM_URL =
-    "https://btcpay.ideasarelikeflames.org/forms/322ff6ea-8e6b-448f-85f8-ddb5bc5687b6";
-
   const nameInput = document.getElementById("name") as HTMLInputElement;
   const nameRow = document.getElementById("nameRow")!;
   const nameStatus = document.getElementById("nameStatus")!;
   const proceedBtn = document.getElementById("proceedBtn") as HTMLButtonElement;
   const step1 = document.getElementById("step1")!;
   const step2 = document.getElementById("step2")!;
-  const confirmedName = document.getElementById("confirmedName")!;
-  const nameReminder = document.getElementById("nameReminder")!;
-  const payBtn = document.getElementById("payBtn") as HTMLButtonElement;
+  const confirmedNameEl = document.getElementById("confirmedName")!;
   const backBtn = document.getElementById("backBtn")!;
+  const pubkeyInput = document.getElementById("pubkey") as HTMLInputElement;
+  const pubkeyStatus = document.getElementById("pubkeyStatus")!;
+  const payBtn = document.getElementById("payBtn") as HTMLButtonElement;
+  const payStatus = document.getElementById("payStatus")!;
 
   let nameAvailable = false;
   let checkTimeout: ReturnType<typeof setTimeout>;
+  let confirmedName = "";
+
+  function validatePubkey(val: string) {
+    return /^npub1[a-z0-9]{58}$/.test(val) || /^[0-9a-f]{64}$/.test(val);
+  }
 
   // Profil teaser
   (async function loadTeaser() {
@@ -299,10 +326,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       const res = await fetch("/.well-known/nostr.json");
       const data = await res.json();
       const names = data.names || {};
-      const entries = Object.entries(names)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 20);
-
+      const entries = Object.entries(names).sort(() => Math.random() - 0.5).slice(0, 20);
       const pubkeys = entries.map(([, pubkey]) => pubkey);
       const teaserGrid = document.getElementById("teaserGrid");
       if (!teaserGrid) return;
@@ -313,14 +337,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       teaserGrid.style.gap = "8px 10px";
       teaserGrid.style.alignItems = "flex-start";
 
-      const profileRes = await fetch(
-        `/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`,
-      );
+      const profileRes = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
       const profiles = await profileRes.json();
-
-      const withPicture = entries
-        .filter(([, pubkey]) => profiles[pubkey]?.picture)
-        .slice(0, 11);
+      const withPicture = entries.filter(([, pubkey]) => profiles[pubkey]?.picture).slice(0, 11);
 
       const isMobile = window.innerWidth < 768;
       const colWidth = isMobile ? "56px" : "72px";
@@ -330,11 +349,10 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       let colIndex = 0;
       let col: HTMLDivElement | null = null;
       let cardsInCol = 0;
-      const CARDS_PER_COL = 2;
 
       for (const [, pubkey] of withPicture) {
         const profile = profiles[pubkey];
-        if (!col || cardsInCol >= CARDS_PER_COL) {
+        if (!col || cardsInCol >= 2) {
           col = document.createElement("div");
           col.style.display = "flex";
           col.style.flexDirection = "column";
@@ -366,9 +384,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   function setStatus(type: string, icon: string, text: string) {
     nameStatus.className = `status ${type}`;
     nameStatus.textContent = `${icon} ${text}`;
-    nameRow.className =
-      "nip05-name-row " +
-      (type === "available" ? "valid" : type === "taken" ? "taken" : "");
+    nameRow.className = "nip05-name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
   }
 
   function clearStatus() {
@@ -380,26 +396,17 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   }
 
   async function checkAvailability(name: string) {
-    if (!name) {
-      clearStatus();
-      return;
-    }
-
+    if (!name) { clearStatus(); return; }
     if (!/^[a-z0-9_-]+$/.test(name)) {
       setStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
       nameAvailable = false;
       proceedBtn.disabled = true;
       return;
     }
-
     setStatus("checking", "…", "Tjekker tilgængelighed…");
-
     try {
-      const res = await fetch(
-        `/.netlify/functions/check-name?name=${encodeURIComponent(name)}`,
-      );
+      const res = await fetch(`/.netlify/functions/check-name?name=${encodeURIComponent(name)}`);
       const data = await res.json();
-
       if (data.available) {
         setStatus("available", "✓", "Ledigt!");
         nameAvailable = true;
@@ -419,30 +426,15 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   nameInput.addEventListener("input", () => {
     const val = nameInput.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
     if (nameInput.value !== val) nameInput.value = val;
-
     clearTimeout(checkTimeout);
-    if (!val) {
-      clearStatus();
-      return;
-    }
-
+    if (!val) { clearStatus(); return; }
     checkTimeout = setTimeout(() => checkAvailability(val), 500);
   });
 
   proceedBtn.addEventListener("click", () => {
     if (!nameAvailable) return;
-    const name = nameInput.value.trim();
-
-    confirmedName.textContent = `✓ ${name}@nostr.dk er ledigt`;
-    nameReminder.textContent = name;
-    payBtn.onclick = () => {
-      window.open(
-        BTCPAY_FORM_URL,
-        "btcpay",
-        "width=600,height=700,resizable=yes",
-      );
-    };
-
+    confirmedName = nameInput.value.trim();
+    confirmedNameEl.textContent = `✓ ${confirmedName}@nostr.dk er ledigt`;
     step1.style.display = "none";
     step2.style.display = "block";
   });
@@ -450,5 +442,57 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   backBtn.addEventListener("click", () => {
     step2.style.display = "none";
     step1.style.display = "block";
+  });
+
+  // Pubkey validering — live feedback
+  pubkeyInput.addEventListener("input", function () {
+    const val = this.value.trim();
+    if (!val) {
+      pubkeyStatus.className = "status";
+      pubkeyStatus.textContent = "";
+      pubkeyInput.style.borderColor = "rgba(255,255,255,0.1)";
+      payBtn.disabled = true;
+      return;
+    }
+    if (validatePubkey(val)) {
+      pubkeyStatus.className = "status available";
+      pubkeyStatus.textContent = "✓ Gyldig public key";
+      pubkeyInput.style.borderColor = "#4caf50";
+      payBtn.disabled = false;
+    } else {
+      pubkeyStatus.className = "status taken";
+      pubkeyStatus.textContent = "✗ Skal være npub1… (63 tegn) eller hex (64 tegn)";
+      pubkeyInput.style.borderColor = "#e05050";
+      payBtn.disabled = true;
+    }
+  });
+
+  payBtn.addEventListener("click", async () => {
+    const pubkey = pubkeyInput.value.trim();
+    if (!validatePubkey(pubkey)) return;
+
+    payBtn.disabled = true;
+    payBtn.textContent = "Opretter betaling…";
+    payStatus.className = "status checking";
+    payStatus.textContent = "… Forbinder til BTCPay…";
+
+    try {
+      const res = await fetch("/.netlify/functions/create-nip05-invoice", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: confirmedName, pubkey }),
+      });
+      const data = await res.json();
+      if (data.checkoutLink) {
+        window.location.href = data.checkoutLink;
+      } else {
+        throw new Error("Intet checkout link");
+      }
+    } catch {
+      payStatus.className = "status error";
+      payStatus.textContent = "! Noget gik galt — prøv igen";
+      payBtn.disabled = false;
+      payBtn.textContent = "Gå til betaling ⚡";
+    }
   });
 </script>
