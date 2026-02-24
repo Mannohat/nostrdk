@@ -14,77 +14,117 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   </div>
 
   <div class="register-wrap">
-    <div class="card register-card">
 
-      <!-- Trin 1: Tjek navn -->
-      <div id="step1">
-        <div class="field">
-          <label for="name">Vælg din nostr adresse</label>
-          <div class="nip05-name-row" id="nameRow">
-            <input
-              type="text"
-              id="name"
-              placeholder="alice"
-              autocomplete="off"
-              autocapitalize="none"
-              spellcheck="false"
-            />
-            <span class="nip05-suffix">@nostr.dk</span>
-          </div>
-          <div class="status" id="nameStatus"></div>
-        </div>
-
-        <p class="price-note">
-          @nostr.dk NIP-05 adresse for kun <strong>2.100 sats</strong> via
-          <a
-            href="https://enogtyve.org/da/laer-mere/lightning/"
-            target="_blank"
-            rel="noopener noreferrer">Lightning</a
-          > ⚡
-        </p>
-
-        <button id="proceedBtn" class="cta" disabled style="margin-top: 20px;">Næste</button>
-      </div>
-
-      <!-- Trin 2: Navn er ledigt - vis vejledning -->
-      <div id="step2" style="display: none;">
-        <div class="confirmed-name" id="confirmedName"></div>
-        <div class="instructions">
-          <p>Udfyld felterne i betalingsformularen som åbner i et nyt vindue:</p>
-          <ol>
-            <li>
-              Skriv <strong id="nameReminder"></strong> i feltet
-              <em>"Din nostr adresse @nostr.dk"</em> — kun navnet, ikke @nostr.dk
-            </li>
-            <li>Indsæt din Nostr public key (npub1… eller hex)</li>
-            <li>Betal 2.100 sats via Lightning</li>
-          </ol>
-        </div>
-        <button id="payBtn" class="cta" data-umami-event="nip05-betal" style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
-        <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
-      </div>
-
+    <!-- Profil teaser -->
+    <div class="nip05-teaser">
+      <p class="nip05-teaser-label">Allerede verificeret med @nostr.dk</p>
+      <div class="nip05-teaser-grid" id="teaserGrid"></div>
     </div>
+
+    <!-- Trin 1: Tjek navn -->
+    <div id="step1" class="register-form">
+      <div class="field">
+        <label for="name">Vælg din nostr adresse</label>
+        <div class="nip05-name-row" id="nameRow">
+          <input
+            type="text"
+            id="name"
+            placeholder="ditnavnher"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+          />
+          <span class="nip05-suffix">@nostr.dk</span>
+        </div>
+        <div class="status" id="nameStatus"></div>
+      </div>
+
+      <p class="price-note">
+        @nostr.dk NIP-05 adresse for kun <strong>2.100 sats</strong> via
+        <a
+          href="https://enogtyve.org/da/laer-mere/lightning/"
+          target="_blank"
+          rel="noopener noreferrer">Lightning</a
+        > ⚡
+      </p>
+
+      <button id="proceedBtn" class="cta" disabled data-umami-event="nip05-næste" style="margin-top: 20px; width: 100%;">Næste</button>
+    </div>
+
+    <!-- Trin 2: Navn er ledigt - vis vejledning -->
+    <div id="step2" class="register-form" style="display: none;">
+      <div class="confirmed-name" id="confirmedName"></div>
+      <div class="instructions">
+        <p>Udfyld felterne i betalingsformularen som åbner i et nyt vindue:</p>
+        <ol>
+          <li>
+            Skriv <strong id="nameReminder"></strong> i feltet
+            <em>"Din nostr adresse @nostr.dk"</em> — kun navnet, ikke @nostr.dk
+          </li>
+          <li>Indsæt din Nostr public key (npub1… eller hex)</li>
+          <li>Betal 2.100 sats via Lightning</li>
+        </ol>
+      </div>
+      <button id="payBtn" class="cta" data-umami-event="nip05-betal" style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
+      <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
+    </div>
+
   </div>
 
 </NostrLayout>
 
 <style>
   .register-wrap {
-    display: flex;
-    justify-content: center;
-    padding: 0 0 60px;
-  }
-
-  .register-card {
-    width: 100%;
     max-width: 480px;
-    transition: none;
+    margin: 0 auto;
+    padding: 0 0 80px;
   }
 
-  .register-card:hover {
-    transform: none;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  /* ---- Profil teaser ---- */
+  .nip05-teaser {
+    margin: 0 0 30px;
+  }
+
+  .nip05-teaser-label {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-align: center;
+    margin-bottom: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .nip05-teaser-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .teaser-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(108, 79, 150, 0.5);
+    transition: transform 0.2s ease;
+  }
+
+  .teaser-avatar:hover {
+    transform: scale(1.1);
+  }
+
+  .teaser-avatar-placeholder {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid rgba(108, 79, 150, 0.3);
+    background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
+  }
+
+  /* ---- Formular ---- */
+  .register-form {
+    text-align: left;
   }
 
   .field {
@@ -251,6 +291,48 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
   let nameAvailable = false;
   let checkTimeout: ReturnType<typeof setTimeout>;
+
+  // Profil teaser
+  (async function loadTeaser() {
+    try {
+      const res = await fetch("/.well-known/nostr.json");
+      const data = await res.json();
+      const names = data.names || {};
+      const entries = Object.entries(names)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 11);
+
+      const pubkeys = entries.map(([, pubkey]) => pubkey as string);
+      const teaserGrid = document.getElementById("teaserGrid")!;
+
+      const placeholders: Record<string, HTMLElement> = {};
+      for (const [, pubkey] of entries) {
+        const div = document.createElement("div");
+        div.className = "teaser-avatar-placeholder";
+        teaserGrid.appendChild(div);
+        placeholders[pubkey as string] = div;
+      }
+
+      const profileRes = await fetch(
+        `/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`
+      );
+      const profiles = await profileRes.json();
+
+      for (const [pubkey, profile] of Object.entries(profiles) as [string, any][]) {
+        if (!profile.picture) continue;
+        const placeholder = placeholders[pubkey];
+        if (!placeholder) continue;
+
+        const img = document.createElement("img");
+        img.className = "teaser-avatar";
+        img.src = profile.picture;
+        img.alt = "";
+        img.loading = "lazy";
+        img.onerror = () => {};
+        placeholder.replaceWith(img);
+      }
+    } catch {}
+  })();
 
   function setStatus(type: string, icon: string, text: string) {
     nameStatus.className = `status ${type}`;

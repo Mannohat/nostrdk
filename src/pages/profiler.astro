@@ -31,14 +31,13 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   }
 
   .profiler-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-    gap: 28px 16px;
+    columns: 8 110px;
+    column-gap: 16px;
     margin-top: 10px;
   }
 
   .profil-card {
-    display: flex;
+    display: inline-flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
@@ -48,6 +47,14 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     padding: 8px;
     border-radius: 12px;
     transition: transform 0.2s ease, background 0.2s ease;
+    width: 100%;
+    margin-bottom: 20px;
+    break-inside: avoid;
+  }
+
+  /* Forskyd hver anden kolonne ned */
+  .profil-card:nth-child(even) {
+    margin-top: 40px;
   }
 
   .profil-card:hover {
@@ -93,14 +100,18 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
   @media (max-width: 768px) {
     .profiler-grid {
-      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-      gap: 20px 10px;
+      columns: 4 80px;
+      column-gap: 10px;
     }
 
     .profil-avatar,
     .profil-avatar-placeholder {
       width: 68px;
       height: 68px;
+    }
+
+    .profil-card:nth-child(even) {
+      margin-top: 30px;
     }
   }
 </style>
