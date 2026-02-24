@@ -29,7 +29,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
           <input
             type="text"
             id="name"
-            placeholder="ditnavnher"
+            placeholder="alice"
             autocomplete="off"
             autocapitalize="none"
             spellcheck="false"
@@ -98,28 +98,38 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px;
+    gap: 8px 10px;
+    align-items: flex-start;
+  }
+
+  .teaser-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex: 0 0 72px;
+  }
+
+  .teaser-col.staggered {
+    margin-top: 36px;
   }
 
   .teaser-avatar {
-    width: 52px;
-    height: 52px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid rgba(108, 79, 150, 0.5);
-    transition: transform 0.2s ease;
-  }
-
-  .teaser-avatar:hover {
-    transform: scale(1.1);
+    display: block;
   }
 
   .teaser-avatar-placeholder {
-    width: 52px;
-    height: 52px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     border: 2px solid rgba(108, 79, 150, 0.3);
     background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
+    display: block;
   }
 
   /* ---- Formular ---- */
@@ -306,11 +316,24 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       const teaserGrid = document.getElementById("teaserGrid")!;
 
       const placeholders: Record<string, HTMLElement> = {};
+      const CARDS_PER_COL = 2;
+      let colIndex = 0;
+      let col: HTMLDivElement | null = null;
+      let cardsInCol = 0;
+
       for (const [, pubkey] of entries) {
+        if (!col || cardsInCol >= CARDS_PER_COL) {
+          col = document.createElement("div");
+          col.className = "teaser-col" + (colIndex % 2 === 1 ? " staggered" : "");
+          teaserGrid.appendChild(col);
+          colIndex++;
+          cardsInCol = 0;
+        }
         const div = document.createElement("div");
         div.className = "teaser-avatar-placeholder";
-        teaserGrid.appendChild(div);
+        col.appendChild(div);
         placeholders[pubkey as string] = div;
+        cardsInCol++;
       }
 
       const profileRes = await fetch(
