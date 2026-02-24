@@ -563,7 +563,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					const names = data.names || {};
 					const entries = Object.entries(names)
 						.sort(() => Math.random() - 0.5)
-						.slice(0, 11);
+						.slice(0, 20);
 
 					const pubkeys = entries.map(([, pubkey]) => pubkey);
 					const teaserGrid =
@@ -575,9 +575,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					);
 					const profiles = await profileRes.json();
 
-					const withPicture = entries.filter(
-						([, pubkey]) => profiles[pubkey]?.picture,
-					);
+					const withPicture = entries
+						.filter(([, pubkey]) => profiles[pubkey]?.picture)
+						.slice(0, 11);
 
 					let colIndex = 0;
 					let col = null;
@@ -588,9 +588,13 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 						const profile = profiles[pubkey];
 						if (!col || cardsInCol >= CARDS_PER_COL) {
 							col = document.createElement("div");
-							col.className =
-								"teaser-col" +
-								(colIndex % 2 === 1 ? " staggered" : "");
+							col.style.display = "flex";
+							col.style.flexDirection = "column";
+							col.style.alignItems = "center";
+							col.style.gap = "10px";
+							col.style.flex = "0 0 72px";
+							if (colIndex % 2 === 1)
+								col.style.marginTop = "36px";
 							teaserGrid.appendChild(col);
 							colIndex++;
 							cardsInCol = 0;
