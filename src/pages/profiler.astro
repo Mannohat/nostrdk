@@ -31,13 +31,27 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   }
 
   .profiler-grid {
-    columns: 8 110px;
-    column-gap: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
     margin-top: 10px;
+    align-items: flex-start;
+  }
+
+  .profil-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex: 0 0 110px;
+  }
+
+  .profil-col.staggered {
+    margin-top: 50px;
   }
 
   .profil-card {
-    display: inline-flex;
+    display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
@@ -46,15 +60,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     cursor: pointer;
     padding: 8px;
     border-radius: 12px;
+    width: 110px;
     transition: transform 0.2s ease, background 0.2s ease;
-    width: 100%;
-    margin-bottom: 20px;
-    break-inside: avoid;
-  }
-
-  /* Forskyd hver anden kolonne ned */
-  .profil-card:nth-child(even) {
-    margin-top: 40px;
   }
 
   .profil-card:hover {
@@ -99,19 +106,22 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   }
 
   @media (max-width: 768px) {
-    .profiler-grid {
-      columns: 4 80px;
-      column-gap: 10px;
+    .profil-col {
+      flex: 0 0 80px;
+    }
+
+    .profil-card {
+      width: 80px;
     }
 
     .profil-avatar,
     .profil-avatar-placeholder {
-      width: 68px;
-      height: 68px;
+      width: 64px;
+      height: 64px;
     }
 
-    .profil-card:nth-child(even) {
-      margin-top: 30px;
+    .profil-col.staggered {
+      margin-top: 36px;
     }
   }
 </style>
@@ -122,8 +132,26 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   const grid = document.getElementById("grid")!;
   const loading = document.getElementById("loading")!;
 
+  function makeCard(name: string, pubkey: string): HTMLAnchorElement {
+    const card = document.createElement("a");
+    card.className = "profil-card";
+    card.href = `https://primal.net/p/${pubkey}`;
+    card.target = "_blank";
+    card.rel = "noopener noreferrer";
+
+    const placeholder = document.createElement("div");
+    placeholder.className = "profil-avatar-placeholder";
+
+    const nip05 = document.createElement("div");
+    nip05.className = "profil-nip05";
+    nip05.innerHTML = `<span class="profil-name">${name}</span><span class="profil-domain">@nostr.dk</span>`;
+
+    card.appendChild(placeholder);
+    card.appendChild(nip05);
+    return card;
+  }
+
   async function init() {
-    // Hent nostr.json
     let names: Record<string, string> = {};
     try {
       const res = await fetch(NOSTR_JSON_URL);
@@ -142,29 +170,30 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
     loading.style.display = "none";
 
-    // Opret kort med placeholder
+    // Fordel profiler i kolonner — hver anden kolonne er forskudt
+    const CARDS_PER_COL = 2;
     const cards: Record<string, HTMLElement> = {};
+
+    let colIndex = 0;
+    let col: HTMLDivElement | null = null;
+    let cardsInCol = 0;
+
     for (const [name, pubkey] of entries) {
-      const card = document.createElement("a");
-      card.className = "profil-card";
-      card.href = `https://primal.net/p/${pubkey}`;
-      card.target = "_blank";
-      card.rel = "noopener noreferrer";
+      if (!col || cardsInCol >= CARDS_PER_COL) {
+        col = document.createElement("div");
+        col.className = "profil-col" + (colIndex % 2 === 1 ? " staggered" : "");
+        grid.appendChild(col);
+        colIndex++;
+        cardsInCol = 0;
+      }
 
-      const placeholder = document.createElement("div");
-      placeholder.className = "profil-avatar-placeholder";
-
-      const nip05 = document.createElement("div");
-      nip05.className = "profil-nip05";
-      nip05.innerHTML = `<span class="profil-name">${name}</span><span class="profil-domain">@nostr.dk</span>`;
-
-      card.appendChild(placeholder);
-      card.appendChild(nip05);
-      grid.appendChild(card);
+      const card = makeCard(name, pubkey);
+      col.appendChild(card);
       cards[pubkey] = card;
+      cardsInCol++;
     }
 
-    // Hent profiler via Netlify funktion (server-side, ingen CORS)
+    // Hent profilbilleder
     const pubkeys = entries.map(([, pubkey]) => pubkey);
     try {
       const res = await fetch(
@@ -188,9 +217,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
         img.src = profile.picture;
         placeholder.replaceWith(img);
       }
-    } catch {
-      // Vis placeholders ved fejl
-    }
+    } catch {}
   }
 
   init();
