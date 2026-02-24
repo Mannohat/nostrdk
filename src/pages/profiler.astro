@@ -16,6 +16,47 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     <div id="grid" class="profiler-grid"></div>
   </div>
 
+  <!-- NIP-05 registrering -->
+  <section class="nostr-nip05" id="nostr-nip05">
+    <h2>Få din egen <span style="font-size: 0.75em;">(NIP-05 adresse)</span></h2>
+    <p>
+      Tjek om dit ønskede navn er ledigt, følg anvisningerne og betal 2.100 sats
+      via Lightning — din adresse er aktiv inden for få minutter.
+    </p>
+
+    <div class="nip05-register">
+      <div id="nip05-step1">
+        <div class="nip05-field">
+          <div class="nip05-name-row" id="nip05NameRow">
+            <input type="text" id="nip05Name" placeholder="ditnavnher"
+              autocomplete="off" autocapitalize="none" spellcheck="false" />
+            <span class="nip05-suffix">@nostr.dk</span>
+          </div>
+          <div class="nip05-status" id="nip05Status"></div>
+        </div>
+        <p class="nip05-price">
+          @nostr.dk nip-05 adresse for kun <strong>2.100 sats</strong> via
+          <a href="https://enogtyve.org/da/laer-mere/lightning/" target="_blank" rel="noopener noreferrer">Lightning</a> ⚡
+        </p>
+        <button id="nip05ProceedBtn" class="cta" disabled data-umami-event="nip05-profiler-button">Næste</button>
+      </div>
+
+      <div id="nip05-step2" style="display: none;">
+        <div class="nip05-confirmed" id="nip05Confirmed"></div>
+        <div class="nip05-instructions">
+          <p>Udfyld felterne i betalingsformularen som åbner i et nyt vindue:</p>
+          <ol>
+            <li>Skriv <strong id="nip05NameReminder"></strong> i feltet <em>"Din nostr adresse @nostr.dk"</em> — kun navnet, ikke @nostr.dk</li>
+            <li>Indsæt din Nostr public key (npub1… eller hex)</li>
+            <li>Betal 2.100 sats via Lightning</li>
+          </ol>
+        </div>
+        <button id="nip05PayBtn" class="cta" data-umami-event="nip05-profiler-pay">Gå til betaling ⚡</button>
+        <button id="nip05BackBtn" class="nip05-back-btn">← Vælg et andet navn</button>
+      </div>
+    </div>
+  </section>
+
 </NostrLayout>
 
 <style is:global>
@@ -36,7 +77,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     gap: 8px 12px;
     margin-top: 10px;
     align-items: flex-start;
-  }
+    justify-content: center;
+}
 
   .profil-col {
     display: flex;
@@ -170,7 +212,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
     loading.style.display = "none";
 
-    // Fordel profiler i kolonner — hver anden kolonne er forskudt
     const CARDS_PER_COL = 2;
     const cards: Record<string, HTMLElement> = {};
 
@@ -193,7 +234,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       cardsInCol++;
     }
 
-    // Hent profilbilleder
     const pubkeys = entries.map(([, pubkey]) => pubkey);
     try {
       const res = await fetch(
@@ -221,4 +261,81 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   }
 
   init();
+</script>
+
+<script is:inline>
+  (function () {
+    const BTCPAY_FORM_URL = "https://btcpay.ideasarelikeflames.org/forms/322ff6ea-8e6b-448f-85f8-ddb5bc5687b6";
+    let nameAvailable = false;
+    let checkTimeout;
+
+    function setStatus(type, icon, text) {
+      document.getElementById("nip05Status").className = "nip05-status " + type;
+      document.getElementById("nip05Status").textContent = icon + " " + text;
+      document.getElementById("nip05NameRow").className = "nip05-name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
+    }
+
+    function clearStatus() {
+      document.getElementById("nip05Status").className = "nip05-status";
+      document.getElementById("nip05Status").textContent = "";
+      document.getElementById("nip05NameRow").className = "nip05-name-row";
+      nameAvailable = false;
+      document.getElementById("nip05ProceedBtn").disabled = true;
+    }
+
+    async function checkAvailability(name) {
+      if (!name) { clearStatus(); return; }
+      if (!/^[a-z0-9_-]+$/.test(name)) {
+        setStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
+        nameAvailable = false;
+        document.getElementById("nip05ProceedBtn").disabled = true;
+        return;
+      }
+      setStatus("checking", "…", "Tjekker tilgængelighed…");
+      try {
+        const res = await fetch("/.netlify/functions/check-name?name=" + encodeURIComponent(name));
+        const data = await res.json();
+        if (data.available) {
+          setStatus("available", "✓", "Ledigt!");
+          nameAvailable = true;
+          document.getElementById("nip05ProceedBtn").disabled = false;
+        } else {
+          setStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
+          nameAvailable = false;
+          document.getElementById("nip05ProceedBtn").disabled = true;
+        }
+      } catch {
+        setStatus("error", "!", "Kunne ikke tjekke — prøv igen");
+        nameAvailable = false;
+        document.getElementById("nip05ProceedBtn").disabled = true;
+      }
+    }
+
+    document.getElementById("nip05Name").addEventListener("input", function () {
+      const val = this.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      if (this.value !== val) this.value = val;
+      clearTimeout(checkTimeout);
+      if (!val) { clearStatus(); return; }
+      checkTimeout = setTimeout(() => checkAvailability(val), 500);
+    });
+
+    document.getElementById("nip05ProceedBtn").addEventListener("click", function () {
+      if (!nameAvailable) return;
+      const name = document.getElementById("nip05Name").value.trim();
+      document.getElementById("nip05Confirmed").textContent = "✓ " + name + "@nostr.dk er ledigt";
+      document.getElementById("nip05NameReminder").textContent = name;
+      document.getElementById("nip05-step1").style.display = "none";
+      document.getElementById("nip05-step2").style.display = "block";
+    });
+
+    document.getElementById("nip05PayBtn").addEventListener("click", function () {
+      const w = 620, h = 820;
+      window.open(BTCPAY_FORM_URL, "nip05Window", `width=${w},height=${h},top=${screen.height/2-h/2},left=${screen.width/2-w/2},resizable=yes,scrollbars=yes`);
+    });
+
+    document.getElementById("nip05BackBtn").addEventListener("click", function () {
+      document.getElementById("nip05-step2").style.display = "none";
+      document.getElementById("nip05-step1").style.display = "block";
+    });
+  })();
 </script>

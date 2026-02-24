@@ -567,6 +567,29 @@ a {
 	margin: 20px auto;
 	display: block;
   }
+
+  /* ===========================================
+	 PROFIL TEASER
+	 =========================================== */
+
+  .teaser-see-more {
+	text-align: center;
+	margin-top: 16px;
+	margin-bottom: 0;
+	font-size: 0.78rem;
+  }
+
+  .teaser-see-more a {
+	color: rgba(255, 255, 255, 0.3);
+	text-decoration: none;
+	letter-spacing: 0.03em;
+	font-weight: normal;
+	transition: color 0.2s;
+  }
+
+  .teaser-see-more a:hover {
+	color: rgba(255, 255, 255, 0.6);
+  }
   
   /* ===========================================
 	 RESPONSIVE DESIGN
