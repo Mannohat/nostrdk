@@ -298,6 +298,12 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			Lightning — din adresse er aktiv inden for få minutter.
 		</p>
 
+		<!-- Profil teaser -->
+		<div class="nip05-teaser">
+			<p class="nip05-teaser-label">Allerede verificeret med @nostr.dk</p>
+			<div class="nip05-teaser-grid" id="nip05TeaserGrid"></div>
+		</div>
+
 		<!-- Inline registreringsformular -->
 		<div class="nip05-register">
 			<!-- Trin 1: Navn-tjek -->
@@ -544,6 +550,49 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 				});
 			}
 
+			// NIP-05 profil teaser
+			(async function loadTeaser() {
+				try {
+					const res = await fetch("/.well-known/nostr.json");
+					const data = await res.json();
+					const names = data.names || {};
+					const entries = Object.entries(names)
+						.sort(() => Math.random() - 0.5)
+						.slice(0, 11);
+
+					const pubkeys = entries.map(([, pubkey]) => pubkey);
+					const teaserGrid = document.getElementById("nip05TeaserGrid");
+					if (!teaserGrid) return;
+
+					const placeholders = {};
+					for (const [, pubkey] of entries) {
+						const div = document.createElement("div");
+						div.className = "teaser-avatar-placeholder";
+						teaserGrid.appendChild(div);
+						placeholders[pubkey] = div;
+					}
+
+					const profileRes = await fetch(
+						`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`
+					);
+					const profiles = await profileRes.json();
+
+					for (const [pubkey, profile] of Object.entries(profiles)) {
+						if (!profile.picture) continue;
+						const placeholder = placeholders[pubkey];
+						if (!placeholder) continue;
+
+						const img = document.createElement("img");
+						img.className = "teaser-avatar";
+						img.src = profile.picture;
+						img.alt = "";
+						img.loading = "lazy";
+						img.onerror = () => {};
+						placeholder.replaceWith(img);
+					}
+				} catch {}
+			})();
+
 			// NIP-05 navn-tjek
 			let nip05NameAvailable = false;
 			let nip05CheckTimeout;
@@ -721,19 +770,52 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			transform: scale(0.95);
 		}
 
+		/* ---- NIP-05 profil teaser ---- */
+		.nip05-teaser {
+			margin: 10px 0 30px;
+		}
+
+		.nip05-teaser-label {
+			font-size: 0.8rem;
+			color: rgba(255, 255, 255, 0.4);
+			text-align: center;
+			margin-bottom: 14px;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+		}
+
+		.nip05-teaser-grid {
+			display: flex;
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: 8px;
+		}
+
+		.teaser-avatar {
+			width: 52px;
+			height: 52px;
+			border-radius: 50%;
+			object-fit: cover;
+			border: 2px solid rgba(108, 79, 150, 0.5);
+			transition: transform 0.2s ease;
+		}
+
+		.teaser-avatar:hover {
+			transform: scale(1.1);
+		}
+
+		.teaser-avatar-placeholder {
+			width: 52px;
+			height: 52px;
+			border-radius: 50%;
+			border: 2px solid rgba(108, 79, 150, 0.3);
+			background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
+		}
+
 		/* ---- NIP-05 inline formular ---- */
 		.nip05-register {
 			max-width: 480px;
 			margin: 30px auto 10px;
-			background: linear-gradient(
-				135deg,
-				rgba(55, 26, 118, 0.5),
-				rgba(30, 15, 70, 0.5)
-			);
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			border-radius: 12px;
-			padding: 1.8rem;
-			box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 			text-align: left;
 		}
 
