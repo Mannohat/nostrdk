@@ -184,9 +184,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 				<li>
 					<strong>Vælg en klient</strong>: Vælg en Nostr-kompatibel
 					klient, såsom:
-					<ul
-						style="list-style: none; padding: 0; display: flex; flex-direction: column; align-items: center;"
-					>
+					<ul>
 						<li>Damus (iOS)</li>
 						<li>Primal (Android, iOS & Desktop)</li>
 					</ul>
@@ -779,6 +777,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			color: rgba(255, 255, 255, 0.5);
 			margin: 8px 0;
 			font-weight: 400;
+			text-align: center;
 		}
 
 		.support-instruction {
@@ -830,40 +829,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			justify-content: center;
 			gap: 8px 10px;
 			align-items: flex-start;
-		}
-
-		.teaser-col {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 10px;
-			flex: 0 0 72px;
-		}
-
-		.teaser-col.staggered {
-			margin-top: 36px;
-		}
-
-		.teaser-avatar {
-			width: 64px;
-			height: 64px;
-			border-radius: 50%;
-			object-fit: cover;
-			border: 2px solid rgba(108, 79, 150, 0.5);
-			display: block;
-		}
-
-		.teaser-avatar-placeholder {
-			width: 64px;
-			height: 64px;
-			border-radius: 50%;
-			border: 2px solid rgba(108, 79, 150, 0.3);
-			background: linear-gradient(
-				135deg,
-				rgba(108, 79, 150, 0.2),
-				rgba(55, 26, 118, 0.2)
-			);
-			display: block;
 		}
 
 		/* ---- NIP-05 inline formular ---- */
