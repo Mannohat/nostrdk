@@ -304,6 +304,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		<div class="nip05-teaser">
 			<p class="nip05-teaser-label">Allerede verificeret med @nostr.dk</p>
 			<div class="nip05-teaser-grid" id="nip05TeaserGrid"></div>
+			<p class="teaser-see-more">
+				<a href="/profiler">Se flere profiler →</a>
+			</p>
 		</div>
 
 		<!-- Inline registreringsformular -->
@@ -569,6 +572,12 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					const teaserGrid =
 						document.getElementById("nip05TeaserGrid");
 					if (!teaserGrid) return;
+
+					teaserGrid.style.display = "flex";
+					teaserGrid.style.flexWrap = "wrap";
+					teaserGrid.style.justifyContent = "center";
+					teaserGrid.style.gap = "8px 10px";
+					teaserGrid.style.alignItems = "flex-start";
 
 					const profileRes = await fetch(
 						`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`,
