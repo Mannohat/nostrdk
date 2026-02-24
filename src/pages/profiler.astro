@@ -1,0 +1,226 @@
+---
+import NostrLayout from "../layouts/NostrLayout.astro";
+---
+
+<NostrLayout
+  title="Profiler verificeret med @nostr.dk | nostr.dk"
+  description="Disse brugere har valgt at verificere deres Nostr-profil med en @nostr.dk adresse."
+>
+  <div class="page-header">
+    <h1>Profiler verificeret med @nostr.dk</h1>
+    <p>Disse brugere har valgt at verificere deres Nostr-profil med en @nostr.dk adresse.</p>
+  </div>
+
+  <div class="brugere-wrap">
+    <div id="loading" class="loading-msg">Henter profiler…</div>
+    <div id="grid" class="brugere-grid"></div>
+  </div>
+
+</NostrLayout>
+
+<style>
+  .brugere-wrap {
+    padding: 0 0 80px;
+  }
+
+  .loading-msg {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 1rem;
+    padding: 60px 0;
+  }
+
+  .brugere-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .bruger-card {
+    background: linear-gradient(135deg, rgba(108, 79, 150, 0.3), rgba(55, 26, 118, 0.3));
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    padding: 24px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    cursor: pointer;
+  }
+
+  .bruger-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, rgba(108, 79, 150, 0.5), rgba(55, 26, 118, 0.5));
+  }
+
+  .bruger-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(108, 79, 150, 0.5);
+  }
+
+  .bruger-avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin-bottom: 14px;
+    background: linear-gradient(135deg, rgba(108, 79, 150, 0.4), rgba(55, 26, 118, 0.4));
+    border: 2px solid rgba(108, 79, 150, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .bruger-nip05 {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.55);
+    word-break: break-all;
+  }
+
+  .bruger-nip05 strong {
+    color: #fff;
+    font-size: 0.9rem;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  @media (max-width: 768px) {
+    .brugere-grid {
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 14px;
+    }
+
+    .bruger-avatar,
+    .bruger-avatar-placeholder {
+      width: 64px;
+      height: 64px;
+    }
+  }
+</style>
+
+<script>
+  const RELAY_URL = "wss://relay.damus.io";
+  const NOSTR_JSON_URL = "https://nostr.dk/.well-known/nostr.json";
+
+  const grid = document.getElementById("grid")!;
+  const loading = document.getElementById("loading")!;
+
+  // Kort til at holde styr på hvilke pubkeys der er oprettet
+  const cards: Record<string, HTMLAnchorElement> = {};
+
+  async function init() {
+    // Hent nostr.json
+    let names: Record<string, string> = {};
+    try {
+      const res = await fetch(NOSTR_JSON_URL);
+      const data = await res.json();
+      names = data.names || {};
+    } catch {
+      loading.textContent = "Kunne ikke hente brugerliste — prøv igen.";
+      return;
+    }
+
+    const entries = Object.entries(names);
+    if (entries.length === 0) {
+      loading.textContent = "Ingen brugere endnu.";
+      return;
+    }
+
+    loading.style.display = "none";
+
+    // Opret et kort for hvert navn med placeholder
+    for (const [name, pubkey] of entries) {
+      const card = document.createElement("a");
+      card.className = "bruger-card";
+      card.href = `https://primal.net/p/${pubkey}`;
+      card.target = "_blank";
+      card.rel = "noopener noreferrer";
+
+      card.innerHTML = `
+        <div class="bruger-avatar-placeholder">⚡</div>
+        <div class="bruger-nip05">
+          <strong>${name}</strong>
+          @nostr.dk
+        </div>
+      `;
+
+      grid.appendChild(card);
+      cards[pubkey] = card;
+    }
+
+    // Hent profiler via relay WebSocket
+    const pubkeys = entries.map(([, pubkey]) => pubkey);
+    fetchProfiles(pubkeys);
+  }
+
+  function fetchProfiles(pubkeys: string[]) {
+    const ws = new WebSocket(RELAY_URL);
+
+    ws.onopen = () => {
+      const req = JSON.stringify([
+        "REQ",
+        "profiles",
+        {
+          kinds: [0],
+          authors: pubkeys,
+        },
+      ]);
+      ws.send(req);
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg[0] === "EOSE") {
+          ws.close();
+          return;
+        }
+        if (msg[0] !== "EVENT") return;
+
+        const nostrEvent = msg[2];
+        if (nostrEvent.kind !== 0) return;
+
+        const profile = JSON.parse(nostrEvent.content);
+        const pubkey = nostrEvent.pubkey;
+        const card = cards[pubkey];
+        if (!card) return;
+
+        const picture = profile.picture;
+        if (picture) {
+          const placeholder = card.querySelector(".bruger-avatar-placeholder");
+          if (placeholder) {
+            const img = document.createElement("img");
+            img.className = "bruger-avatar";
+            img.alt = profile.display_name || profile.name || "Profilbillede";
+            img.loading = "lazy";
+            img.onerror = () => {
+              // Behold placeholder hvis billede fejler
+              img.replaceWith(placeholder);
+            };
+            img.src = picture;
+            placeholder.replaceWith(img);
+          }
+        }
+      } catch {
+        // Ignorer fejl på enkelt events
+      }
+    };
+
+    ws.onerror = () => {
+      // Profiler vises stadig med placeholder ved fejl
+    };
+  }
+
+  init();
+</script>
