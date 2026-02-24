@@ -6,15 +6,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	title="Nostr.dk – Tag del i fremtidens decentraliserede internet"
 	description="Din indgang til Nostr – den censurresistente, decentraliserede protokol for sociale medier og meget mere."
 >
-	<!-- BTCPay Modal -->
-	<div id="btcpayModal" class="btcpay-modal" style="display:none;">
-		<div class="btcpay-modal-backdrop" id="btcpayBackdrop"></div>
-		<div class="btcpay-modal-box">
-			<button class="btcpay-modal-close" id="btcpayClose" aria-label="Luk">✕</button>
-			<iframe id="btcpayFrame" src="" frameborder="0" allowfullscreen></iframe>
-		</div>
-	</div>
-
 	<!-- Hero Section -->
 	<section class="hero">
 		<h1>Tag del i fremtidens decentraliserede internet</h1>
@@ -452,30 +443,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			return /^npub1[a-z0-9]{58}$/.test(val) || /^[0-9a-f]{64}$/.test(val);
 		}
 
-		// Modal
-		function openBtcpayModal(url) {
-			const modal = document.getElementById("btcpayModal");
-			const frame = document.getElementById("btcpayFrame");
-			frame.src = url;
-			modal.style.display = "flex";
-			document.body.style.overflow = "hidden";
-		}
-
-		function closeBtcpayModal() {
-			const modal = document.getElementById("btcpayModal");
-			const frame = document.getElementById("btcpayFrame");
-			modal.style.display = "none";
-			frame.src = "";
-			document.body.style.overflow = "";
-		}
-
 		document.addEventListener("DOMContentLoaded", function () {
-			document.getElementById("btcpayClose").addEventListener("click", closeBtcpayModal);
-			document.getElementById("btcpayBackdrop").addEventListener("click", closeBtcpayModal);
-			document.addEventListener("keydown", function(e) {
-				if (e.key === "Escape") closeBtcpayModal();
-			});
-
 			// Hero knap
 			const startButton = document.getElementById("start-button");
 			if (startButton) {
@@ -644,11 +612,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 						});
 						const data = await res.json();
 						if (data.checkoutLink) {
-							ps.className = "";
-							ps.textContent = "";
-							payBtn.disabled = false;
-							payBtn.textContent = "Gå til betaling ⚡";
-							openBtcpayModal(data.checkoutLink);
+							window.location.href = data.checkoutLink;
 						} else {
 							throw new Error("Intet checkout link");
 						}
@@ -672,76 +636,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	</script>
 
 	<style>
-		/* ---- BTCPay Modal ---- */
-		.btcpay-modal {
-			position: fixed;
-			inset: 0;
-			z-index: 1000;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-		}
-
-		.btcpay-modal-backdrop {
-			position: absolute;
-			inset: 0;
-			background: rgba(0, 0, 0, 0.75);
-			backdrop-filter: blur(4px);
-		}
-
-		.btcpay-modal-box {
-			position: relative;
-			z-index: 1;
-			width: 100%;
-			max-width: 480px;
-			height: 85vh;
-			max-height: 760px;
-			background: #1a1a2e;
-			border-radius: 16px;
-			overflow: hidden;
-			box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
-			margin: 0 16px;
-		}
-
-		.btcpay-modal-close {
-			position: absolute;
-			top: 12px;
-			right: 12px;
-			z-index: 2;
-			background: rgba(0, 0, 0, 0.5);
-			border: none;
-			color: #fff;
-			width: 32px;
-			height: 32px;
-			border-radius: 50%;
-			font-size: 0.9rem;
-			cursor: pointer;
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			transition: background 0.2s;
-		}
-
-		.btcpay-modal-close:hover {
-			background: rgba(255, 255, 255, 0.2);
-		}
-
-		#btcpayFrame {
-			width: 100%;
-			height: 100%;
-			border: none;
-		}
-
-		@media (max-width: 520px) {
-			.btcpay-modal-box {
-				height: 92vh;
-				max-height: none;
-				border-radius: 12px;
-				margin: 0 8px;
-			}
-		}
-
-		/* ---- Klienter ---- */
 		.klient-description {
 			font-size: 0.85rem;
 			color: rgba(255, 255, 255, 0.5);
@@ -775,7 +669,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
 		.support-qr:active { transform: scale(0.95); }
 
-		/* ---- NIP-05 profil teaser ---- */
 		.nip05-teaser { margin: 10px 0 30px; }
 
 		.nip05-teaser-label {
@@ -795,7 +688,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			align-items: flex-start;
 		}
 
-		/* ---- NIP-05 inline formular ---- */
 		.nip05-register {
 			max-width: 480px;
 			margin: 30px auto 10px;
