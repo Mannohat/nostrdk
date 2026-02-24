@@ -88,17 +88,19 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   }
 
   .profil-name {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: rgba(160, 132, 202, 0.9);
     line-height: 1.3;
     word-break: break-all;
+    margin-top: 10px;
   }
 
   .profil-domain {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.68rem;
+    color: rgba(255, 255, 255, 0.2);
     margin-top: 1px;
+    letter-spacing: 0.02em;
   }
 
   @media (max-width: 768px) {
@@ -121,13 +123,18 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 </style>
 
 <script>
-  const RELAY_URL = "wss://relay.damus.io";
+  const RELAYS = [
+    "wss://nos.lol",
+    "wss://relay.nostr.band",
+    "wss://relay.primal.net",
+  ];
   const NOSTR_JSON_URL = "https://nostr.dk/.well-known/nostr.json";
 
   const grid = document.getElementById("grid")!;
   const loading = document.getElementById("loading")!;
 
   const cards: Record<string, HTMLAnchorElement> = {};
+  const resolved = new Set<string>();
 
   async function init() {
     let names: Record<string, string> = {};
@@ -155,12 +162,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       card.target = "_blank";
       card.rel = "noopener noreferrer";
 
-      // Initialer som placeholder
-      const initials = name.slice(0, 2).toUpperCase();
-
       card.innerHTML = `
         <div class="avatar-wrap">
-          <div class="profil-avatar-placeholder">${initials}</div>
+          <div class="profil-avatar-placeholder"></div>
         </div>
         <span class="profil-name">${name}</span>
         <span class="profil-domain">@nostr.dk</span>
@@ -170,43 +174,51 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       cards[pubkey] = card;
     }
 
-    fetchProfiles(entries.map(([, pubkey]) => pubkey));
+    const pubkeys = entries.map(([, pubkey]) => pubkey);
+    for (const relay of RELAYS) {
+      fetchProfiles(pubkeys, relay);
+    }
   }
 
-  function fetchProfiles(pubkeys: string[]) {
-    const ws = new WebSocket(RELAY_URL);
+  function handleEvent(msg: any) {
+    try {
+      if (msg[0] !== "EVENT" || msg[2].kind !== 0) return;
+      const pubkey = msg[2].pubkey;
+      if (resolved.has(pubkey)) return;
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify([
-        "REQ", "profiles",
-        { kinds: [0], authors: pubkeys }
-      ]));
-    };
+      const profile = JSON.parse(msg[2].content);
+      const card = cards[pubkey];
+      if (!card || !profile.picture) return;
 
-    ws.onmessage = (event) => {
-      try {
-        const msg = JSON.parse(event.data);
-        if (msg[0] === "EOSE") { ws.close(); return; }
-        if (msg[0] !== "EVENT" || msg[2].kind !== 0) return;
+      const placeholder = card.querySelector(".profil-avatar-placeholder");
+      if (!placeholder) return;
 
-        const profile = JSON.parse(msg[2].content);
-        const card = cards[msg[2].pubkey];
-        if (!card || !profile.picture) return;
+      const img = document.createElement("img");
+      img.className = "profil-avatar";
+      img.alt = profile.display_name || profile.name || "";
+      img.loading = "lazy";
+      img.onerror = () => {};
+      img.src = profile.picture;
+      placeholder.replaceWith(img);
+      resolved.add(pubkey);
+    } catch {}
+  }
 
-        const placeholder = card.querySelector(".profil-avatar-placeholder");
-        if (!placeholder) return;
-
-        const img = document.createElement("img");
-        img.className = "profil-avatar";
-        img.alt = profile.display_name || profile.name || "";
-        img.loading = "lazy";
-        img.onerror = () => { /* behold placeholder */ };
-        img.src = profile.picture;
-        placeholder.replaceWith(img);
-      } catch {
-        // ignorer fejl
-      }
-    };
+  function fetchProfiles(pubkeys: string[], relayUrl: string) {
+    try {
+      const ws = new WebSocket(relayUrl);
+      ws.onopen = () => {
+        ws.send(JSON.stringify(["REQ", "profiles", { kinds: [0], authors: pubkeys }]));
+      };
+      ws.onmessage = (event) => {
+        try {
+          const msg = JSON.parse(event.data);
+          if (msg[0] === "EOSE") { ws.close(); return; }
+          handleEvent(msg);
+        } catch {}
+      };
+      ws.onerror = () => {};
+    } catch {}
   }
 
   init();
