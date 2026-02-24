@@ -107,18 +107,12 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
 <script>
   const NOSTR_JSON_URL = "https://nostr.dk/.well-known/nostr.json";
-  const RELAYS = [
-    "wss://relay.primal.net",
-    "wss://relay.nostr.band",
-    "wss://nos.lol",
-  ];
 
   const grid = document.getElementById("grid")!;
   const loading = document.getElementById("loading")!;
-  const cards: Record<string, HTMLElement> = {};
-  const resolved = new Set<string>();
 
   async function init() {
+    // Hent nostr.json
     let names: Record<string, string> = {};
     try {
       const res = await fetch(NOSTR_JSON_URL);
@@ -137,6 +131,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
     loading.style.display = "none";
 
+    // Opret kort med placeholder
+    const cards: Record<string, HTMLElement> = {};
     for (const [name, pubkey] of entries) {
       const card = document.createElement("a");
       card.className = "profil-card";
@@ -157,52 +153,33 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       cards[pubkey] = card;
     }
 
+    // Hent profiler via Netlify funktion (server-side, ingen CORS)
     const pubkeys = entries.map(([, pubkey]) => pubkey);
-    RELAYS.forEach(relay => connectRelay(relay, pubkeys));
-  }
-
-  function applyProfile(pubkey: string, picture: string) {
-    if (resolved.has(pubkey)) return;
-    const card = cards[pubkey];
-    if (!card) return;
-    const placeholder = card.querySelector(".profil-avatar-placeholder");
-    if (!placeholder) return;
-
-    const img = document.createElement("img");
-    img.className = "profil-avatar";
-    img.alt = pubkey.slice(0, 8);
-    img.src = picture;
-    img.onerror = () => {};
-    placeholder.replaceWith(img);
-    resolved.add(pubkey);
-  }
-
-  function connectRelay(url: string, pubkeys: string[]) {
     try {
-      const ws = new WebSocket(url);
-      const subId = "p" + Math.random().toString(36).slice(2, 8);
+      const res = await fetch(
+        `/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`
+      );
+      const profiles = await res.json();
 
-      ws.onopen = () => {
-        ws.send(JSON.stringify([
-          "REQ", subId,
-          { kinds: [0], authors: pubkeys, limit: pubkeys.length }
-        ]));
-      };
+      for (const [pubkey, profile] of Object.entries(profiles) as [string, any][]) {
+        if (!profile?.picture) continue;
+        const card = cards[pubkey];
+        if (!card) continue;
 
-      ws.onmessage = (e) => {
-        try {
-          const msg = JSON.parse(e.data);
-          if (msg[0] === "EOSE") { ws.close(); return; }
-          if (msg[0] !== "EVENT" || msg[2]?.kind !== 0) return;
-          const profile = JSON.parse(msg[2].content);
-          if (profile?.picture) {
-            applyProfile(msg[2].pubkey, profile.picture);
-          }
-        } catch {}
-      };
+        const placeholder = card.querySelector(".profil-avatar-placeholder");
+        if (!placeholder) continue;
 
-      ws.onerror = () => {};
-    } catch {}
+        const img = document.createElement("img");
+        img.className = "profil-avatar";
+        img.alt = profile.display_name || "";
+        img.loading = "lazy";
+        img.onerror = () => {};
+        img.src = profile.picture;
+        placeholder.replaceWith(img);
+      }
+    } catch {
+      // Vis placeholders ved fejl
+    }
   }
 
   init();
