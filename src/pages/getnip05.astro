@@ -14,7 +14,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   </div>
 
   <div class="register-wrap">
-
     <!-- Profil teaser -->
     <div class="nip05-teaser">
       <p class="nip05-teaser-label">Allerede verificeret med @nostr.dk</p>
@@ -29,7 +28,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
           <input
             type="text"
             id="name"
-            placeholder="alice"
+            placeholder="ditnavn"
             autocomplete="off"
             autocapitalize="none"
             spellcheck="false"
@@ -48,7 +47,13 @@ import NostrLayout from "../layouts/NostrLayout.astro";
         > ⚡
       </p>
 
-      <button id="proceedBtn" class="cta" disabled data-umami-event="nip05-næste" style="margin-top: 20px; width: 100%;">Næste</button>
+      <button
+        id="proceedBtn"
+        class="cta"
+        disabled
+        data-umami-event="nip05-næste"
+        style="margin-top: 20px; width: 100%;">Næste</button
+      >
     </div>
 
     <!-- Trin 2: Navn er ledigt - vis vejledning -->
@@ -65,12 +70,15 @@ import NostrLayout from "../layouts/NostrLayout.astro";
           <li>Betal 2.100 sats via Lightning</li>
         </ol>
       </div>
-      <button id="payBtn" class="cta" data-umami-event="nip05-betal" style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
+      <button
+        id="payBtn"
+        class="cta"
+        data-umami-event="nip05-betal"
+        style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button
+      >
       <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
     </div>
-
   </div>
-
 </NostrLayout>
 
 <style>
@@ -128,7 +136,11 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     height: 64px;
     border-radius: 50%;
     border: 2px solid rgba(108, 79, 150, 0.3);
-    background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
+    background: linear-gradient(
+      135deg,
+      rgba(108, 79, 150, 0.2),
+      rgba(55, 26, 118, 0.2)
+    );
     display: block;
   }
 
@@ -198,10 +210,18 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     min-height: 1.1em;
   }
 
-  .status.checking  { color: rgba(255, 255, 255, 0.4); }
-  .status.available { color: #4caf50; }
-  .status.taken     { color: #e05050; }
-  .status.error     { color: #e08050; }
+  .status.checking {
+    color: rgba(255, 255, 255, 0.4);
+  }
+  .status.available {
+    color: #4caf50;
+  }
+  .status.taken {
+    color: #e05050;
+  }
+  .status.error {
+    color: #e08050;
+  }
 
   .price-note {
     font-size: 0.9rem;
@@ -288,16 +308,16 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   const BTCPAY_FORM_URL =
     "https://btcpay.ideasarelikeflames.org/forms/322ff6ea-8e6b-448f-85f8-ddb5bc5687b6";
 
-  const nameInput     = document.getElementById("name") as HTMLInputElement;
-  const nameRow       = document.getElementById("nameRow")!;
-  const nameStatus    = document.getElementById("nameStatus")!;
-  const proceedBtn    = document.getElementById("proceedBtn") as HTMLButtonElement;
-  const step1         = document.getElementById("step1")!;
-  const step2         = document.getElementById("step2")!;
+  const nameInput = document.getElementById("name") as HTMLInputElement;
+  const nameRow = document.getElementById("nameRow")!;
+  const nameStatus = document.getElementById("nameStatus")!;
+  const proceedBtn = document.getElementById("proceedBtn") as HTMLButtonElement;
+  const step1 = document.getElementById("step1")!;
+  const step2 = document.getElementById("step2")!;
   const confirmedName = document.getElementById("confirmedName")!;
-  const nameReminder  = document.getElementById("nameReminder")!;
-  const payBtn        = document.getElementById("payBtn") as HTMLButtonElement;
-  const backBtn       = document.getElementById("backBtn")!;
+  const nameReminder = document.getElementById("nameReminder")!;
+  const payBtn = document.getElementById("payBtn") as HTMLButtonElement;
+  const backBtn = document.getElementById("backBtn")!;
 
   let nameAvailable = false;
   let checkTimeout: ReturnType<typeof setTimeout>;
@@ -324,30 +344,39 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       for (const [, pubkey] of entries) {
         if (!col || cardsInCol >= CARDS_PER_COL) {
           col = document.createElement("div");
-          col.className = "teaser-col" + (colIndex % 2 === 1 ? " staggered" : "");
+          col.className =
+            "teaser-col" + (colIndex % 2 === 1 ? " staggered" : "");
           teaserGrid.appendChild(col);
           colIndex++;
           cardsInCol = 0;
         }
         const div = document.createElement("div");
         div.className = "teaser-avatar-placeholder";
+        div.style.width = "64px";
+        div.style.height = "64px";
+        div.style.borderRadius = "50%";
         col.appendChild(div);
         placeholders[pubkey as string] = div;
         cardsInCol++;
       }
 
       const profileRes = await fetch(
-        `/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`
+        `/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`,
       );
       const profiles = await profileRes.json();
 
-      for (const [pubkey, profile] of Object.entries(profiles) as [string, any][]) {
+      for (const [pubkey, profile] of Object.entries(profiles) as [
+        string,
+        any,
+      ][]) {
         if (!profile.picture) continue;
         const placeholder = placeholders[pubkey];
         if (!placeholder) continue;
 
         const img = document.createElement("img");
         img.className = "teaser-avatar";
+        img.style.width = "64px";
+        img.style.height = "64px";
         img.src = profile.picture;
         img.alt = "";
         img.loading = "lazy";
@@ -374,7 +403,10 @@ import NostrLayout from "../layouts/NostrLayout.astro";
   }
 
   async function checkAvailability(name: string) {
-    if (!name) { clearStatus(); return; }
+    if (!name) {
+      clearStatus();
+      return;
+    }
 
     if (!/^[a-z0-9_-]+$/.test(name)) {
       setStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
@@ -387,7 +419,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
     try {
       const res = await fetch(
-        `/.netlify/functions/check-name?name=${encodeURIComponent(name)}`
+        `/.netlify/functions/check-name?name=${encodeURIComponent(name)}`,
       );
       const data = await res.json();
 
@@ -412,7 +444,10 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     if (nameInput.value !== val) nameInput.value = val;
 
     clearTimeout(checkTimeout);
-    if (!val) { clearStatus(); return; }
+    if (!val) {
+      clearStatus();
+      return;
+    }
 
     checkTimeout = setTimeout(() => checkAvailability(val), 500);
   });
@@ -424,7 +459,11 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     confirmedName.textContent = `✓ ${name}@nostr.dk er ledigt`;
     nameReminder.textContent = name;
     payBtn.onclick = () => {
-      window.open(BTCPAY_FORM_URL, "btcpay", "width=600,height=700,resizable=yes");
+      window.open(
+        BTCPAY_FORM_URL,
+        "btcpay",
+        "width=600,height=700,resizable=yes",
+      );
     };
 
     step1.style.display = "none";
