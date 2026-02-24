@@ -344,30 +344,38 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 				>
 			</div>
 
-			<!-- Trin 2: Vejledning + åbn BTCPayServer popup -->
+			<!-- Trin 2: Indtast npub og betal -->
 			<div id="nip05-step2" style="display: none;">
 				<div class="nip05-confirmed" id="nip05Confirmed"></div>
+				<div class="nip05-field" style="margin-bottom: 1rem;">
+					<label style="display:block; font-size:0.85rem; font-weight:600; color:#e0e0e0; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Din Nostr public key</label>
+					<input
+						type="text"
+						id="nip05Pubkey"
+						placeholder="npub1… eller hex"
+						autocomplete="off"
+						autocapitalize="none"
+						spellcheck="false"
+						style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.7rem 0.9rem; color:#fff; font-size:0.9rem; outline:none; box-sizing:border-box; transition: border-color 0.2s;"
+					/>
+					<div class="nip05-status" id="nip05PubkeyStatus"></div>
+				</div>
 				<div class="nip05-instructions">
-					<p>
-						Udfyld felterne i betalingsformularen som åbner i et nyt
-						vindue:
-					</p>
+					<p>Hvad sker der næste:</p>
 					<ol>
-						<li>
-							Skriv <strong id="nip05NameReminder"></strong> i feltet
-							<em>"Din nostr adresse @nostr.dk"</em> — kun navnet,
-							ikke @nostr.dk
-						</li>
-						<li>Indsæt din Nostr public key (npub1… eller hex)</li>
+						<li>Klik "Gå til betaling ⚡"</li>
 						<li>Betal 2.100 sats via Lightning</li>
+						<li>Din NIP-05 adresse aktiveres automatisk</li>
 					</ol>
 				</div>
 				<button
 					id="nip05PayBtn"
 					class="cta"
+					disabled
 					data-umami-event="nip05-pay-button"
 					>Gå til betaling ⚡</button
 				>
+				<div class="nip05-status" id="nip05PayStatus"></div>
 				<button id="nip05BackBtn" class="nip05-back-btn"
 					>← Vælg et andet navn</button
 				>
@@ -490,22 +498,15 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	</section>
 
 	<script is:inline>
-		const BTCPAY_FORM_URL =
-			"https://btcpay.ideasarelikeflames.org/forms/322ff6ea-8e6b-448f-85f8-ddb5bc5687b6";
-
 		function toggleSection(element) {
 			element.classList.toggle("expanded");
 			const isExpanded = element.classList.contains("expanded");
-			element.setAttribute(
-				"aria-expanded",
-				isExpanded ? "true" : "false",
-			);
+			element.setAttribute("aria-expanded", isExpanded ? "true" : "false");
 		}
 		window.toggleSection = toggleSection;
 
 		window.copyToClipboard = async function () {
-			const lnurl =
-				"LNURL1DP68GURN8GHJ7ER9D4HJUMRWWP5KWEME9E3K7MF0D3H82UNVWQH4JAR4DYM5XKGH6R5";
+			const lnurl = "LNURL1DP68GURN8GHJ7ER9D4HJUMRWWP5KWEME9E3K7MF0D3H82UNVWQH4JAR4DYM5XKGH6R5";
 			if (navigator.clipboard && navigator.clipboard.writeText) {
 				try {
 					await navigator.clipboard.writeText(lnurl);
@@ -530,14 +531,18 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			document.body.removeChild(textArea);
 		};
 
+		function validatePubkey(val) {
+			const isNpub = /^npub1[a-z0-9]{58}$/.test(val);
+			const isHex = /^[0-9a-f]{64}$/.test(val);
+			return isNpub || isHex;
+		}
+
 		document.addEventListener("DOMContentLoaded", function () {
 			// Hero knap
 			const startButton = document.getElementById("start-button");
 			if (startButton) {
 				startButton.addEventListener("click", function () {
-					const sections = document.querySelectorAll(
-						".collapsible-section",
-					);
+					const sections = document.querySelectorAll(".collapsible-section");
 					sections.forEach((section) => {
 						section.classList.add("expanded");
 						section.setAttribute("aria-expanded", "true");
@@ -545,14 +550,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					setTimeout(() => {
 						const firstSection = sections[0];
 						if (firstSection) {
-							const sectionTop =
-								firstSection.getBoundingClientRect().top +
-								window.scrollY -
-								80;
-							window.scrollTo({
-								top: sectionTop,
-								behavior: "smooth",
-							});
+							const sectionTop = firstSection.getBoundingClientRect().top + window.scrollY - 80;
+							window.scrollTo({ top: sectionTop, behavior: "smooth" });
 						}
 					}, 300);
 				});
@@ -564,13 +563,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					const res = await fetch("/.well-known/nostr.json");
 					const data = await res.json();
 					const names = data.names || {};
-					const entries = Object.entries(names)
-						.sort(() => Math.random() - 0.5)
-						.slice(0, 20);
-
+					const entries = Object.entries(names).sort(() => Math.random() - 0.5).slice(0, 20);
 					const pubkeys = entries.map(([, pubkey]) => pubkey);
-					const teaserGrid =
-						document.getElementById("nip05TeaserGrid");
+					const teaserGrid = document.getElementById("nip05TeaserGrid");
 					if (!teaserGrid) return;
 
 					teaserGrid.style.display = "flex";
@@ -580,23 +575,16 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					teaserGrid.style.alignItems = "flex-start";
 					teaserGrid.style.paddingBottom = "40px";
 
-					const profileRes = await fetch(
-						`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`,
-					);
+					const profileRes = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
 					const profiles = await profileRes.json();
-
-					const withPicture = entries
-						.filter(([, pubkey]) => profiles[pubkey]?.picture)
-						.slice(0, 11);
+					const withPicture = entries.filter(([, pubkey]) => profiles[pubkey]?.picture).slice(0, 11);
 
 					const isMobile = window.innerWidth < 768;
 					const colWidth = isMobile ? "56px" : "72px";
 					const imgSize = isMobile ? "48px" : "64px";
 					const staggerOffset = isMobile ? "28px" : "36px";
 
-					let colIndex = 0;
-					let col = null;
-					let cardsInCol = 0;
+					let colIndex = 0, col = null, cardsInCol = 0;
 					const CARDS_PER_COL = 2;
 
 					for (const [, pubkey] of withPicture) {
@@ -608,8 +596,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 							col.style.alignItems = "center";
 							col.style.gap = "10px";
 							col.style.flex = `0 0 ${colWidth}`;
-							if (colIndex % 2 === 1)
-								col.style.marginTop = staggerOffset;
+							if (colIndex % 2 === 1) col.style.marginTop = staggerOffset;
 							teaserGrid.appendChild(col);
 							colIndex++;
 							cardsInCol = 0;
@@ -634,74 +621,47 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			// NIP-05 navn-tjek
 			let nip05NameAvailable = false;
 			let nip05CheckTimeout;
+			let confirmedName = "";
 
 			function nip05SetStatus(type, icon, text) {
 				const status = document.getElementById("nip05Status");
 				const row = document.getElementById("nip05NameRow");
 				status.className = "nip05-status " + type;
 				status.textContent = icon + " " + text;
-				row.className =
-					"nip05-name-row " +
-					(type === "available"
-						? "valid"
-						: type === "taken"
-							? "taken"
-							: "");
+				row.className = "nip05-name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
 			}
 
 			function nip05ClearStatus() {
-				const status = document.getElementById("nip05Status");
-				const row = document.getElementById("nip05NameRow");
-				status.className = "nip05-status";
-				status.textContent = "";
-				row.className = "nip05-name-row";
+				document.getElementById("nip05Status").className = "nip05-status";
+				document.getElementById("nip05Status").textContent = "";
+				document.getElementById("nip05NameRow").className = "nip05-name-row";
 				nip05NameAvailable = false;
 				document.getElementById("nip05ProceedBtn").disabled = true;
 			}
 
 			async function nip05CheckAvailability(name) {
-				if (!name) {
-					nip05ClearStatus();
-					return;
-				}
+				if (!name) { nip05ClearStatus(); return; }
 				if (!/^[a-z0-9_-]+$/.test(name)) {
-					nip05SetStatus(
-						"taken",
-						"✗",
-						"Kun små bogstaver, tal, _ og - er tilladt",
-					);
+					nip05SetStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
 					nip05NameAvailable = false;
 					document.getElementById("nip05ProceedBtn").disabled = true;
 					return;
 				}
 				nip05SetStatus("checking", "…", "Tjekker tilgængelighed…");
 				try {
-					const res = await fetch(
-						"/.netlify/functions/check-name?name=" +
-							encodeURIComponent(name),
-					);
+					const res = await fetch("/.netlify/functions/check-name?name=" + encodeURIComponent(name));
 					const data = await res.json();
 					if (data.available) {
 						nip05SetStatus("available", "✓", "Ledigt!");
 						nip05NameAvailable = true;
-						document.getElementById("nip05ProceedBtn").disabled =
-							false;
+						document.getElementById("nip05ProceedBtn").disabled = false;
 					} else {
-						nip05SetStatus(
-							"taken",
-							"✗",
-							"Navnet er allerede taget — prøv et andet",
-						);
+						nip05SetStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
 						nip05NameAvailable = false;
-						document.getElementById("nip05ProceedBtn").disabled =
-							true;
+						document.getElementById("nip05ProceedBtn").disabled = true;
 					}
 				} catch (e) {
-					nip05SetStatus(
-						"error",
-						"!",
-						"Kunne ikke tjekke — prøv igen",
-					);
+					nip05SetStatus("error", "!", "Kunne ikke tjekke — prøv igen");
 					nip05NameAvailable = false;
 					document.getElementById("nip05ProceedBtn").disabled = true;
 				}
@@ -710,19 +670,11 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			const nameInput = document.getElementById("nip05Name");
 			if (nameInput) {
 				nameInput.addEventListener("input", function () {
-					const val = nameInput.value
-						.toLowerCase()
-						.replace(/[^a-z0-9_-]/g, "");
+					const val = nameInput.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
 					if (nameInput.value !== val) nameInput.value = val;
 					clearTimeout(nip05CheckTimeout);
-					if (!val) {
-						nip05ClearStatus();
-						return;
-					}
-					nip05CheckTimeout = setTimeout(
-						() => nip05CheckAvailability(val),
-						500,
-					);
+					if (!val) { nip05ClearStatus(); return; }
+					nip05CheckTimeout = setTimeout(() => nip05CheckAvailability(val), 500);
 				});
 			}
 
@@ -730,42 +682,87 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			if (proceedBtn) {
 				proceedBtn.addEventListener("click", function () {
 					if (!nip05NameAvailable) return;
-					const name = document
-						.getElementById("nip05Name")
-						.value.trim();
-					document.getElementById("nip05Confirmed").textContent =
-						"✓ " + name + "@nostr.dk er ledigt";
-					document.getElementById("nip05NameReminder").textContent =
-						name;
-					document.getElementById("nip05-step1").style.display =
-						"none";
-					document.getElementById("nip05-step2").style.display =
-						"block";
+					confirmedName = document.getElementById("nip05Name").value.trim();
+					document.getElementById("nip05Confirmed").textContent = "✓ " + confirmedName + "@nostr.dk er ledigt";
+					document.getElementById("nip05-step1").style.display = "none";
+					document.getElementById("nip05-step2").style.display = "block";
 				});
 			}
 
+			// Pubkey validering — live feedback
+			const pubkeyInput = document.getElementById("nip05Pubkey");
+			const pubkeyStatus = document.getElementById("nip05PubkeyStatus");
 			const payBtn = document.getElementById("nip05PayBtn");
+
+			if (pubkeyInput) {
+				pubkeyInput.addEventListener("input", function () {
+					const val = this.value.trim();
+					if (!val) {
+						pubkeyStatus.className = "nip05-status";
+						pubkeyStatus.textContent = "";
+						pubkeyInput.style.borderColor = "rgba(255,255,255,0.1)";
+						payBtn.disabled = true;
+						return;
+					}
+					if (validatePubkey(val)) {
+						pubkeyStatus.className = "nip05-status available";
+						pubkeyStatus.textContent = "✓ Gyldig public key";
+						pubkeyInput.style.borderColor = "#4caf50";
+						payBtn.disabled = false;
+					} else {
+						pubkeyStatus.className = "nip05-status taken";
+						pubkeyStatus.textContent = "✗ Skal være npub1… (63 tegn) eller hex (64 tegn)";
+						pubkeyInput.style.borderColor = "#e05050";
+						payBtn.disabled = true;
+					}
+				});
+			}
+
 			if (payBtn) {
-				payBtn.addEventListener("click", function () {
-					const width = 620,
-						height = 820;
-					const left = screen.width / 2 - width / 2;
-					const top = screen.height / 2 - height / 2;
-					window.open(
-						BTCPAY_FORM_URL,
-						"nip05Window",
-						`width=${width},height=${height},top=${top},left=${left},resizable=yes,scrollbars=yes`,
-					);
+				payBtn.addEventListener("click", async function () {
+					const pubkey = pubkeyInput.value.trim();
+					if (!validatePubkey(pubkey)) return;
+
+					payBtn.disabled = true;
+					payBtn.textContent = "Opretter betaling…";
+					const ps = document.getElementById("nip05PayStatus");
+					ps.className = "nip05-status checking";
+					ps.textContent = "… Forbinder til BTCPay…";
+
+					try {
+						const res = await fetch("/.netlify/functions/create-nip05-invoice", {
+							method: "POST",
+							headers: { "Content-Type": "application/json" },
+							body: JSON.stringify({ name: confirmedName, pubkey }),
+						});
+						const data = await res.json();
+						if (data.checkoutLink) {
+							ps.className = "";
+							ps.textContent = "";
+							window.open(
+								data.checkoutLink,
+								"btcpay",
+								"width=600,height=700,resizable=yes,scrollbars=yes"
+							);
+							payBtn.disabled = false;
+							payBtn.textContent = "Gå til betaling ⚡";
+						} else {
+							throw new Error("Intet checkout link");
+						}
+					} catch (err) {
+						ps.className = "nip05-status error";
+						ps.textContent = "! Noget gik galt — prøv igen";
+						payBtn.disabled = false;
+						payBtn.textContent = "Gå til betaling ⚡";
+					}
 				});
 			}
 
 			const backBtn = document.getElementById("nip05BackBtn");
 			if (backBtn) {
 				backBtn.addEventListener("click", function () {
-					document.getElementById("nip05-step2").style.display =
-						"none";
-					document.getElementById("nip05-step1").style.display =
-						"block";
+					document.getElementById("nip05-step2").style.display = "none";
+					document.getElementById("nip05-step1").style.display = "block";
 				});
 			}
 		});
@@ -855,12 +852,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		.nip05-name-row:focus-within {
 			border-color: rgba(108, 79, 150, 0.8);
 		}
-		.nip05-name-row.valid {
-			border-color: #4caf50;
-		}
-		.nip05-name-row.taken {
-			border-color: #e05050;
-		}
+		.nip05-name-row.valid { border-color: #4caf50; }
+		.nip05-name-row.taken { border-color: #e05050; }
 
 		.nip05-name-row input {
 			flex: 1;
@@ -894,18 +887,10 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			min-height: 1.1em;
 		}
 
-		.nip05-status.checking {
-			color: rgba(255, 255, 255, 0.4);
-		}
-		.nip05-status.available {
-			color: #4caf50;
-		}
-		.nip05-status.taken {
-			color: #e05050;
-		}
-		.nip05-status.error {
-			color: #e08050;
-		}
+		.nip05-status.checking { color: rgba(255, 255, 255, 0.4); }
+		.nip05-status.available { color: #4caf50; }
+		.nip05-status.taken { color: #e05050; }
+		.nip05-status.error { color: #e08050; }
 
 		.nip05-price {
 			font-size: 0.9rem;
@@ -913,9 +898,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			margin: 0.6rem 0 0;
 		}
 
-		.nip05-price strong {
-			color: #fff;
-		}
+		.nip05-price strong { color: #fff; }
 
 		.nip05-register .cta {
 			margin-top: 1rem;
@@ -961,9 +944,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			margin-bottom: 0;
 		}
 
-		.nip05-instructions strong {
-			color: #fff;
-		}
+		.nip05-instructions strong { color: #fff; }
 		.nip05-instructions em {
 			color: rgba(255, 255, 255, 0.55);
 			font-style: normal;
