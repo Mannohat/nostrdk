@@ -6,6 +6,15 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	title="Nostr.dk – Tag del i fremtidens decentraliserede internet"
 	description="Din indgang til Nostr – den censurresistente, decentraliserede protokol for sociale medier og meget mere."
 >
+	<!-- BTCPay Modal -->
+	<div id="btcpayModal" class="btcpay-modal" style="display:none;">
+		<div class="btcpay-modal-backdrop" id="btcpayBackdrop"></div>
+		<div class="btcpay-modal-box">
+			<button class="btcpay-modal-close" id="btcpayClose" aria-label="Luk">✕</button>
+			<iframe id="btcpayFrame" src="" frameborder="0" allowfullscreen></iframe>
+		</div>
+	</div>
+
 	<!-- Hero Section -->
 	<section class="hero">
 		<h1>Tag del i fremtidens decentraliserede internet</h1>
@@ -247,38 +256,20 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</p>
 		<div class="klient-container">
 			<div class="klient-item">
-				<a
-					href="https://primal.net"
-					target="_blank"
-					data-umami-event="klient-primal"
-				>
+				<a href="https://primal.net" target="_blank" data-umami-event="klient-primal">
 					<img src="/primal.png" alt="Primal" loading="lazy" />
 					<h3>Primal</h3>
 				</a>
 				<p class="klient-description">Android, iOS & Desktop</p>
-				<a
-					href="https://primal.net"
-					target="_blank"
-					class="klient-link"
-					data-umami-event="klient-primal">Besøg Primal</a
-				>
+				<a href="https://primal.net" target="_blank" class="klient-link" data-umami-event="klient-primal">Besøg Primal</a>
 			</div>
 			<div class="klient-item">
-				<a
-					href="https://damus.io"
-					target="_blank"
-					data-umami-event="klient-damus"
-				>
+				<a href="https://damus.io" target="_blank" data-umami-event="klient-damus">
 					<img src="/damus.png" alt="Damus" loading="lazy" />
 					<h3>Damus</h3>
 				</a>
 				<p class="klient-description">iOS</p>
-				<a
-					href="https://damus.io"
-					target="_blank"
-					class="klient-link"
-					data-umami-event="klient-damus">Besøg Damus</a
-				>
+				<a href="https://damus.io" target="_blank" class="klient-link" data-umami-event="klient-damus">Besøg Damus</a>
 			</div>
 		</div>
 	</section>
@@ -286,9 +277,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	<!-- NIP-05 Section -->
 	<section class="nostr-nip05" id="nostr-nip05">
 		<h2>
-			Få en Nostr adresse <span style="font-size: 0.75em;"
-				>(NIP-05 adresse)</span
-			>
+			Få en Nostr adresse <span style="font-size: 0.75em;">(NIP-05 adresse)</span>
 		</h2>
 		<p>
 			Du kan opsætte en verificeret identitet som gør det muligt at knytte
@@ -304,9 +293,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		<div class="nip05-teaser">
 			<p class="nip05-teaser-label">Allerede verificeret med @nostr.dk</p>
 			<div class="nip05-teaser-grid" id="nip05TeaserGrid"></div>
-			<p class="teaser-see-more">
-				<a href="/profiler">Se flere profiler →</a>
-			</p>
+			<p class="teaser-see-more"><a href="/profiler">Se flere profiler →</a></p>
 		</div>
 
 		<!-- Inline registreringsformular -->
@@ -328,20 +315,10 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					<div class="nip05-status" id="nip05Status"></div>
 				</div>
 				<p class="nip05-price">
-					@nostr.dk nip-05 adresse for kun <strong>2.100 sats</strong>
-					via
-					<a
-						href="https://enogtyve.org/da/laer-mere/lightning/"
-						target="_blank"
-						rel="noopener noreferrer">Lightning</a
-					> ⚡
+					@nostr.dk nip-05 adresse for kun <strong>2.100 sats</strong> via
+					<a href="https://enogtyve.org/da/laer-mere/lightning/" target="_blank" rel="noopener noreferrer">Lightning</a> ⚡
 				</p>
-				<button
-					id="nip05ProceedBtn"
-					class="cta"
-					disabled
-					data-umami-event="nip05-button">Næste</button
-				>
+				<button id="nip05ProceedBtn" class="cta" disabled data-umami-event="nip05-button">Næste</button>
 			</div>
 
 			<!-- Trin 2: Indtast npub og betal -->
@@ -368,17 +345,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 						<li>Din NIP-05 adresse aktiveres automatisk</li>
 					</ol>
 				</div>
-				<button
-					id="nip05PayBtn"
-					class="cta"
-					disabled
-					data-umami-event="nip05-pay-button"
-					>Gå til betaling ⚡</button
-				>
+				<button id="nip05PayBtn" class="cta" disabled data-umami-event="nip05-pay-button">Gå til betaling ⚡</button>
 				<div class="nip05-status" id="nip05PayStatus"></div>
-				<button id="nip05BackBtn" class="nip05-back-btn"
-					>← Vælg et andet navn</button
-				>
+				<button id="nip05BackBtn" class="nip05-back-btn">← Vælg et andet navn</button>
 			</div>
 		</div>
 	</section>
@@ -396,44 +365,16 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			betyder også at du nemt kan skifte til en anden platform/klient.
 		</p>
 		<div class="resource-container">
-			<a
-				href="/podcasts"
-				class="resource-item"
-				data-umami-event="ressource-podcasts"
-			>
-				<img
-					src="/podcasts.png"
-					alt="Podcasts"
-					class="resource-icon"
-					loading="lazy"
-				/>
+			<a href="/podcasts" class="resource-item" data-umami-event="ressource-podcasts">
+				<img src="/podcasts.png" alt="Podcasts" class="resource-icon" loading="lazy" />
 				<h3>Nostr Podcasts</h3>
 			</a>
-			<a
-				href="/apps"
-				class="resource-item"
-				data-umami-event="ressource-apps"
-			>
-				<img
-					src="/apps.png"
-					alt="Apps & Tjenester"
-					class="resource-icon"
-					loading="lazy"
-				/>
+			<a href="/apps" class="resource-item" data-umami-event="ressource-apps">
+				<img src="/apps.png" alt="Apps & Tjenester" class="resource-icon" loading="lazy" />
 				<h3>Apps & Tjenester</h3>
 			</a>
-			<a
-				href="https://t.me/enogtyvedk/510"
-				target="_blank"
-				class="resource-item"
-				data-umami-event="telegram-link"
-			>
-				<img
-					src="/telegram.png"
-					alt="Telegram"
-					class="resource-icon"
-					loading="lazy"
-				/>
+			<a href="https://t.me/enogtyvedk/510" target="_blank" class="resource-item" data-umami-event="telegram-link">
+				<img src="/telegram.png" alt="Telegram" class="resource-icon" loading="lazy" />
 				<h3>Nostr.dk Telegram</h3>
 			</a>
 		</div>
@@ -456,12 +397,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</p>
 		<div class="resource-container">
 			<a href="mailto:nostr@nostr.dk" data-umami-event="email-link">
-				<img
-					src="/sendmail.png"
-					alt="Send Email"
-					class="resource-icon"
-					loading="lazy"
-				/>
+				<img src="/sendmail.png" alt="Send Email" class="resource-icon" loading="lazy" />
 				<h3>Send Email</h3>
 			</a>
 		</div>
@@ -475,8 +411,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			du sende lidt sats ⚡️ via Lightning-netværket. Hvad er Lightning? <a
 				href="https://enogtyve.org/da/laer-mere/lightning/"
 				target="_blank"
-				rel="noopener noreferrer">Lær mere her</a
-			>.
+				rel="noopener noreferrer">Lær mere her</a>.
 		</p>
 		<button
 			onclick="copyToClipboard()"
@@ -485,74 +420,71 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			aria-label="Klik for at kopiere LNURL til udklipsholder"
 			data-umami-event="support-qr-click"
 		>
-			<img
-				src="/support-qr.png"
-				alt="Support QR Code"
-				class="support-qr"
-				loading="lazy"
-			/>
+			<img src="/support-qr.png" alt="Support QR Code" class="support-qr" loading="lazy" />
 		</button>
-		<p class="support-instruction">
-			<em>Klik på QR-koden for at kopiere LNURL til udklipsholder</em>
-		</p>
+		<p class="support-instruction"><em>Klik på QR-koden for at kopiere LNURL til udklipsholder</em></p>
 	</section>
 
 	<script is:inline>
 		function toggleSection(element) {
 			element.classList.toggle("expanded");
-			const isExpanded = element.classList.contains("expanded");
-			element.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+			element.setAttribute("aria-expanded", element.classList.contains("expanded") ? "true" : "false");
 		}
 		window.toggleSection = toggleSection;
 
 		window.copyToClipboard = async function () {
 			const lnurl = "LNURL1DP68GURN8GHJ7ER9D4HJUMRWWP5KWEME9E3K7MF0D3H82UNVWQH4JAR4DYM5XKGH6R5";
 			if (navigator.clipboard && navigator.clipboard.writeText) {
-				try {
-					await navigator.clipboard.writeText(lnurl);
-					alert("LNURL kopieret til udklipsholder!");
-					return;
-				} catch (err) {}
+				try { await navigator.clipboard.writeText(lnurl); alert("LNURL kopieret til udklipsholder!"); return; } catch (err) {}
 			}
 			const textArea = document.createElement("textarea");
 			textArea.value = lnurl;
 			textArea.style.position = "fixed";
 			textArea.style.left = "-999999px";
-			textArea.style.top = "0";
 			document.body.appendChild(textArea);
 			textArea.focus();
 			textArea.select();
-			try {
-				document.execCommand("copy");
-				alert("LNURL kopieret til udklipsholder!");
-			} catch (err) {
-				alert("Kunne ikke kopiere. Prøv venligst igen.");
-			}
+			try { document.execCommand("copy"); alert("LNURL kopieret til udklipsholder!"); } catch (err) { alert("Kunne ikke kopiere. Prøv venligst igen."); }
 			document.body.removeChild(textArea);
 		};
 
 		function validatePubkey(val) {
-			const isNpub = /^npub1[a-z0-9]{58}$/.test(val);
-			const isHex = /^[0-9a-f]{64}$/.test(val);
-			return isNpub || isHex;
+			return /^npub1[a-z0-9]{58}$/.test(val) || /^[0-9a-f]{64}$/.test(val);
+		}
+
+		// Modal
+		function openBtcpayModal(url) {
+			const modal = document.getElementById("btcpayModal");
+			const frame = document.getElementById("btcpayFrame");
+			frame.src = url;
+			modal.style.display = "flex";
+			document.body.style.overflow = "hidden";
+		}
+
+		function closeBtcpayModal() {
+			const modal = document.getElementById("btcpayModal");
+			const frame = document.getElementById("btcpayFrame");
+			modal.style.display = "none";
+			frame.src = "";
+			document.body.style.overflow = "";
 		}
 
 		document.addEventListener("DOMContentLoaded", function () {
+			document.getElementById("btcpayClose").addEventListener("click", closeBtcpayModal);
+			document.getElementById("btcpayBackdrop").addEventListener("click", closeBtcpayModal);
+			document.addEventListener("keydown", function(e) {
+				if (e.key === "Escape") closeBtcpayModal();
+			});
+
 			// Hero knap
 			const startButton = document.getElementById("start-button");
 			if (startButton) {
 				startButton.addEventListener("click", function () {
 					const sections = document.querySelectorAll(".collapsible-section");
-					sections.forEach((section) => {
-						section.classList.add("expanded");
-						section.setAttribute("aria-expanded", "true");
-					});
+					sections.forEach((s) => { s.classList.add("expanded"); s.setAttribute("aria-expanded", "true"); });
 					setTimeout(() => {
-						const firstSection = sections[0];
-						if (firstSection) {
-							const sectionTop = firstSection.getBoundingClientRect().top + window.scrollY - 80;
-							window.scrollTo({ top: sectionTop, behavior: "smooth" });
-						}
+						const first = sections[0];
+						if (first) window.scrollTo({ top: first.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" });
 					}, 300);
 				});
 			}
@@ -564,20 +496,15 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					const data = await res.json();
 					const names = data.names || {};
 					const entries = Object.entries(names).sort(() => Math.random() - 0.5).slice(0, 20);
-					const pubkeys = entries.map(([, pubkey]) => pubkey);
+					const pubkeys = entries.map(([, pk]) => pk);
 					const teaserGrid = document.getElementById("nip05TeaserGrid");
 					if (!teaserGrid) return;
 
-					teaserGrid.style.display = "flex";
-					teaserGrid.style.flexWrap = "wrap";
-					teaserGrid.style.justifyContent = "center";
-					teaserGrid.style.gap = "8px 10px";
-					teaserGrid.style.alignItems = "flex-start";
-					teaserGrid.style.paddingBottom = "40px";
+					teaserGrid.style.cssText = "display:flex; flex-wrap:wrap; justify-content:center; gap:8px 10px; align-items:flex-start; padding-bottom:40px;";
 
 					const profileRes = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
 					const profiles = await profileRes.json();
-					const withPicture = entries.filter(([, pubkey]) => profiles[pubkey]?.picture).slice(0, 11);
+					const withPicture = entries.filter(([, pk]) => profiles[pk]?.picture).slice(0, 11);
 
 					const isMobile = window.innerWidth < 768;
 					const colWidth = isMobile ? "56px" : "72px";
@@ -585,50 +512,30 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					const staggerOffset = isMobile ? "28px" : "36px";
 
 					let colIndex = 0, col = null, cardsInCol = 0;
-					const CARDS_PER_COL = 2;
-
-					for (const [, pubkey] of withPicture) {
-						const profile = profiles[pubkey];
-						if (!col || cardsInCol >= CARDS_PER_COL) {
+					for (const [, pk] of withPicture) {
+						const profile = profiles[pk];
+						if (!col || cardsInCol >= 2) {
 							col = document.createElement("div");
-							col.style.display = "flex";
-							col.style.flexDirection = "column";
-							col.style.alignItems = "center";
-							col.style.gap = "10px";
-							col.style.flex = `0 0 ${colWidth}`;
+							col.style.cssText = `display:flex; flex-direction:column; align-items:center; gap:10px; flex:0 0 ${colWidth};`;
 							if (colIndex % 2 === 1) col.style.marginTop = staggerOffset;
 							teaserGrid.appendChild(col);
-							colIndex++;
-							cardsInCol = 0;
+							colIndex++; cardsInCol = 0;
 						}
 						const img = document.createElement("img");
-						img.style.width = imgSize;
-						img.style.height = imgSize;
-						img.style.borderRadius = "50%";
-						img.style.objectFit = "cover";
-						img.style.border = "2px solid rgba(108, 79, 150, 0.6)";
-						img.style.display = "block";
-						img.src = profile.picture;
-						img.alt = "";
-						img.loading = "lazy";
-						img.onerror = () => {};
-						col.appendChild(img);
-						cardsInCol++;
+						img.style.cssText = `width:${imgSize}; height:${imgSize}; border-radius:50%; object-fit:cover; border:2px solid rgba(108,79,150,0.6); display:block;`;
+						img.src = profile.picture; img.alt = ""; img.loading = "lazy"; img.onerror = () => {};
+						col.appendChild(img); cardsInCol++;
 					}
 				} catch {}
 			})();
 
 			// NIP-05 navn-tjek
-			let nip05NameAvailable = false;
-			let nip05CheckTimeout;
-			let confirmedName = "";
+			let nip05NameAvailable = false, nip05CheckTimeout, confirmedName = "";
 
 			function nip05SetStatus(type, icon, text) {
-				const status = document.getElementById("nip05Status");
-				const row = document.getElementById("nip05NameRow");
-				status.className = "nip05-status " + type;
-				status.textContent = icon + " " + text;
-				row.className = "nip05-name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
+				document.getElementById("nip05Status").className = "nip05-status " + type;
+				document.getElementById("nip05Status").textContent = icon + " " + text;
+				document.getElementById("nip05NameRow").className = "nip05-name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
 			}
 
 			function nip05ClearStatus() {
@@ -660,7 +567,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 						nip05NameAvailable = false;
 						document.getElementById("nip05ProceedBtn").disabled = true;
 					}
-				} catch (e) {
+				} catch {
 					nip05SetStatus("error", "!", "Kunne ikke tjekke — prøv igen");
 					nip05NameAvailable = false;
 					document.getElementById("nip05ProceedBtn").disabled = true;
@@ -670,8 +577,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			const nameInput = document.getElementById("nip05Name");
 			if (nameInput) {
 				nameInput.addEventListener("input", function () {
-					const val = nameInput.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
-					if (nameInput.value !== val) nameInput.value = val;
+					const val = this.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+					if (this.value !== val) this.value = val;
 					clearTimeout(nip05CheckTimeout);
 					if (!val) { nip05ClearStatus(); return; }
 					nip05CheckTimeout = setTimeout(() => nip05CheckAvailability(val), 500);
@@ -739,13 +646,9 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 						if (data.checkoutLink) {
 							ps.className = "";
 							ps.textContent = "";
-							window.open(
-								data.checkoutLink,
-								"btcpay",
-								"width=600,height=700,resizable=yes,scrollbars=yes"
-							);
 							payBtn.disabled = false;
 							payBtn.textContent = "Gå til betaling ⚡";
+							openBtcpayModal(data.checkoutLink);
 						} else {
 							throw new Error("Intet checkout link");
 						}
@@ -769,6 +672,76 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	</script>
 
 	<style>
+		/* ---- BTCPay Modal ---- */
+		.btcpay-modal {
+			position: fixed;
+			inset: 0;
+			z-index: 1000;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+
+		.btcpay-modal-backdrop {
+			position: absolute;
+			inset: 0;
+			background: rgba(0, 0, 0, 0.75);
+			backdrop-filter: blur(4px);
+		}
+
+		.btcpay-modal-box {
+			position: relative;
+			z-index: 1;
+			width: 100%;
+			max-width: 480px;
+			height: 85vh;
+			max-height: 760px;
+			background: #1a1a2e;
+			border-radius: 16px;
+			overflow: hidden;
+			box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+			margin: 0 16px;
+		}
+
+		.btcpay-modal-close {
+			position: absolute;
+			top: 12px;
+			right: 12px;
+			z-index: 2;
+			background: rgba(0, 0, 0, 0.5);
+			border: none;
+			color: #fff;
+			width: 32px;
+			height: 32px;
+			border-radius: 50%;
+			font-size: 0.9rem;
+			cursor: pointer;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			transition: background 0.2s;
+		}
+
+		.btcpay-modal-close:hover {
+			background: rgba(255, 255, 255, 0.2);
+		}
+
+		#btcpayFrame {
+			width: 100%;
+			height: 100%;
+			border: none;
+		}
+
+		@media (max-width: 520px) {
+			.btcpay-modal-box {
+				height: 92vh;
+				max-height: none;
+				border-radius: 12px;
+				margin: 0 8px;
+			}
+		}
+
+		/* ---- Klienter ---- */
 		.klient-description {
 			font-size: 0.85rem;
 			color: rgba(255, 255, 255, 0.5);
@@ -797,19 +770,13 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		}
 
 		@media (max-width: 768px) {
-			.support-qr {
-				max-width: 320px;
-			}
+			.support-qr { max-width: 320px; }
 		}
 
-		.support-qr:active {
-			transform: scale(0.95);
-		}
+		.support-qr:active { transform: scale(0.95); }
 
 		/* ---- NIP-05 profil teaser ---- */
-		.nip05-teaser {
-			margin: 10px 0 30px;
-		}
+		.nip05-teaser { margin: 10px 0 30px; }
 
 		.nip05-teaser-label {
 			font-size: 0.8rem;
@@ -835,9 +802,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			text-align: left;
 		}
 
-		.nip05-field {
-			margin-bottom: 1rem;
-		}
+		.nip05-field { margin-bottom: 1rem; }
 
 		.nip05-name-row {
 			display: flex;
@@ -849,9 +814,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			transition: border-color 0.2s;
 		}
 
-		.nip05-name-row:focus-within {
-			border-color: rgba(108, 79, 150, 0.8);
-		}
+		.nip05-name-row:focus-within { border-color: rgba(108, 79, 150, 0.8); }
 		.nip05-name-row.valid { border-color: #4caf50; }
 		.nip05-name-row.taken { border-color: #e05050; }
 
@@ -866,9 +829,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			color: #fff;
 		}
 
-		.nip05-name-row input::placeholder {
-			color: rgba(255, 255, 255, 0.3);
-		}
+		.nip05-name-row input::placeholder { color: rgba(255, 255, 255, 0.3); }
 
 		.nip05-suffix {
 			padding: 0 0.75rem;
@@ -945,10 +906,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		}
 
 		.nip05-instructions strong { color: #fff; }
-		.nip05-instructions em {
-			color: rgba(255, 255, 255, 0.55);
-			font-style: normal;
-		}
+		.nip05-instructions em { color: rgba(255, 255, 255, 0.55); font-style: normal; }
 
 		.nip05-back-btn {
 			background: none;
@@ -962,8 +920,6 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			transition: color 0.2s;
 		}
 
-		.nip05-back-btn:hover {
-			color: rgba(255, 255, 255, 0.7);
-		}
+		.nip05-back-btn:hover { color: rgba(255, 255, 255, 0.7); }
 	</style>
 </NostrLayout>
