@@ -331,35 +331,31 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       const teaserGrid = document.getElementById("teaserGrid");
       if (!teaserGrid) return;
 
-      teaserGrid.style.display = "flex";
-      teaserGrid.style.flexWrap = "wrap";
-      teaserGrid.style.justifyContent = "center";
-      teaserGrid.style.gap = "8px 10px";
-      teaserGrid.style.alignItems = "flex-start";
-
       const profileRes = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
       const profiles = await profileRes.json();
       const withPicture = entries.filter(([, pubkey]) => profiles[pubkey]?.picture).slice(0, 11);
 
       const isMobile = window.innerWidth < 768;
-      const colWidth = isMobile ? "56px" : "72px";
       const imgSize = isMobile ? "48px" : "64px";
-      const staggerOffset = isMobile ? "28px" : "36px";
+      const colWidth = isMobile ? "56px" : "72px";
+      const staggerOffset = isMobile ? "0px" : "36px"; // Ingen stagger på mobil
 
       let colIndex = 0;
       let col: HTMLDivElement | null = null;
       let cardsInCol = 0;
+      const maxPerCol = isMobile ? 3 : 2; // Flere per kolonne på mobil = færre kolonner = pænere
 
       for (const [, pubkey] of withPicture) {
         const profile = profiles[pubkey];
-        if (!col || cardsInCol >= 2) {
+        if (!col || cardsInCol >= maxPerCol) {
           col = document.createElement("div");
           col.style.display = "flex";
           col.style.flexDirection = "column";
           col.style.alignItems = "center";
           col.style.gap = "10px";
           col.style.flex = `0 0 ${colWidth}`;
-          if (colIndex % 2 === 1) col.style.marginTop = staggerOffset;
+          // Kun stagger på desktop
+          if (!isMobile && colIndex % 2 === 1) col.style.marginTop = staggerOffset;
           teaserGrid.appendChild(col);
           colIndex++;
           cardsInCol = 0;
