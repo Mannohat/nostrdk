@@ -574,6 +574,26 @@ textarea::placeholder {
 /* ===========================================
 	 PROFIL TEASER
 	 =========================================== */
+.teaser-col {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+	flex: 0 0 72px;
+}
+
+.teaser-col.staggered {
+	margin-top: 36px;
+}
+
+.teaser-avatar {
+	width: 64px;
+	height: 64px;
+	border-radius: 50%;
+	object-fit: cover;
+	border: 2px solid rgba(108, 79, 150, 0.6);
+	display: block;
+}
 
 .nip05-teaser .teaser-see-more {
 	text-align: center;
@@ -601,6 +621,18 @@ textarea::placeholder {
 	 =========================================== */
 
 @media (max-width: 768px) {
+	.teaser-col {
+		flex: 0 0 56px;
+	}
+
+	.teaser-avatar {
+		width: 48px;
+		height: 48px;
+	}
+
+	.teaser-col.staggered {
+		margin-top: 0;
+	}
 
 	/* Container mobile padding */
 	.container {
