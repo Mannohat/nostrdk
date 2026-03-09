@@ -80,7 +80,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           
-          BRANCH_NAME="add-resource-${RESOURCE_FILENAME%.md}"
+          # Issue-nummeret sikrer at branch-navnet altid er unikt
+          BRANCH_NAME="add-resource-${RESOURCE_FILENAME%.md}-${{ github.event.issue.number }}"
           
           git checkout -b "$BRANCH_NAME"
           

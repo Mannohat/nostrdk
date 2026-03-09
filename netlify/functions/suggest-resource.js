@@ -102,6 +102,31 @@ exports.handler = async (event) => {
   ].join("\n");
 
   try {
+    // Tjek om der allerede eksisterer et åbent issue med samme URL
+    const searchResponse = await fetch(
+      `https://api.github.com/search/issues?q=repo:${GITHUB_REPO}+is:issue+is:open+${encodeURIComponent(url)}`,
+      {
+        headers: {
+          Authorization: `Bearer ${GITHUB_TOKEN}`,
+          Accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      }
+    );
+
+    if (searchResponse.ok) {
+      const searchData = await searchResponse.json();
+      if (searchData.total_count > 0) {
+        return {
+          statusCode: 409,
+          headers,
+          body: JSON.stringify({
+            error: `Der er allerede et forslag med denne URL – det bliver behandlet hurtigst muligt.`,
+          }),
+        };
+      }
+    }
+
     const response = await fetch(
       `https://api.github.com/repos/${GITHUB_REPO}/issues`,
       {
