@@ -477,7 +477,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					const isMobile = window.innerWidth < 768;
 					const colWidth = isMobile ? "56px" : "72px";
 					const imgSize = isMobile ? "48px" : "64px";
-					const staggerOffset = isMobile ? "28px" : "36px";
+					const staggerOffset = isMobile ? "0px" : "36px";
 
 					let colIndex = 0, col = null, cardsInCol = 0;
 					for (const [, pk] of withPicture) {
