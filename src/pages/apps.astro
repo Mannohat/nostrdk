@@ -71,6 +71,12 @@ const resourcesByCategory = Object.keys(categories).reduce(
     </div>
   </div>
 
+  <!-- Section filter banner (skjult som standard) -->
+  <div id="section-filter-banner" style="display:none;">
+    <span>Viser: <strong id="section-filter-label"></strong></span>
+    <button id="clear-section-filter">✕ Vis alle</button>
+  </div>
+
   <!-- Resources by Category -->
   {
     Object.entries(categories).map(([categoryKey, categoryInfo]) => {
@@ -90,8 +96,14 @@ const resourcesByCategory = Object.keys(categories).reduce(
               >
                 <h3>{resource.data.title}</h3>
                 {resource.data.section && (
-                  <div class="resource-section-tag">
-                    {resource.data.section}
+                  <div
+                    class="resource-section-tag"
+                    data-section={resource.data.section}
+                    role="button"
+                    tabindex="0"
+                    title={`Vis alle: ${resource.data.section}`}
+                  >
+                    🏷️ {resource.data.section}
                   </div>
                 )}
                 <p>{resource.data.description}</p>
@@ -176,8 +188,8 @@ const resourcesByCategory = Object.keys(categories).reduce(
 
       <div class="form-group">
         <label for="field-section">Section tag</label>
-        <input type="text" id="field-section" placeholder="f.eks. Twitter Alternativ, Wallet, Video..." maxlength="50" />
-        <span class="field-hint">Hjælper med at sortere ressourcen på siden</span>
+        <input type="text" id="field-section" placeholder="f.eks. Twitter Alternative, Youtube Alternative, Payments..." maxlength="50" />
+        <span class="field-hint">Eksisterende tags: Twitter Alternative, Youtube Alternative, Social Media, Payments, Streaming, Marketplace, Chat/Besked...</span>
       </div>
 
       <div class="form-group">
@@ -299,6 +311,63 @@ const resourcesByCategory = Object.keys(categories).reduce(
     // Luk med Escape
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
+
+    // ── Section tag filtrering ────────────────────────────
+    let activeSectionFilter = null;
+
+    document.querySelectorAll(".resource-section-tag").forEach(function (tag) {
+      tag.addEventListener("click", function () {
+        const section = this.getAttribute("data-section");
+
+        // Klik på samme tag igen = nulstil filter
+        if (activeSectionFilter === section) {
+          activeSectionFilter = null;
+          document.querySelectorAll(".resource-section-tag").forEach(t => t.classList.remove("active"));
+          document.getElementById("section-filter-banner").style.display = "none";
+          resourceCards.forEach(c => c.classList.remove("hidden"));
+          resourceSections.forEach(s => s.classList.remove("hidden"));
+          if (noResults) noResults.style.display = "none";
+          return;
+        }
+
+        activeSectionFilter = section;
+        document.querySelectorAll(".resource-section-tag").forEach(t => t.classList.remove("active"));
+        this.classList.add("active");
+
+        const banner = document.getElementById("section-filter-banner");
+        document.getElementById("section-filter-label").textContent = section;
+        banner.style.display = "flex";
+
+        let visibleCount = 0;
+        resourceCards.forEach(function (card) {
+          const cardSection = card.querySelector(".resource-section-tag")?.getAttribute("data-section") || "";
+          const matches = cardSection === section;
+          card.classList.toggle("hidden", !matches);
+          if (matches) visibleCount++;
+        });
+
+        resourceSections.forEach(function (sec) {
+          const hasVisible = Array.from(sec.querySelectorAll(".resource-card")).some(c => !c.classList.contains("hidden"));
+          sec.classList.toggle("hidden", !hasVisible);
+        });
+
+        if (noResults) noResults.style.display = visibleCount === 0 ? "block" : "none";
+      });
+
+      tag.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") this.click();
+      });
+    });
+
+    const clearSectionBtn = document.getElementById("clear-section-filter");
+    clearSectionBtn && clearSectionBtn.addEventListener("click", function () {
+      activeSectionFilter = null;
+      document.querySelectorAll(".resource-section-tag").forEach(t => t.classList.remove("active"));
+      document.getElementById("section-filter-banner").style.display = "none";
+      resourceCards.forEach(c => c.classList.remove("hidden"));
+      resourceSections.forEach(s => s.classList.remove("hidden"));
+      if (noResults) noResults.style.display = "none";
     });
 
     // ── Tegntæller ────────────────────────────────────────
@@ -450,6 +519,52 @@ const resourcesByCategory = Object.keys(categories).reduce(
     font-size: 0.85rem;
     font-weight: 600;
     margin-bottom: 10px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s, transform 0.15s;
+    user-select: none;
+  }
+
+  .resource-section-tag:hover {
+    background: rgba(160, 132, 202, 0.5);
+    color: #fff;
+    transform: scale(1.05);
+  }
+
+  .resource-section-tag.active {
+    background: #6c4f96;
+    color: #fff;
+  }
+
+  #section-filter-banner {
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    background: rgba(108, 79, 150, 0.25);
+    border: 1px solid rgba(160, 132, 202, 0.3);
+    border-radius: 10px;
+    padding: 12px 24px;
+    margin-bottom: 40px;
+    font-size: 1rem;
+    color: #e0e0e0;
+  }
+
+  #section-filter-banner strong { color: #a084ca; }
+
+  #clear-section-filter {
+    background: rgba(160, 132, 202, 0.2);
+    border: 1px solid rgba(160, 132, 202, 0.4);
+    color: #a084ca;
+    border-radius: 6px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+
+  #clear-section-filter:hover {
+    background: rgba(160, 132, 202, 0.35);
+    color: #fff;
   }
 
   /* ── No results ── */
