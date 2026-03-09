@@ -11,37 +11,47 @@ exports.handler = async (event) => {
     };
   }
 
-  try {
-    // Netlify Functions har adgang til projektets filer via process.cwd()
-    const filePath = path.join(process.cwd(), "public", ".well-known", "nostr.json");
-    const raw = fs.readFileSync(filePath, "utf-8");
-    const data = JSON.parse(raw);
-    const taken = Object.prototype.hasOwnProperty.call(data.names || {}, name);
+  // Prøv flere mulige stier til nostr.json
+  const possiblePaths = [
+    path.join(__dirname, "..", "..", "public", ".well-known", "nostr.json"),
+    path.join(process.cwd(), "public", ".well-known", "nostr.json"),
+    "/var/task/public/.well-known/nostr.json",
+  ];
 
-    return {
-      statusCode: 200,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ available: !taken, name }),
-    };
-  } catch (err) {
-    console.error("Fejl ved læsning af nostr.json:", err.message);
-    // Fallback: prøv HTTP hvis filsystem ikke virker
+  let data = null;
+
+  for (const filePath of possiblePaths) {
     try {
+      const raw = fs.readFileSync(filePath, "utf-8");
+      data = JSON.parse(raw);
+      console.log("Læste nostr.json fra:", filePath);
+      break;
+    } catch {
+      console.log("Ingen fil på:", filePath);
+    }
+  }
+
+  if (!data) {
+    // Fallback: HTTP
+    try {
+      console.log("Prøver HTTP fallback...");
       const response = await fetch("https://nostr.dk/.well-known/nostr.json");
-      if (!response.ok) throw new Error("HTTP fejl");
-      const data = await response.json();
-      const taken = Object.prototype.hasOwnProperty.call(data.names || {}, name);
-      return {
-        statusCode: 200,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ available: !taken, name }),
-      };
-    } catch (fallbackErr) {
-      console.error("Fallback fejl:", fallbackErr.message);
+      if (!response.ok) throw new Error("HTTP fejl: " + response.status);
+      data = await response.json();
+    } catch (err) {
+      console.error("HTTP fallback fejlede:", err.message);
       return {
         statusCode: 500,
         body: JSON.stringify({ error: "Intern fejl" }),
       };
     }
   }
+
+  const taken = Object.prototype.hasOwnProperty.call(data.names || {}, name);
+
+  return {
+    statusCode: 200,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ available: !taken, name }),
+  };
 };
