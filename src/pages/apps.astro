@@ -175,6 +175,12 @@ const resourcesByCategory = Object.keys(categories).reduce(
       </div>
 
       <div class="form-group">
+        <label for="field-section">Section tag</label>
+        <input type="text" id="field-section" placeholder="f.eks. Twitter Alternativ, Wallet, Video..." maxlength="50" />
+        <span class="field-hint">Hjælper med at sortere ressourcen på siden</span>
+      </div>
+
+      <div class="form-group">
         <label for="field-description">Kort beskrivelse <span class="required">*</span></label>
         <textarea id="field-description" placeholder="Beskriv hvad appen/tjenesten gør – max 300 tegn..." maxlength="300" rows="3"></textarea>
         <div class="char-counter"><span id="char-count">0</span> / 300</div>
@@ -273,6 +279,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
       document.getElementById("field-name").value = "";
       document.getElementById("field-url").value = "";
       document.getElementById("field-category").value = "";
+      document.getElementById("field-section").value = "";
       document.getElementById("field-description").value = "";
       charCount.textContent = "0";
       ["error-name", "error-url", "error-description"].forEach(
@@ -314,6 +321,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
       const name = document.getElementById("field-name").value.trim();
       const url = document.getElementById("field-url").value.trim();
       const category = document.getElementById("field-category").value;
+      const section = document.getElementById("field-section").value.trim();
       const description = document.getElementById("field-description").value.trim();
 
       // Klientside-validering
@@ -346,7 +354,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
         const res = await fetch("/.netlify/functions/suggest-resource", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, url, category, description }),
+          body: JSON.stringify({ name, url, category, section, description }),
         });
 
         const data = await res.json();
@@ -588,6 +596,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
   .form-group select option { background: #1a0f2e; color: #fff; }
 
   .char-counter { font-size: 0.78rem; color: #888; text-align: right; margin-top: 3px; }
+  .field-hint { font-size: 0.78rem; color: #888; margin-top: 3px; }
 
   .field-error { font-size: 0.8rem; color: #e07070; min-height: 1em; }
 
