@@ -46,380 +46,604 @@ const resourcesByCategory = Object.keys(categories).reduce(
 <NostrLayout title="Apps & Tjenester | Nostr.dk" description="Oversigt over decentraliserede apps og tjenester bygget på Nostr – alternativer til YouTube, Twitter, Facebook og meget mere.">
 
   <div class="page-header">
-        <h1>Apps & Tjenester</h1>
-        <p>
-          Stort set alle de services og virksomheder som f.eks. Youtube, Google,
-          Facebook, Twitter osv. har dine data og kan lukke dig ude fra din
-          konto. Nostr giver dig mulighed for at eje din egen data, sikrer dig
-          adgang og beholde dine følgere på tværs af Nostr-baserede services.
-        </p>
-      </div>
+    <h1>Apps & Tjenester</h1>
+    <p>
+      Stort set alle de services og virksomheder som f.eks. Youtube, Google,
+      Facebook, Twitter osv. har dine data og kan lukke dig ude fra din
+      konto. Nostr giver dig mulighed for at eje din egen data, sikrer dig
+      adgang og beholde dine følgere på tværs af Nostr-baserede services.
+    </p>
+  </div>
 
-      <!-- Search Bar with Subtle Contribute Link -->
-      <div class="search-container">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="🔍 Søg efter apps og tjenester..."
-          class="search-input"
-        />
-        <!-- Subtle Contribute Link -->
-        <div class="contribute-link">
-          <p>
-            Mangler der noget? <a
-              href="https://github.com/Mannohat/nostrdk/issues/new?template=resource-suggestion.yml"
-              target="_blank">Foreslå App / Tjeneste →</a>
-          </p>
-        </div>
-      </div>
+  <!-- Search Bar with Subtle Contribute Link -->
+  <div class="search-container">
+    <input
+      type="text"
+      id="search-input"
+      placeholder="🔍 Søg efter apps og tjenester..."
+      class="search-input"
+    />
+    <!-- Subtle Contribute Link – åbner nu modal i stedet for GitHub -->
+    <div class="contribute-link">
+      <p>
+        Mangler der noget? <button class="link-button" id="open-modal-subtle">Foreslå App / Tjeneste →</button>
+      </p>
+    </div>
+  </div>
 
-      <!-- Resources by Category -->
-      {
-        Object.entries(categories).map(([categoryKey, categoryInfo]) => {
-          const resources = resourcesByCategory[categoryKey];
-          if (!resources || resources.length === 0) return null;
+  <!-- Resources by Category -->
+  {
+    Object.entries(categories).map(([categoryKey, categoryInfo]) => {
+      const resources = resourcesByCategory[categoryKey];
+      if (!resources || resources.length === 0) return null;
 
-          return (
-            <section class="resource-section" data-category={categoryKey}>
-              <h2 class="section-title">{categoryInfo.title}</h2>
-              <p class="section-description">{categoryInfo.description}</p>
+      return (
+        <section class="resource-section" data-category={categoryKey}>
+          <h2 class="section-title">{categoryInfo.title}</h2>
+          <p class="section-description">{categoryInfo.description}</p>
 
-              <div class="resource-grid">
-                {resources.map((resource) => (
-                  <div
-                    class="resource-card"
-                    data-search-text={`${resource.data.title} ${resource.data.description} ${resource.data.section}`.toLowerCase()}
-                  >
-                    <h3>{resource.data.title}</h3>
-                    {resource.data.section && (
-                      <div class="resource-section-tag">
-                        {resource.data.section}
-                      </div>
-                    )}
-                    <p>{resource.data.description}</p>
-                    <a
-                      href={resource.data.url}
-                      target="_blank"
-                      class="resource-link"
-                    >
-                      Besøg {resource.data.title} →
-                    </a>
+          <div class="resource-grid">
+            {resources.map((resource) => (
+              <div
+                class="resource-card"
+                data-search-text={`${resource.data.title} ${resource.data.description} ${resource.data.section}`.toLowerCase()}
+              >
+                <h3>{resource.data.title}</h3>
+                {resource.data.section && (
+                  <div class="resource-section-tag">
+                    {resource.data.section}
                   </div>
-                ))}
+                )}
+                <p>{resource.data.description}</p>
+                <a
+                  href={resource.data.url}
+                  target="_blank"
+                  class="resource-link"
+                >
+                  Besøg {resource.data.title} →
+                </a>
               </div>
-            </section>
-          );
-        })
-      }
+            ))}
+          </div>
+        </section>
+      );
+    })
+  }
 
-      <!-- No results message (hidden by default) -->
-      <div id="no-results" class="no-results" style="display: none;">
-        <h2>Ingen resultater fundet</h2>
-        <p>Prøv at søge efter noget andet.</p>
+  <!-- No results message (hidden by default) -->
+  <div id="no-results" class="no-results" style="display: none;">
+    <h2>Ingen resultater fundet</h2>
+    <p>Prøv at søge efter noget andet.</p>
+  </div>
+
+  <!-- CTA Section – primær knap åbner modal -->
+  <section class="cta-section">
+    <h2>Bidrag til Nostr.dk</h2>
+    <p>
+      Hjælp os med at gøre listen bedre eller udforsk mere indhold om Nostr
+    </p>
+    <div class="cta-buttons">
+      <button class="cta-button primary" id="open-modal-cta">
+        ➕ Foreslå App / Tjeneste
+      </button>
+      <a href="/podcasts" class="cta-button secondary">Se Podcasts →</a>
+      <a href="/" class="cta-button secondary">Gå til Forsiden →</a>
+    </div>
+  </section>
+
+</NostrLayout>
+
+<!-- =====================================================
+     MODAL – Foreslå ressource
+     ===================================================== -->
+<div id="suggest-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-box">
+    <!-- Luk-knap -->
+    <button class="modal-close" id="close-modal" aria-label="Luk">&times;</button>
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-icon">➕</div>
+      <h2 id="modal-title">Foreslå en ressource</h2>
+      <p>Kender du en app eller tjeneste som mangler? Send et forslag – vi gennemgår det hurtigst muligt.</p>
+    </div>
+
+    <!-- Form -->
+    <div class="modal-form" id="modal-form-container">
+      <div class="form-group">
+        <label for="field-name">Navn på app / tjeneste <span class="required">*</span></label>
+        <input type="text" id="field-name" placeholder="f.eks. Damus, Primal, Coracle..." maxlength="80" />
+        <span class="field-error" id="error-name"></span>
       </div>
 
-      <!-- Updated CTA Section -->
-      <section class="cta-section">
-        <h2>Bidrag til Nostr.dk</h2>
-        <p>
-          Hjælp os med at gøre listen bedre eller udforsk mere indhold om Nostr
-        </p>
-        <div class="cta-buttons">
-          <a
-            href="https://github.com/Mannohat/nostrdk/issues/new?template=resource-suggestion.yml"
-            target="_blank"
-            class="cta-button primary"
-          >
-            ➕ Foreslå App / Tjeneste →
-          </a>
-          <a href="/podcasts" class="cta-button secondary">Se Podcasts →</a>
-          <a href="/" class="cta-button secondary">Gå til Forsiden →</a>
-        </div>
-      </section>
+      <div class="form-group">
+        <label for="field-url">URL <span class="required">*</span></label>
+        <input type="text" id="field-url" placeholder="https://..." maxlength="200" />
+        <span class="field-error" id="error-url"></span>
+      </div>
 
+      <div class="form-group">
+        <label for="field-category">Kategori</label>
+        <select id="field-category">
+          <option value="">Vælg kategori (valgfri)</option>
+          <option value="nostr-alternatives">Nostr Alternativ til centraliseret tjeneste</option>
+          <option value="services">Nostr Service</option>
+          <option value="extensions">Browser Udvidelse</option>
+          <option value="tools">Nostr Værktøj</option>
+          <option value="relays">Nostr Relay</option>
+        </select>
+      </div>
 
-    <script is:inline>
-      document.addEventListener("DOMContentLoaded", function () {
-        const searchInput = document.getElementById("search-input");
-        const resourceCards = document.querySelectorAll(".resource-card");
-        const resourceSections = document.querySelectorAll(".resource-section");
-        const noResults = document.getElementById("no-results");
+      <div class="form-group">
+        <label for="field-description">Kort beskrivelse <span class="required">*</span></label>
+        <textarea id="field-description" placeholder="Beskriv hvad appen/tjenesten gør – max 300 tegn..." maxlength="300" rows="3"></textarea>
+        <div class="char-counter"><span id="char-count">0</span> / 300</div>
+        <span class="field-error" id="error-description"></span>
+      </div>
 
-        if (searchInput) {
-          searchInput.addEventListener("input", function (e) {
-            const searchTerm = this.value.toLowerCase().trim();
+      <button class="submit-button" id="submit-suggestion">
+        <span id="submit-text">Send forslag</span>
+        <span id="submit-spinner" class="spinner" style="display:none;"></span>
+      </button>
+    </div>
 
-            let visibleCount = 0;
+    <!-- Succesbesked (skjult som standard) -->
+    <div class="modal-success" id="modal-success" style="display:none;">
+      <div class="success-icon">✅</div>
+      <h3>Tak for dit forslag!</h3>
+      <p>Dit forslag er nu sendt og vil blive gennemgået af teamet.</p>
+      <button class="cta-button secondary" id="close-success">Luk</button>
+    </div>
 
-            resourceCards.forEach(function (card) {
-              const searchText = card.getAttribute("data-search-text") || "";
-              const matches = searchText.includes(searchTerm);
+    <!-- Fejlbesked (skjult som standard) -->
+    <div class="modal-error-banner" id="modal-error-banner" style="display:none;">
+      <span id="modal-error-text">Der skete en fejl. Prøv igen.</span>
+    </div>
+  </div>
+</div>
 
-              if (matches || searchTerm === "") {
-                card.classList.remove("hidden");
-                visibleCount++;
-              } else {
-                card.classList.add("hidden");
-              }
-            });
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function () {
 
-            resourceSections.forEach(function (section) {
-              const cardsInSection = section.querySelectorAll(".resource-card");
-              let hasVisible = false;
+    // ── Søgefunktion ──────────────────────────────────────
+    const searchInput = document.getElementById("search-input");
+    const resourceCards = document.querySelectorAll(".resource-card");
+    const resourceSections = document.querySelectorAll(".resource-section");
+    const noResults = document.getElementById("no-results");
 
-              cardsInSection.forEach(function (card) {
-                if (!card.classList.contains("hidden")) {
-                  hasVisible = true;
-                }
-              });
+    if (searchInput) {
+      searchInput.addEventListener("input", function () {
+        const searchTerm = this.value.toLowerCase().trim();
+        let visibleCount = 0;
 
-              if (hasVisible) {
-                section.classList.remove("hidden");
-              } else {
-                section.classList.add("hidden");
-              }
-            });
+        resourceCards.forEach(function (card) {
+          const searchText = card.getAttribute("data-search-text") || "";
+          const matches = searchText.includes(searchTerm);
+          card.classList.toggle("hidden", !matches && searchTerm !== "");
+          if (matches || searchTerm === "") visibleCount++;
+        });
 
-            if (noResults) {
-              if (visibleCount === 0 && searchTerm !== "") {
-                noResults.style.display = "block";
-              } else {
-                noResults.style.display = "none";
-              }
-            }
-          });
+        resourceSections.forEach(function (section) {
+          const cardsInSection = section.querySelectorAll(".resource-card");
+          const hasVisible = Array.from(cardsInSection).some(
+            (c) => !c.classList.contains("hidden")
+          );
+          section.classList.toggle("hidden", !hasVisible);
+        });
+
+        if (noResults) {
+          noResults.style.display =
+            visibleCount === 0 && searchTerm !== "" ? "block" : "none";
         }
       });
-    </script>
+    }
 
-    <style>
-      /* Completely disable text selection and highlighting */
-      * {
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
+    // ── Modal: åbn / luk ─────────────────────────────────
+    const modal = document.getElementById("suggest-modal");
+    const openButtons = [
+      document.getElementById("open-modal-cta"),
+      document.getElementById("open-modal-subtle"),
+    ];
+    const closeBtn = document.getElementById("close-modal");
+    const closeSuccess = document.getElementById("close-success");
+
+    function openModal() {
+      modal.setAttribute("aria-hidden", "false");
+      modal.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+      setTimeout(() => document.getElementById("field-name").focus(), 100);
+    }
+
+    function closeModal() {
+      modal.setAttribute("aria-hidden", "true");
+      modal.classList.remove("is-open");
+      document.body.style.overflow = "";
+    }
+
+    openButtons.forEach((btn) => btn && btn.addEventListener("click", openModal));
+    closeBtn && closeBtn.addEventListener("click", closeModal);
+    closeSuccess && closeSuccess.addEventListener("click", closeModal);
+
+    // Luk ved klik på backdrop
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) closeModal();
+    });
+
+    // Luk med Escape
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
+
+    // ── Tegntæller ────────────────────────────────────────
+    const descField = document.getElementById("field-description");
+    const charCount = document.getElementById("char-count");
+    descField && descField.addEventListener("input", function () {
+      charCount.textContent = this.value.length;
+    });
+
+    // ── Indsend forslag ───────────────────────────────────
+    const submitBtn = document.getElementById("submit-suggestion");
+
+    submitBtn && submitBtn.addEventListener("click", async function () {
+      // Ryd tidligere fejl
+      ["error-name", "error-url", "error-description"].forEach(
+        (id) => (document.getElementById(id).textContent = "")
+      );
+      document.getElementById("modal-error-banner").style.display = "none";
+
+      const name = document.getElementById("field-name").value.trim();
+      const url = document.getElementById("field-url").value.trim();
+      const category = document.getElementById("field-category").value;
+      const description = document.getElementById("field-description").value.trim();
+
+      // Klientside-validering
+      let valid = true;
+      if (!name) {
+        document.getElementById("error-name").textContent = "Navn er påkrævet";
+        valid = false;
       }
-
-      .search-input {
-        -webkit-user-select: text;
-        -moz-user-select: text;
-        -ms-user-select: text;
-        user-select: text;
-      }
-
-      /* Hidden class for search filtering */
-      .hidden {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        height: 0 !important;
-        overflow: hidden !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-
-      ::selection {
-        background: transparent;
-        color: inherit;
-      }
-
-      ::-moz-selection {
-        background: transparent;
-        color: inherit;
-      }
-
-      mark {
-        background: none !important;
-        color: inherit !important;
-      }
-
-      /* Search container */
-      .search-container {
-        max-width: 700px;
-        margin: 50px auto 60px;
-        padding: 0 20px;
-      }
-
-      .search-input {
-        width: 100%;
-        padding: 20px 28px;
-        font-size: 1.15rem;
-        font-weight: 500;
-        border: 3px solid rgba(160, 132, 202, 0.4);
-        border-radius: 50px;
-        background: linear-gradient(
-          135deg,
-          rgba(108, 79, 150, 0.15),
-          rgba(55, 26, 118, 0.15)
-        );
-        color: #fff;
-        transition: all 0.3s;
-        text-align: center;
-      }
-
-      .search-input:focus {
-        outline: none;
-        border-color: #a084ca;
-        background: linear-gradient(
-          135deg,
-          rgba(108, 79, 150, 0.25),
-          rgba(55, 26, 118, 0.25)
-        );
-        box-shadow: 0 0 30px rgba(160, 132, 202, 0.4);
-        text-align: center;
-      }
-
-      .search-input::placeholder {
-        color: rgba(255, 255, 255, 0.6);
-        font-weight: 400;
-      }
-
-      /* Subtle Contribute Link */
-      .contribute-link {
-        text-align: center;
-        margin-top: 15px;
-      }
-
-      .contribute-link p {
-        font-size: 0.95rem;
-        color: #999;
-      }
-
-      .contribute-link a {
-        color: #a084ca;
-        text-decoration: none;
-        font-weight: 600;
-        transition: all 0.3s;
-      }
-
-      .contribute-link a:hover {
-        color: #c0a4e0;
-        text-decoration: underline;
-      }
-
-      .resource-section {
-        margin-bottom: 80px;
-      }
-
-      .section-description {
-        text-align: center;
-        font-size: 1.1rem;
-        color: #b0b0b0;
-        margin-bottom: 40px;
-      }
-
-      .resource-section-tag {
-        display: inline-block;
-        padding: 6px 12px;
-        background: rgba(160, 132, 202, 0.3);
-        color: #a084ca;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-weight: 600;
-        margin-bottom: 10px;
-      }
-
-      .no-results {
-        text-align: center;
-        padding: 80px 20px;
-      }
-
-      .no-results h2 {
-        font-size: 2rem;
-        margin-bottom: 15px;
-        color: #a084ca;
-      }
-
-      .no-results p {
-        font-size: 1.1rem;
-        color: #b0b0b0;
-      }
-
-      .cta-section {
-        text-align: center;
-        padding: 60px 20px;
-        background: linear-gradient(
-          135deg,
-          rgba(108, 79, 150, 0.2),
-          rgba(55, 26, 118, 0.2)
-        );
-        border-radius: 16px;
-        margin: 80px 0 40px;
-      }
-
-      .cta-section h2 {
-        font-size: 2.5rem;
-        margin-bottom: 20px;
-      }
-
-      .cta-section p {
-        font-size: 1.2rem;
-        color: #c0c0c0;
-        margin-bottom: 30px;
-      }
-
-      .cta-buttons {
-        display: flex;
-        gap: 20px;
-        justify-content: center;
-        flex-wrap: wrap;
-      }
-
-      .cta-button {
-        padding: 15px 35px;
-        border-radius: 8px;
-        font-size: 1.1rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s;
-        display: inline-block;
-      }
-
-      .cta-button.primary {
-        background: #6c4f96;
-        color: #fff;
-      }
-
-      .cta-button.primary:hover {
-        background: #563c73;
-        transform: scale(1.05);
-      }
-
-      .cta-button.secondary {
-        background: transparent;
-        color: #a084ca;
-        border: 2px solid #a084ca;
-      }
-
-      .cta-button.secondary:hover {
-        background: rgba(160, 132, 202, 0.1);
-        transform: scale(1.05);
-      }
-
-      @media (max-width: 768px) {
-        .search-container {
-          padding: 0 10px;
-        }
-
-        .search-input {
-          padding: 16px 20px;
-          font-size: 1rem;
-        }
-
-        .contribute-link p {
-          font-size: 0.9rem;
-        }
-
-        .cta-buttons {
-          flex-direction: column;
-          align-items: center;
-        }
-
-        .cta-button {
-          width: 100%;
-          max-width: 300px;
+      if (!url) {
+        document.getElementById("error-url").textContent = "URL er påkrævet";
+        valid = false;
+      } else {
+        try { new URL(url); } catch {
+          document.getElementById("error-url").textContent = "Indtast en gyldig URL (husk https://)";
+          valid = false;
         }
       }
-    </style>
- <NostrLayout></NostrLayout>
+      if (!description) {
+        document.getElementById("error-description").textContent = "Beskrivelse er påkrævet";
+        valid = false;
+      }
+      if (!valid) return;
+
+      // Vis spinner
+      document.getElementById("submit-text").style.display = "none";
+      document.getElementById("submit-spinner").style.display = "inline-block";
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch("/.netlify/functions/suggest-resource", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, url, category, description }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          document.getElementById("modal-form-container").style.display = "none";
+          document.getElementById("modal-success").style.display = "flex";
+        } else {
+          throw new Error(data.error || "Ukendt fejl");
+        }
+      } catch (err) {
+        const banner = document.getElementById("modal-error-banner");
+        document.getElementById("modal-error-text").textContent =
+          err.message || "Der skete en fejl – prøv igen.";
+        banner.style.display = "block";
+      } finally {
+        document.getElementById("submit-text").style.display = "inline";
+        document.getElementById("submit-spinner").style.display = "none";
+        submitBtn.disabled = false;
+      }
+    });
+  });
+</script>
+
+<style>
+  /* ── Generelle utilities ── */
+  * { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
+  input, textarea, select { -webkit-user-select: text; user-select: text; }
+  ::selection { background: transparent; color: inherit; }
+
+  .hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ── Søgefelt ── */
+  .search-container {
+    max-width: 700px;
+    margin: 50px auto 60px;
+    padding: 0 20px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 20px 28px;
+    font-size: 1.15rem;
+    font-weight: 500;
+    border: 3px solid rgba(160, 132, 202, 0.4);
+    border-radius: 50px;
+    background: linear-gradient(135deg, rgba(108,79,150,0.15), rgba(55,26,118,0.15));
+    color: #fff;
+    transition: all 0.3s;
+    text-align: center;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: #a084ca;
+    background: linear-gradient(135deg, rgba(108,79,150,0.25), rgba(55,26,118,0.25));
+    box-shadow: 0 0 30px rgba(160,132,202,0.4);
+  }
+  .search-input::placeholder { color: rgba(255,255,255,0.6); font-weight: 400; }
+
+  /* Subtil bidrag-link – nu en knap der ligner et link */
+  .contribute-link { text-align: center; margin-top: 15px; }
+  .contribute-link p { font-size: 0.95rem; color: #999; }
+  .link-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #a084ca;
+    font-weight: 600;
+    font-size: inherit;
+    padding: 0;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+  .link-button:hover { color: #c0a4e0; text-decoration: underline; }
+
+  /* ── Resource sections ── */
+  .resource-section { margin-bottom: 80px; }
+  .section-description { text-align: center; font-size: 1.1rem; color: #b0b0b0; margin-bottom: 40px; }
+  .resource-section-tag {
+    display: inline-block;
+    padding: 6px 12px;
+    background: rgba(160,132,202,0.3);
+    color: #a084ca;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  /* ── No results ── */
+  .no-results { text-align: center; padding: 80px 20px; }
+  .no-results h2 { font-size: 2rem; margin-bottom: 15px; color: #a084ca; }
+  .no-results p { font-size: 1.1rem; color: #b0b0b0; }
+
+  /* ── CTA-sektion ── */
+  .cta-section {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, rgba(108,79,150,0.2), rgba(55,26,118,0.2));
+    border-radius: 16px;
+    margin: 80px 0 40px;
+  }
+  .cta-section h2 { font-size: 2.5rem; margin-bottom: 20px; }
+  .cta-section p { font-size: 1.2rem; color: #c0c0c0; margin-bottom: 30px; }
+  .cta-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+
+  .cta-button {
+    padding: 15px 35px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-block;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+  .cta-button.primary { background: #6c4f96; color: #fff; }
+  .cta-button.primary:hover { background: #563c73; transform: scale(1.05); }
+  .cta-button.secondary { background: transparent; color: #a084ca; border: 2px solid #a084ca; }
+  .cta-button.secondary:hover { background: rgba(160,132,202,0.1); transform: scale(1.05); }
+
+  /* ══════════════════════════════════════════════════
+     MODAL
+  ══════════════════════════════════════════════════ */
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(10, 5, 25, 0.85);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.is-open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal-box {
+    background: linear-gradient(145deg, #1a0f2e, #120a22);
+    border: 1px solid rgba(160, 132, 202, 0.25);
+    border-radius: 20px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(160,132,202,0.1);
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 40px;
+    position: relative;
+    transform: translateY(20px);
+    transition: transform 0.25s ease;
+  }
+  .modal-overlay.is-open .modal-box {
+    transform: translateY(0);
+  }
+
+  /* Luk-knap */
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: rgba(160,132,202,0.15);
+    border: none;
+    color: #a084ca;
+    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background 0.2s, color 0.2s;
+  }
+  .modal-close:hover { background: rgba(160,132,202,0.3); color: #fff; }
+
+  /* Modal header */
+  .modal-header { text-align: center; margin-bottom: 32px; }
+  .modal-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .modal-header h2 {
+    font-size: 1.6rem;
+    color: #fff;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .modal-header p { font-size: 0.95rem; color: #b0b0b0; line-height: 1.5; }
+
+  /* Formfelter */
+  .modal-form { display: flex; flex-direction: column; gap: 20px; }
+
+  .form-group { display: flex; flex-direction: column; gap: 7px; }
+
+  .form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c0a4e0;
+    letter-spacing: 0.02em;
+  }
+  .required { color: #e07070; }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    background: rgba(108, 79, 150, 0.15);
+    border: 2px solid rgba(160, 132, 202, 0.25);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    resize: vertical;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #a084ca;
+    background: rgba(108, 79, 150, 0.25);
+    box-shadow: 0 0 0 3px rgba(160, 132, 202, 0.15);
+  }
+  .form-group select option { background: #1a0f2e; color: #fff; }
+
+  .char-counter { font-size: 0.78rem; color: #888; text-align: right; margin-top: 3px; }
+
+  .field-error { font-size: 0.8rem; color: #e07070; min-height: 1em; }
+
+  /* Send-knap */
+  .submit-button {
+    background: linear-gradient(135deg, #6c4f96, #4a2d7a);
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 15px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .submit-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #7d5cae, #5a3a8a);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(108, 79, 150, 0.5);
+  }
+  .submit-button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* Spinner */
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Succesbesked */
+  .modal-success {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 0;
+    gap: 16px;
+  }
+  .success-icon { font-size: 3rem; }
+  .modal-success h3 { font-size: 1.4rem; color: #fff; }
+  .modal-success p { color: #b0b0b0; font-size: 0.95rem; }
+
+  /* Fejlbanner */
+  .modal-error-banner {
+    background: rgba(200, 60, 60, 0.2);
+    border: 1px solid rgba(200, 60, 60, 0.4);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #f08080;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  /* ── Scrollbar i modal ── */
+  .modal-box::-webkit-scrollbar { width: 6px; }
+  .modal-box::-webkit-scrollbar-track { background: transparent; }
+  .modal-box::-webkit-scrollbar-thumb { background: rgba(160,132,202,0.3); border-radius: 3px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .search-container { padding: 0 10px; }
+    .search-input { padding: 16px 20px; font-size: 1rem; }
+    .contribute-link p { font-size: 0.9rem; }
+    .cta-buttons { flex-direction: column; align-items: center; }
+    .cta-button { width: 100%; max-width: 300px; }
+    .modal-box { padding: 28px 20px; }
+    .modal-header h2 { font-size: 1.4rem; }
+  }
+</style>
