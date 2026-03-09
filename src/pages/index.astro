@@ -472,7 +472,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
 					const profileRes = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
 					const profiles = await profileRes.json();
-					const withPicture = entries.filter(([, pk]) => profiles[pk]?.picture).slice(0, 8);
+					const withPicture = entries.filter(([, pk]) => profiles[pk]?.picture).slice(0, 10);
 
 					const isMobile = window.innerWidth < 768;
 					const colWidth = isMobile ? "56px" : "72px";

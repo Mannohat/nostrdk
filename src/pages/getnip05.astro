@@ -360,7 +360,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
       const profileRes = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
       const profiles = await profileRes.json();
-      const withPicture = entries.filter(([, pubkey]) => profiles[pubkey]?.picture).slice(0, 11);
+      const withPicture = entries.filter(([, pubkey]) => profiles[pubkey]?.picture).slice(0, 10);
 
       // Brug CSS-klasser ligesom profiler.astro – media query håndterer mobil automatisk
       let colIndex = 0;
