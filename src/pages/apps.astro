@@ -191,8 +191,11 @@ const resourcesByCategory = Object.keys(categories).reduce(
     <div class="modal-success" id="modal-success" style="display:none;">
       <div class="success-icon">✅</div>
       <h3>Tak for dit forslag!</h3>
-      <p>Dit forslag er nu sendt og vil blive gennemgået af teamet.</p>
-      <button class="cta-button secondary" id="close-success">Luk</button>
+      <p>Dit forslag er nu sendt og vil blive gennemgået hurtigst muligt.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+        <button class="cta-button primary" id="suggest-another">Foreslå en ny →</button>
+        <button class="cta-button secondary" id="close-success">Luk</button>
+      </div>
     </div>
 
     <!-- Fejlbesked (skjult som standard) -->
@@ -263,6 +266,23 @@ const resourcesByCategory = Object.keys(categories).reduce(
     openButtons.forEach((btn) => btn && btn.addEventListener("click", openModal));
     closeBtn && closeBtn.addEventListener("click", closeModal);
     closeSuccess && closeSuccess.addEventListener("click", closeModal);
+
+    // Nulstil formularen og vis den igen
+    const suggestAnother = document.getElementById("suggest-another");
+    suggestAnother && suggestAnother.addEventListener("click", function () {
+      document.getElementById("field-name").value = "";
+      document.getElementById("field-url").value = "";
+      document.getElementById("field-category").value = "";
+      document.getElementById("field-description").value = "";
+      charCount.textContent = "0";
+      ["error-name", "error-url", "error-description"].forEach(
+        (id) => (document.getElementById(id).textContent = "")
+      );
+      document.getElementById("modal-error-banner").style.display = "none";
+      document.getElementById("modal-success").style.display = "none";
+      document.getElementById("modal-form-container").style.display = "flex";
+      document.getElementById("field-name").focus();
+    });
 
     // Luk ved klik på backdrop
     modal.addEventListener("click", function (e) {
