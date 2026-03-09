@@ -336,43 +336,70 @@ import NostrLayout from "../layouts/NostrLayout.astro";
       const withPicture = entries.filter(([, pubkey]) => profiles[pubkey]?.picture).slice(0, 11);
 
       const isMobile = window.innerWidth < 768;
-      const imgSize = isMobile ? "48px" : "64px";
-      const colWidth = isMobile ? "56px" : "72px";
-      const staggerOffset = isMobile ? "0px" : "36px"; // Ingen stagger på mobil
 
-      let colIndex = 0;
-      let col: HTMLDivElement | null = null;
-      let cardsInCol = 0;
-      const maxPerCol = isMobile ? 3 : 2; // Flere per kolonne på mobil = færre kolonner = pænere
+      if (isMobile) {
+        // Mobil: simpelt fladt grid med flexbox wrap
+        teaserGrid.style.display = "flex";
+        teaserGrid.style.flexWrap = "wrap";
+        teaserGrid.style.justifyContent = "center";
+        teaserGrid.style.gap = "12px";
+        teaserGrid.style.alignItems = "center";
 
-      for (const [, pubkey] of withPicture) {
-        const profile = profiles[pubkey];
-        if (!col || cardsInCol >= maxPerCol) {
-          col = document.createElement("div");
-          col.style.display = "flex";
-          col.style.flexDirection = "column";
-          col.style.alignItems = "center";
-          col.style.gap = "10px";
-          col.style.flex = `0 0 ${colWidth}`;
-          // Kun stagger på desktop
-          if (!isMobile && colIndex % 2 === 1) col.style.marginTop = staggerOffset;
-          teaserGrid.appendChild(col);
-          colIndex++;
-          cardsInCol = 0;
+        for (const [, pubkey] of withPicture) {
+          const profile = profiles[pubkey];
+          const img = document.createElement("img");
+          img.style.width = "52px";
+          img.style.height = "52px";
+          img.style.borderRadius = "50%";
+          img.style.objectFit = "cover";
+          img.style.border = "2px solid rgba(108, 79, 150, 0.6)";
+          img.style.display = "block";
+          img.src = profile.picture;
+          img.alt = "";
+          img.loading = "lazy";
+          img.onerror = () => img.style.display = "none";
+          teaserGrid.appendChild(img);
         }
-        const img = document.createElement("img");
-        img.style.width = imgSize;
-        img.style.height = imgSize;
-        img.style.borderRadius = "50%";
-        img.style.objectFit = "cover";
-        img.style.border = "2px solid rgba(108, 79, 150, 0.6)";
-        img.style.display = "block";
-        img.src = profile.picture;
-        img.alt = "";
-        img.loading = "lazy";
-        img.onerror = () => {};
-        col.appendChild(img);
-        cardsInCol++;
+      } else {
+        // Desktop: behold det staggerede kolonne-layout
+        teaserGrid.style.display = "flex";
+        teaserGrid.style.flexWrap = "wrap";
+        teaserGrid.style.justifyContent = "center";
+        teaserGrid.style.gap = "8px 10px";
+        teaserGrid.style.alignItems = "flex-start";
+
+        let colIndex = 0;
+        let col: HTMLDivElement | null = null;
+        let cardsInCol = 0;
+
+        for (const [, pubkey] of withPicture) {
+          const profile = profiles[pubkey];
+          if (!col || cardsInCol >= 2) {
+            col = document.createElement("div");
+            col.style.display = "flex";
+            col.style.flexDirection = "column";
+            col.style.alignItems = "center";
+            col.style.gap = "10px";
+            col.style.flex = "0 0 72px";
+            if (colIndex % 2 === 1) col.style.marginTop = "36px";
+            teaserGrid.appendChild(col);
+            colIndex++;
+            cardsInCol = 0;
+          }
+          const img = document.createElement("img");
+          img.style.width = "64px";
+          img.style.height = "64px";
+          img.style.borderRadius = "50%";
+          img.style.objectFit = "cover";
+          img.style.border = "2px solid rgba(108, 79, 150, 0.6)";
+          img.style.display = "block";
+          img.src = profile.picture;
+          img.alt = "";
+          img.loading = "lazy";
+          img.onerror = () => {};
+          col.appendChild(img);
+          cardsInCol++;
+        }
       }
     } catch {}
   })();
