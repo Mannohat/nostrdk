@@ -363,15 +363,33 @@ const appsItemListLd = {
 
     let activeType = "";
 
-    // Allow deep links like /apps?type=client
+    // Restore state from URL (deep links like /apps?type=client&q=primal)
     try {
       const params = new URLSearchParams(window.location.search || "");
       const t = (params.get("type") || "").trim();
+      const q = (params.get("q") || "").trim();
       if (t && typeSelect) {
         typeSelect.value = t;
         activeType = t;
       }
+      if (q && searchInput) {
+        searchInput.value = q;
+      }
     } catch {}
+
+    function syncUrl() {
+      try {
+        const url = new URL(window.location.href);
+        const q = (searchInput?.value || "").trim();
+        if (activeType) url.searchParams.set("type", activeType);
+        else url.searchParams.delete("type");
+        if (q) url.searchParams.set("q", q);
+        else url.searchParams.delete("q");
+        // Keep it tidy
+        if (!url.searchParams.toString()) url.search = "";
+        window.history.replaceState({}, "", url.toString());
+      } catch {}
+    }
 
     function updateClearVisible() {
       const hasAny = Boolean(activeType) || Boolean((searchInput?.value || "").trim());
@@ -406,6 +424,7 @@ const appsItemListLd = {
         noResults.style.display = visibleCount === 0 ? "block" : "none";
       }
 
+      syncUrl();
       updateClearVisible();
     }
 
@@ -426,10 +445,16 @@ const appsItemListLd = {
     }
 
     if (searchInput) {
+      let qT;
       searchInput.addEventListener("input", function () {
-        applyFilters();
+        // slight debounce for typing
+        clearTimeout(qT);
+        qT = setTimeout(applyFilters, 80);
       });
     }
+
+    // Apply once on load after restoring URL state
+    applyFilters();
 
     // ── Modal: åbn / luk ─────────────────────────────────
     const modal = document.getElementById("suggest-modal");

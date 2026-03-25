@@ -43,7 +43,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 						/>
 						<span class="nip05-suffix">@nostr.dk</span>
 					</div>
-					<div class={statusClassName} id={ids.nameStatus} />
+					<div class={statusClassName} id={ids.nameStatus} role="status" aria-live="polite" aria-atomic="true" />
 				</div>
 
 				<p class="price-note">
@@ -81,7 +81,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 						spellcheck="false"
 						class="pubkey-input"
 					/>
-					<div class={statusClassName} id={ids.pubkeyStatus} />
+					<div class={statusClassName} id={ids.pubkeyStatus} role="status" aria-live="polite" aria-atomic="true" />
 				</div>
 
 				<div class="instructions">
@@ -103,7 +103,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 				>
 					Gå til betaling ⚡
 				</button>
-				<div class={statusClassName} id={ids.payStatus} />
+				<div class={statusClassName} id={ids.payStatus} role="status" aria-live="polite" aria-atomic="true" />
 				<button type="button" id={ids.backBtn} class="back-btn">
 					← Vælg et andet navn
 				</button>
@@ -133,7 +133,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 						/>
 						<span class="nip05-suffix">@nostr.dk</span>
 					</div>
-					<div class="nip05-status" id={ids.nameStatus} />
+					<div class="nip05-status" id={ids.nameStatus} role="status" aria-live="polite" aria-atomic="true" />
 				</div>
 				<p class="nip05-price">
 					@nostr.dk nip-05 adresse for kun <strong>2.100 sats</strong> via{" "}
@@ -167,7 +167,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 						spellcheck="false"
 						class="pubkey-input"
 					/>
-					<div class="nip05-status" id={ids.pubkeyStatus} />
+					<div class="nip05-status" id={ids.pubkeyStatus} role="status" aria-live="polite" aria-atomic="true" />
 				</div>
 				<div class="nip05-instructions">
 					<p>Hvad sker der næste:</p>
@@ -180,7 +180,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 				<button type="button" id={ids.payBtn} class="cta" disabled data-umami-event={umamiPay}>
 					Gå til betaling ⚡
 				</button>
-				<div class="nip05-status" id={ids.payStatus} />
+				<div class="nip05-status" id={ids.payStatus} role="status" aria-live="polite" aria-atomic="true" />
 				<button type="button" id={ids.backBtn} class="nip05-back-btn">
 					← Vælg et andet navn
 				</button>
@@ -255,6 +255,46 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 		let checkTimeout;
 		let confirmedName = "";
 
+		function isLocalDev() {
+			try {
+				return (
+					(location.hostname === "localhost" || location.hostname === "127.0.0.1") &&
+					(location.port === "4321" || location.port === "3000")
+				);
+			} catch {
+				return false;
+			}
+		}
+
+		async function fetchJsonWithNetlifyFallback(path, init) {
+			const tryFetch = async (base) => {
+				const url = base ? `${base}${path}` : path;
+				const res = await fetch(url, init);
+				// If we're on Astro dev, Netlify functions will often be a 404 HTML page.
+				const ct = (res.headers.get("content-type") || "").toLowerCase();
+				if (!ct.includes("application/json")) {
+					// Still allow json-ish responses without headers, but this avoids HTML parse errors.
+					const text = await res.text();
+					try {
+						return { res, data: JSON.parse(text) };
+					} catch {
+						throw new Error(text || "Non-JSON response");
+					}
+				}
+				return { res, data: await res.json() };
+			};
+
+			try {
+				return await tryFetch("");
+			} catch (e) {
+				if (isLocalDev()) {
+					// Netlify Dev default port
+					return await tryFetch("http://localhost:8888");
+				}
+				throw e;
+			}
+		}
+
 		function setNameStatus(type, icon, text) {
 			nameStatus.className = `${statusClass} ${type}`.trim();
 			nameStatus.textContent = `${icon} ${text}`;
@@ -284,10 +324,10 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 			}
 			setNameStatus("checking", "…", "Tjekker tilgængelighed…");
 			try {
-				const res = await fetch(
+				const { res, data } = await fetchJsonWithNetlifyFallback(
 					`/.netlify/functions/check-name?name=${encodeURIComponent(name)}`,
 				);
-				const data = await res.json();
+				if (!res.ok) throw new Error(data?.error || "Fejl");
 				if (data.available) {
 					setNameStatus("available", "✓", "Ledigt!");
 					window.umami?.track("nip05-name-available");
@@ -300,7 +340,13 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 					proceedBtn.disabled = true;
 				}
 			} catch {
-				setNameStatus("error", "!", "Kunne ikke tjekke — prøv igen");
+				setNameStatus(
+					"error",
+					"!",
+					isLocalDev()
+						? "Kunne ikke tjekke lokalt. Prøv `netlify dev` (typisk :8888) eller live site."
+						: "Kunne ikke tjekke — prøv igen",
+				);
 				nameAvailable = false;
 				proceedBtn.disabled = true;
 			}
@@ -366,12 +412,15 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 			payStatus.textContent = "… Forbinder til BTCPay…";
 
 			try {
-				const res = await fetch("/.netlify/functions/create-nip05-invoice", {
-					method: "POST",
-					headers: { "Content-Type": "application/json" },
-					body: JSON.stringify({ name: confirmedName, pubkey }),
-				});
-				const data = await res.json();
+				const { res, data } = await fetchJsonWithNetlifyFallback(
+					"/.netlify/functions/create-nip05-invoice",
+					{
+						method: "POST",
+						headers: { "Content-Type": "application/json" },
+						body: JSON.stringify({ name: confirmedName, pubkey }),
+					},
+				);
+				if (!res.ok) throw new Error(data?.error || "Fejl");
 				if (data.checkoutLink) {
 					window.umami?.track("nip05-invoice-created");
 					window.location.href = data.checkoutLink;
@@ -381,7 +430,9 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 			} catch {
 				window.umami?.track("nip05-invoice-failed");
 				payStatus.className = `${statusClass} error`;
-				payStatus.textContent = "! Noget gik galt — prøv igen";
+				payStatus.textContent = isLocalDev()
+					? "! Kunne ikke oprette betaling lokalt. Prøv `netlify dev` (:8888) eller live site."
+					: "! Noget gik galt — prøv igen";
 				payBtn.disabled = false;
 				payBtn.textContent = "Gå til betaling ⚡";
 			}
