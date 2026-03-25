@@ -8,6 +8,7 @@ import {
 	type Nip05FormIds,
 	type Nip05StatusClass,
 } from "../scripts/nip05-register.client.ts";
+import nip05InitUrl from "../scripts/nip05-register-init.ts?url";
 
 interface Props {
 	variant: "home" | "page";
@@ -24,7 +25,11 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 
 {
 	variant === "page" && (
-		<div class="register-wrap nip05-register-form-root">
+		<div
+			class="register-wrap nip05-register-form-root"
+			data-nip05-ids={JSON.stringify(ids)}
+			data-nip05-status-class={statusClassName}
+		>
 			<div id={ids.step1} class="register-form">
 				<div class="field">
 					<label for={ids.nameInput}>Vælg din nostr adresse</label>
@@ -110,7 +115,11 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 
 {
 	variant === "home" && (
-		<div class="nip05-register nip05-register-form-root">
+		<div
+			class="nip05-register nip05-register-form-root"
+			data-nip05-ids={JSON.stringify(ids)}
+			data-nip05-status-class={statusClassName}
+		>
 			<div id={ids.step1}>
 				<div class="nip05-field">
 					<label for={ids.nameInput} class="visually-hidden">Vælg din nostr adresse</label>
@@ -181,19 +190,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 	)
 }
 
-<script
-	is:inline
-	define:vars={{
-		idsSerialized: JSON.stringify(ids),
-		statusClassSerialized: statusClassName,
-	}}
->
-	import { initNip05RegisterForm } from "../scripts/nip05-register.client.ts";
-
-	const ids = JSON.parse(idsSerialized);
-	const statusClass = statusClassSerialized;
-	initNip05RegisterForm(ids, { statusClass });
-</script>
+<script type="module" src={nip05InitUrl}></script>
 
 <style is:global>
 	/* ---- Side-layout (getnip05, profiler, test-betaling) ---- */
