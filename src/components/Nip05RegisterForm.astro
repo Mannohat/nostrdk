@@ -8,7 +8,6 @@ import {
 	type Nip05FormIds,
 	type Nip05StatusClass,
 } from "../scripts/nip05-register.client.ts";
-import nip05InitUrl from "../scripts/nip05-register-init.ts?url";
 
 interface Props {
 	variant: "home" | "page";
@@ -190,7 +189,211 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 	)
 }
 
-<script type="module" src={nip05InitUrl}></script>
+<script
+	is:inline
+	define:vars={{
+		idsSerialized: JSON.stringify(ids),
+		statusClassSerialized: statusClassName,
+	}}
+>
+	const ids = JSON.parse(idsSerialized);
+	const statusClass = statusClassSerialized;
+
+	function validatePubkey(val) {
+		return /^npub1[a-z0-9]{58}$/.test(val) || /^[0-9a-f]{64}$/.test(val);
+	}
+
+	function el(id) {
+		return document.getElementById(id);
+	}
+
+	function init() {
+		const nameInput0 = el(ids.nameInput);
+		const nameRow0 = el(ids.nameRow);
+		const nameStatus0 = el(ids.nameStatus);
+		const proceedBtn0 = el(ids.proceedBtn);
+		const step10 = el(ids.step1);
+		const step20 = el(ids.step2);
+		const confirmedNameEl0 = el(ids.confirmedName);
+		const backBtn0 = el(ids.backBtn);
+		const pubkeyInput0 = el(ids.pubkeyInput);
+		const pubkeyStatus0 = el(ids.pubkeyStatus);
+		const payBtn0 = el(ids.payBtn);
+		const payStatus0 = el(ids.payStatus);
+
+		if (
+			!nameInput0 ||
+			!nameRow0 ||
+			!nameStatus0 ||
+			!proceedBtn0 ||
+			!step10 ||
+			!step20 ||
+			!confirmedNameEl0 ||
+			!backBtn0 ||
+			!pubkeyInput0 ||
+			!pubkeyStatus0 ||
+			!payBtn0 ||
+			!payStatus0
+		) {
+			return;
+		}
+
+		const nameInput = /** @type {HTMLInputElement} */ (nameInput0);
+		const nameRow = nameRow0;
+		const nameStatus = nameStatus0;
+		const proceedBtn = /** @type {HTMLButtonElement} */ (proceedBtn0);
+		const step1 = step10;
+		const step2 = step20;
+		const confirmedNameEl = confirmedNameEl0;
+		const backBtn = /** @type {HTMLButtonElement} */ (backBtn0);
+		const pubkeyInput = /** @type {HTMLInputElement} */ (pubkeyInput0);
+		const pubkeyStatus = pubkeyStatus0;
+		const payBtn = /** @type {HTMLButtonElement} */ (payBtn0);
+		const payStatus = payStatus0;
+
+		let nameAvailable = false;
+		let checkTimeout;
+		let confirmedName = "";
+
+		function setNameStatus(type, icon, text) {
+			nameStatus.className = `${statusClass} ${type}`.trim();
+			nameStatus.textContent = `${icon} ${text}`;
+			nameRow.className =
+				"nip05-name-row" +
+				(type === "available" ? " valid" : type === "taken" ? " taken" : "");
+		}
+
+		function clearNameStatus() {
+			nameStatus.className = statusClass;
+			nameStatus.textContent = "";
+			nameRow.className = "nip05-name-row";
+			nameAvailable = false;
+			proceedBtn.disabled = true;
+		}
+
+		async function checkAvailability(name) {
+			if (!name) {
+				clearNameStatus();
+				return;
+			}
+			if (!/^[a-z0-9_-]+$/.test(name)) {
+				setNameStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
+				nameAvailable = false;
+				proceedBtn.disabled = true;
+				return;
+			}
+			setNameStatus("checking", "…", "Tjekker tilgængelighed…");
+			try {
+				const res = await fetch(
+					`/.netlify/functions/check-name?name=${encodeURIComponent(name)}`,
+				);
+				const data = await res.json();
+				if (data.available) {
+					setNameStatus("available", "✓", "Ledigt!");
+					window.umami?.track("nip05-name-available");
+					nameAvailable = true;
+					proceedBtn.disabled = false;
+				} else {
+					setNameStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
+					window.umami?.track("nip05-name-taken");
+					nameAvailable = false;
+					proceedBtn.disabled = true;
+				}
+			} catch {
+				setNameStatus("error", "!", "Kunne ikke tjekke — prøv igen");
+				nameAvailable = false;
+				proceedBtn.disabled = true;
+			}
+		}
+
+		// Avoid double-binding (Astro page transitions)
+		if (nameInput.dataset.nip05Bound === "true") return;
+		nameInput.dataset.nip05Bound = "true";
+
+		nameInput.addEventListener("input", () => {
+			const val = nameInput.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+			if (nameInput.value !== val) nameInput.value = val;
+			clearTimeout(checkTimeout);
+			if (!val) {
+				clearNameStatus();
+				return;
+			}
+			checkTimeout = setTimeout(() => checkAvailability(val), 500);
+		});
+
+		proceedBtn.addEventListener("click", () => {
+			if (!nameAvailable) return;
+			confirmedName = nameInput.value.trim();
+			confirmedNameEl.textContent = `✓ ${confirmedName}@nostr.dk er ledigt`;
+			step1.style.display = "none";
+			step2.style.display = "block";
+		});
+
+		backBtn.addEventListener("click", () => {
+			step2.style.display = "none";
+			step1.style.display = "block";
+		});
+
+		pubkeyInput.addEventListener("input", function () {
+			const val = this.value.trim();
+			if (!val) {
+				pubkeyStatus.className = statusClass;
+				pubkeyStatus.textContent = "";
+				pubkeyInput.style.borderColor = "rgba(255,255,255,0.1)";
+				payBtn.disabled = true;
+				return;
+			}
+			if (validatePubkey(val)) {
+				pubkeyStatus.className = `${statusClass} available`;
+				pubkeyStatus.textContent = "✓ Gyldig public key";
+				pubkeyInput.style.borderColor = "#4caf50";
+				payBtn.disabled = false;
+			} else {
+				pubkeyStatus.className = `${statusClass} taken`;
+				pubkeyStatus.textContent = "✗ Skal være npub1… (63 tegn) eller hex (64 tegn)";
+				pubkeyInput.style.borderColor = "#e05050";
+				payBtn.disabled = true;
+			}
+		});
+
+		payBtn.addEventListener("click", async () => {
+			const pubkey = pubkeyInput.value.trim();
+			if (!validatePubkey(pubkey)) return;
+
+			payBtn.disabled = true;
+			payBtn.textContent = "Opretter betaling…";
+			payStatus.className = `${statusClass} checking`;
+			payStatus.textContent = "… Forbinder til BTCPay…";
+
+			try {
+				const res = await fetch("/.netlify/functions/create-nip05-invoice", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ name: confirmedName, pubkey }),
+				});
+				const data = await res.json();
+				if (data.checkoutLink) {
+					window.umami?.track("nip05-invoice-created");
+					window.location.href = data.checkoutLink;
+				} else {
+					throw new Error("Intet checkout link");
+				}
+			} catch {
+				window.umami?.track("nip05-invoice-failed");
+				payStatus.className = `${statusClass} error`;
+				payStatus.textContent = "! Noget gik galt — prøv igen";
+				payBtn.disabled = false;
+				payBtn.textContent = "Gå til betaling ⚡";
+			}
+		});
+	}
+
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", init, { once: true });
+	} else {
+		init();
+	}
+</script>
 
 <style is:global>
 	/* ---- Side-layout (getnip05, profiler, test-betaling) ---- */
