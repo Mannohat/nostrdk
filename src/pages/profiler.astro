@@ -415,21 +415,14 @@ const entries = Object.entries(nostrNames).sort(([a], [b]) => a.localeCompare(b)
         await navigator.clipboard.writeText(text);
         setStatus("Kopieret. Indsæt i din klient for at følge.");
       } catch {
-        // Fallback for older browsers
-        const ta = document.createElement("textarea");
-        ta.value = text;
-        ta.style.position = "fixed";
-        ta.style.left = "-9999px";
-        document.body.appendChild(ta);
-        ta.focus();
-        ta.select();
+        // No `document.execCommand("copy")` fallback (deprecated).
+        // Provide a manual-copy flow instead.
         try {
-          document.execCommand("copy");
-          setStatus("Kopieret. Indsæt i din klient for at følge.");
+          window.prompt("Kopiér pubkeys:", text);
+          setStatus("Kopiér manuelt fra prompten og indsæt i din klient.");
         } catch {
-          setStatus("Kunne ikke kopiere automatisk.");
+          setStatus("Kunne ikke kopiere automatisk. Prøv en anden browser.");
         }
-        ta.remove();
       }
     }
 

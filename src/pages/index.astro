@@ -394,7 +394,7 @@ import { SUPPORT_LNURL } from "../site.config";
 		window.copyToClipboard = async function () {
 			const lnurl = SUPPORT_LNURL;
 			const okMsg = "LNURL kopieret til udklipsholder.";
-			const failMsg = "Kunne ikke kopiere. Prøv venligst igen.";
+			const failMsg = "Kunne ikke kopiere automatisk. Kopiér manuelt: " + lnurl;
 			if (navigator.clipboard && navigator.clipboard.writeText) {
 				try {
 					await navigator.clipboard.writeText(lnurl);
@@ -402,20 +402,12 @@ import { SUPPORT_LNURL } from "../site.config";
 					return;
 				} catch (err) {}
 			}
-			const textArea = document.createElement("textarea");
-			textArea.value = lnurl;
-			textArea.style.position = "fixed";
-			textArea.style.left = "-999999px";
-			document.body.appendChild(textArea);
-			textArea.focus();
-			textArea.select();
+			// No `document.execCommand("copy")` fallback (deprecated).
+			// Provide a manual-copy flow instead.
 			try {
-				document.execCommand("copy");
-				setCopyStatus(okMsg);
-			} catch (err) {
-				setCopyStatus(failMsg);
-			}
-			document.body.removeChild(textArea);
+				window.prompt("Kopiér LNURL:", lnurl);
+			} catch {}
+			setCopyStatus(failMsg);
 		};
 
 		document.addEventListener("DOMContentLoaded", function () {
