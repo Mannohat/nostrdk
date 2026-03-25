@@ -4,6 +4,8 @@ description: "Værktøjer til at administrere Nostr-profiler og nøgler."
 url: "https://nostrtool.com/"
 category: "tools"
 section: "Profile Management"
+type: "tool"
 order: 1
 published: true
+
 ---

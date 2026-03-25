@@ -4,6 +4,8 @@ description: "Soapbox laver værktøjer som hjælper dig med at bygge dine egne 
 url: "https://soapbox.pub/"
 category: "tools"
 section: "Development Tools"
+type: "tool"
 order: 1
 published: true
+
 ---

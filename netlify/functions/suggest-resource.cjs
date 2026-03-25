@@ -1,9 +1,5 @@
-// netlify/functions/suggest-resource.js
+// netlify/functions/suggest-resource.cjs
 // Opretter et GitHub Issue i præcis det format som auto-create-resource-pr.yml forventer.
-//
-// Workflowen kræver:
-//   - Label:  "ressource-forslag"  (+ "needs-review")
-//   - Body:   ### Feltnavne der matches med parseField() i workflowen
 
 exports.handler = async (event) => {
   // Kun POST tilladt
@@ -25,14 +21,32 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Ugyldigt JSON" }) };
   }
 
-  const { name, url, category, description } = body;
+  const { name, url, description, type } = body;
 
   // Valider påkrævede felter
-  if (!name || !url || !description) {
+  if (!name || !url || !description || !type) {
     return {
       statusCode: 400,
       headers,
-      body: JSON.stringify({ error: "Navn, URL og beskrivelse er påkrævet" }),
+      body: JSON.stringify({ error: "Navn, URL, type og beskrivelse er påkrævet" }),
+    };
+  }
+  const allowedTypes = new Set([
+    "client",
+    "wallet",
+    "tool",
+    "extension",
+    "relay",
+    "marketplace",
+    "publishing",
+    "streaming",
+    "service",
+  ]);
+  if (!allowedTypes.has(type)) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({ error: "Ugyldig type" }),
     };
   }
 
@@ -48,7 +62,7 @@ exports.handler = async (event) => {
   }
 
   const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-  const GITHUB_REPO = process.env.GITHUB_REPO || "Mannohat/nostrdk"; // ← ret til dit repo
+  const GITHUB_REPO = process.env.GITHUB_REPO || "Mannohat/nostrdk";
 
   if (!GITHUB_TOKEN) {
     console.error("GITHUB_TOKEN mangler i miljøvariablerne");
@@ -59,19 +73,22 @@ exports.handler = async (event) => {
     };
   }
 
-  // Kategori-værdier skal matche PRÆCIS de strenge workflowen bruger i categoryMap
+  // Vi afleder kategori fra type, så brugeren kun udfylder det nødvendige.
   const categoryLabels = {
     "nostr-alternatives": "🔄 Nostr Alternativer (nostr-alternatives)",
-    "services":           "⚡ Nostr Services (services)",
-    "extensions":         "🔌 Browser Udvidelser (extensions)",
-    "tools":              "🛠️ Nostr Værktøjer (tools)",
-    "relays":             "🌐 Nostr Relays (relays)",
+    services: "⚡ Nostr Services (services)",
+    extensions: "🔌 Browser Udvidelser (extensions)",
+    tools: "🛠️ Nostr Værktøjer (tools)",
+    relays: "🌐 Nostr Relays (relays)",
   };
-  const categoryLabel = categoryLabels[category] || "🔄 Nostr Alternativer (nostr-alternatives)";
+  const categoryKeyByType = {
+    extension: "extensions",
+    relay: "relays",
+    tool: "tools",
+  };
+  const categoryKey = categoryKeyByType[type] || "services";
+  const categoryLabel = categoryLabels[categoryKey] || categoryLabels.services;
 
-  // Issue body SKAL bruge ### overskrifter som workflowens parseField() forventer.
-  // Felterne: "Ressource Navn / Resource Name", "URL", "Kategori / Category",
-  //           "Section Tag (valgfri / optional)", "Beskrivelse / Description"
   const issueBody = [
     `### Ressource Navn / Resource Name`,
     ``,
@@ -85,9 +102,9 @@ exports.handler = async (event) => {
     ``,
     categoryLabel,
     ``,
-    `### Section Tag (valgfri / optional)`,
+    `### Type`,
     ``,
-    ``,
+    type,
     ``,
     `### Beskrivelse / Description`,
     ``,
@@ -111,7 +128,7 @@ exports.handler = async (event) => {
           Accept: "application/vnd.github+json",
           "X-GitHub-Api-Version": "2022-11-28",
         },
-      }
+      },
     );
 
     if (searchResponse.ok) {
@@ -127,23 +144,20 @@ exports.handler = async (event) => {
       }
     }
 
-    const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/issues`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${GITHUB_TOKEN}`,
-          Accept: "application/vnd.github+json",
-          "X-GitHub-Api-Version": "2022-11-28",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: `[RESSOURCE] ${name}`,                          // matcher workflowens title-prefix
-          body: issueBody,
-          labels: ["ressource-forslag", "needs-review"],         // PRÆCIS de labels workflowen lytter efter
-        }),
-      }
-    );
+    const response = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/issues`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${GITHUB_TOKEN}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: `[RESSOURCE] ${name}`,
+        body: issueBody,
+        labels: ["ressource-forslag", "needs-review"],
+      }),
+    });
 
     if (!response.ok) {
       const err = await response.json();
@@ -174,3 +188,4 @@ exports.handler = async (event) => {
     };
   }
 };
+

@@ -55,3 +55,4 @@ exports.handler = async (event) => {
     body: JSON.stringify({ available: !taken, name }),
   };
 };
+

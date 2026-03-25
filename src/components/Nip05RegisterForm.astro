@@ -1,0 +1,510 @@
+---
+/**
+ * Fælles NIP-05 registrering (2 trin). `variant="page"` = egne sider; `variant="home"` = forsiden.
+ */
+import {
+	NIP05_IDS_HOME,
+	NIP05_IDS_PAGE,
+	type Nip05FormIds,
+	type Nip05StatusClass,
+} from "../scripts/nip05-register.client.ts";
+
+interface Props {
+	variant: "home" | "page";
+	umamiNext?: string;
+	umamiPay?: string;
+	lightningUmamiEvent?: string;
+}
+
+const { variant, umamiNext, umamiPay, lightningUmamiEvent } = Astro.props;
+
+const ids: Nip05FormIds = variant === "home" ? NIP05_IDS_HOME : NIP05_IDS_PAGE;
+const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : "status";
+---
+
+{
+	variant === "page" && (
+		<div class="register-wrap nip05-register-form-root">
+			<div id={ids.step1} class="register-form">
+				<div class="field">
+					<label for={ids.nameInput}>Vælg din nostr adresse</label>
+					<div class="nip05-name-row" id={ids.nameRow}>
+						<input
+							type="text"
+							id={ids.nameInput}
+							placeholder="ditnavnher"
+							autocomplete="off"
+							autocapitalize="none"
+							spellcheck="false"
+						/>
+						<span class="nip05-suffix">@nostr.dk</span>
+					</div>
+					<div class={statusClassName} id={ids.nameStatus} />
+				</div>
+
+				<p class="price-note">
+					@nostr.dk NIP-05 adresse for kun <strong>2.100 sats</strong> via{" "}
+					<a
+						href="https://enogtyve.org/da/laer-mere/lightning/"
+						target="_blank"
+						rel="noopener noreferrer">Lightning</a>{" "}
+					⚡
+				</p>
+
+				<button
+					type="button"
+					id={ids.proceedBtn}
+					class="cta"
+					disabled
+					style="margin-top: 20px; width: 100%;"
+					data-umami-event={umamiNext}
+				>
+					Næste
+				</button>
+			</div>
+
+			<div id={ids.step2} class="register-form" style="display: none;">
+				<div class="confirmed-name" id={ids.confirmedName} />
+
+				<div class="field">
+					<label for={ids.pubkeyInput}>Din Nostr public key</label>
+					<input
+						type="text"
+						id={ids.pubkeyInput}
+						placeholder="npub1… eller hex"
+						autocomplete="off"
+						autocapitalize="none"
+						spellcheck="false"
+						class="pubkey-input"
+					/>
+					<div class={statusClassName} id={ids.pubkeyStatus} />
+				</div>
+
+				<div class="instructions">
+					<p>Hvad sker der næste:</p>
+					<ol>
+						<li>Klik "Gå til betaling ⚡"</li>
+						<li>Betal 2.100 sats via Lightning</li>
+						<li>Din NIP-05 adresse aktiveres automatisk</li>
+					</ol>
+				</div>
+
+				<button
+					type="button"
+					id={ids.payBtn}
+					class="cta"
+					disabled
+					style="margin-top: 20px; width: 100%;"
+					data-umami-event={umamiPay}
+				>
+					Gå til betaling ⚡
+				</button>
+				<div class={statusClassName} id={ids.payStatus} />
+				<button type="button" id={ids.backBtn} class="back-btn">
+					← Vælg et andet navn
+				</button>
+			</div>
+		</div>
+	)
+}
+
+{
+	variant === "home" && (
+		<div class="nip05-register nip05-register-form-root">
+			<div id={ids.step1}>
+				<div class="nip05-field">
+					<label for={ids.nameInput} class="visually-hidden">Vælg din nostr adresse</label>
+					<div class="nip05-name-row" id={ids.nameRow}>
+						<input
+							type="text"
+							id={ids.nameInput}
+							placeholder="ditnavnher"
+							autocomplete="off"
+							autocapitalize="none"
+							spellcheck="false"
+						/>
+						<span class="nip05-suffix">@nostr.dk</span>
+					</div>
+					<div class="nip05-status" id={ids.nameStatus} />
+				</div>
+				<p class="nip05-price">
+					@nostr.dk nip-05 adresse for kun <strong>2.100 sats</strong> via{" "}
+					<a
+						href="https://enogtyve.org/da/laer-mere/lightning/"
+						target="_blank"
+						rel="noopener noreferrer"
+						data-umami-event={lightningUmamiEvent}>Lightning</a>{" "}
+					⚡
+				</p>
+				<button type="button" id={ids.proceedBtn} class="cta" disabled data-umami-event={umamiNext}>
+					Næste
+				</button>
+			</div>
+
+			<div id={ids.step2} style="display: none;">
+				<div class="nip05-confirmed" id={ids.confirmedName} />
+				<div class="nip05-field" style="margin-bottom: 1rem;">
+					<label
+						for={ids.pubkeyInput}
+						style="display:block; font-size:0.85rem; font-weight:600; color:#e0e0e0; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;"
+					>
+						Din Nostr public key
+					</label>
+					<input
+						type="text"
+						id={ids.pubkeyInput}
+						placeholder="npub1… eller hex"
+						autocomplete="off"
+						autocapitalize="none"
+						spellcheck="false"
+						class="pubkey-input"
+					/>
+					<div class="nip05-status" id={ids.pubkeyStatus} />
+				</div>
+				<div class="nip05-instructions">
+					<p>Hvad sker der næste:</p>
+					<ol>
+						<li>Klik "Gå til betaling ⚡"</li>
+						<li>Betal 2.100 sats via Lightning</li>
+						<li>Din NIP-05 adresse aktiveres automatisk</li>
+					</ol>
+				</div>
+				<button type="button" id={ids.payBtn} class="cta" disabled data-umami-event={umamiPay}>
+					Gå til betaling ⚡
+				</button>
+				<div class="nip05-status" id={ids.payStatus} />
+				<button type="button" id={ids.backBtn} class="nip05-back-btn">
+					← Vælg et andet navn
+				</button>
+			</div>
+		</div>
+	)
+}
+
+<script
+	is:inline
+	define:vars={{
+		idsSerialized: JSON.stringify(ids),
+		statusClassSerialized: statusClassName,
+	}}
+>
+	import { initNip05RegisterForm } from "../scripts/nip05-register.client.ts";
+
+	const ids = JSON.parse(idsSerialized);
+	const statusClass = statusClassSerialized;
+	initNip05RegisterForm(ids, { statusClass });
+</script>
+
+<style is:global>
+	/* ---- Side-layout (getnip05, profiler, test-betaling) ---- */
+	.register-wrap {
+		max-width: 480px;
+		margin: 0 auto;
+		padding: 0 0 80px;
+	}
+
+	.register-form {
+		text-align: left;
+	}
+
+	.field {
+		margin-bottom: 1.4rem;
+	}
+
+	.nip05-register-form-root label {
+		display: block;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: #e0e0e0;
+		margin-bottom: 0.5rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+	}
+
+	.nip05-name-row {
+		display: flex;
+		align-items: stretch;
+		background: rgba(0, 0, 0, 0.3);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 6px;
+		overflow: hidden;
+		transition: border-color 0.2s;
+	}
+
+	.nip05-name-row:focus-within {
+		border-color: rgba(108, 79, 150, 0.8);
+	}
+
+	.nip05-name-row.valid {
+		border-color: #4caf50;
+	}
+
+	.nip05-name-row.taken {
+		border-color: #e05050;
+	}
+
+	.nip05-name-row input[type="text"] {
+		flex: 1;
+		background: transparent;
+		border: none;
+		outline: none;
+		padding: 0.7rem 0.9rem;
+	}
+
+	.nip05-register-form-root .nip05-suffix {
+		padding: 0 0.75rem;
+		color: rgba(255, 255, 255, 0.55);
+		font-size: 0.9rem;
+		white-space: nowrap;
+		border-left: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(0, 0, 0, 0.2);
+		display: flex;
+		align-items: center;
+	}
+
+	.pubkey-input {
+		width: 100%;
+		background: rgba(0, 0, 0, 0.3);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 6px;
+		padding: 0.7rem 0.9rem;
+		color: #fff;
+		font-size: 0.9rem;
+		outline: none;
+		transition: border-color 0.2s;
+		box-sizing: border-box;
+	}
+
+	.pubkey-input:focus {
+		border-color: rgba(108, 79, 150, 0.8);
+	}
+
+	.status {
+		font-size: 0.82rem;
+		margin-top: 0.4rem;
+		min-height: 1.1em;
+	}
+
+	.status.checking {
+		color: rgba(255, 255, 255, 0.55);
+	}
+
+	.status.available {
+		color: #4caf50;
+	}
+
+	.status.taken {
+		color: #e05050;
+	}
+
+	.status.error {
+		color: #e08050;
+	}
+
+	.price-note {
+		font-size: 0.9rem;
+		color: rgba(255, 255, 255, 0.6);
+		margin: 0.5rem 0 0;
+	}
+
+	.price-note strong {
+		color: #fff;
+	}
+
+	.price-note a {
+		color: rgba(255, 255, 255, 0.6);
+	}
+
+	.nip05-register-form-root .cta:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+		transform: none;
+	}
+
+	.confirmed-name {
+		font-size: 1.3rem;
+		font-weight: 700;
+		color: #4caf50;
+		margin-bottom: 1.2rem;
+		text-align: center;
+	}
+
+	.instructions {
+		background: rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		padding: 1rem 1.2rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.instructions p {
+		font-size: 0.9rem;
+		color: #e0e0e0;
+		margin-bottom: 0.8rem;
+	}
+
+	.instructions ol {
+		padding-left: 1.2rem;
+		color: #d0d0d0;
+		font-size: 0.88rem;
+		line-height: 1.8;
+	}
+
+	.instructions strong {
+		color: #fff;
+	}
+
+	.instructions em {
+		color: rgba(255, 255, 255, 0.6);
+		font-style: normal;
+	}
+
+	.back-btn {
+		background: none;
+		border: none;
+		color: rgba(255, 255, 255, 0.55);
+		font-size: 0.82rem;
+		cursor: pointer;
+		margin-top: 1rem;
+		padding: 0;
+		display: block;
+		transition: color 0.2s;
+	}
+
+	.back-btn:hover {
+		color: rgba(255, 255, 255, 0.7);
+	}
+
+	/* ---- Forside (.nip05-register) ---- */
+	.nip05-register {
+		max-width: 480px;
+		margin: 30px auto 10px;
+		text-align: left;
+	}
+
+	.nip05-register .nip05-field {
+		margin-bottom: 1rem;
+	}
+
+	.nip05-register .nip05-name-row input {
+		flex: 1;
+		background: transparent;
+		border: none;
+		outline: none;
+		padding: 0.7rem 0.9rem;
+		font-family: "Inter", sans-serif;
+		font-size: 1rem;
+		color: #fff;
+	}
+
+	.nip05-register .nip05-name-row input::placeholder {
+		color: rgba(255, 255, 255, 0.48);
+	}
+
+	.nip05-status {
+		font-size: 0.82rem;
+		margin-top: 0.4rem;
+		min-height: 1.1em;
+	}
+
+	.nip05-status.checking {
+		color: rgba(255, 255, 255, 0.55);
+	}
+
+	.nip05-status.available {
+		color: #4caf50;
+	}
+
+	.nip05-status.taken {
+		color: #e05050;
+	}
+
+	.nip05-status.error {
+		color: #e08050;
+	}
+
+	.nip05-price {
+		font-size: 0.9rem;
+		color: rgba(255, 255, 255, 0.6);
+		margin: 0.6rem 0 0;
+	}
+
+	.nip05-price strong {
+		color: #fff;
+	}
+
+	.nip05-register .cta {
+		margin-top: 1rem;
+		width: 100%;
+		text-align: center;
+		display: block;
+	}
+
+	.nip05-register .cta:disabled {
+		opacity: 0.3;
+		cursor: not-allowed;
+		transform: none;
+	}
+
+	.nip05-confirmed {
+		font-size: 1.2rem;
+		font-weight: 700;
+		color: #4caf50;
+		margin-bottom: 1rem;
+	}
+
+	.nip05-instructions {
+		background: rgba(0, 0, 0, 0.2);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 8px;
+		padding: 0.9rem 1.1rem;
+		margin-bottom: 0.5rem;
+	}
+
+	.nip05-instructions p {
+		font-size: 0.9rem;
+		color: #e0e0e0;
+		margin-bottom: 0.6rem;
+		text-align: left;
+	}
+
+	.nip05-instructions ol {
+		padding-left: 1.2rem;
+		color: #d0d0d0;
+		font-size: 0.88rem;
+		line-height: 1.8;
+		text-align: left;
+		margin-bottom: 0;
+	}
+
+	.nip05-instructions strong {
+		color: #fff;
+	}
+
+	.nip05-instructions em {
+		color: rgba(255, 255, 255, 0.55);
+		font-style: normal;
+	}
+
+	.nip05-back-btn {
+		background: none;
+		border: none;
+		color: rgba(255, 255, 255, 0.55);
+		font-size: 0.82rem;
+		cursor: pointer;
+		margin-top: 0.8rem;
+		padding: 0;
+		display: block;
+		transition: color 0.2s;
+	}
+
+	.nip05-back-btn:hover {
+		color: rgba(255, 255, 255, 0.7);
+	}
+
+	@media (max-width: 768px) {
+		.register-wrap {
+			padding: 0 0 40px;
+		}
+	}
+</style>

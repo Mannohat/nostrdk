@@ -1,4 +1,4 @@
-// netlify/functions/create-nip05-invoice.js
+// netlify/functions/create-nip05-invoice.cjs
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -47,7 +47,7 @@ exports.handler = async (event) => {
             redirectAutomatically: true,
           },
         }),
-      }
+      },
     );
 
     if (!response.ok) {
@@ -66,3 +66,4 @@ exports.handler = async (event) => {
     return { statusCode: 500, body: "Server error" };
   }
 };
+

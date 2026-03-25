@@ -40,13 +40,6 @@ body:
     validations:
       required: true
 
-  - type: input
-    id: section
-    attributes:
-      label: Section Tag (valgfri / optional)
-      description: F.eks. "Social Media", "Wallet", "Media Storage"
-      placeholder: Social Media
-
   - type: textarea
     id: description
     attributes:

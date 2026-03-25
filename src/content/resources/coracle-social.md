@@ -4,7 +4,9 @@ description: "Coracle.social er en web-baseret Nostr-klient, hvor du kan læse o
 url: "https://coracle.social/"
 category: "nostr-alternatives"
 section: "Social Media"
+type: "client"
 order: 6
 published: true
+
 ---
 

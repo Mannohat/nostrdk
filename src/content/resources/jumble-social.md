@@ -4,7 +4,9 @@ description: "Jumble.social er en web-baseret klient til den decentraliserede No
 url: "https://jumble.social/"
 category: "nostr-alternatives"
 section: "Social Media"
+type: "client"
 order: 5
 published: true
+
 ---
 

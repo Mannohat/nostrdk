@@ -34,7 +34,6 @@ jobs:
             const name = parseField('Ressource Navn / Resource Name');
             const url = parseField('URL');
             const categoryRaw = parseField('Kategori / Category');
-            const section = parseField('Section Tag \\(valgfri / optional\\)') || '';
             const description = parseField('Beskrivelse / Description');
             
             const categoryMap = {
@@ -60,9 +59,6 @@ jobs:
             frontmatter += 'description: "' + finalDescription + '"\n';
             frontmatter += 'url: "' + finalUrl + '"\n';
             frontmatter += 'category: "' + category + '"\n';
-            if (section) {
-              frontmatter += 'section: "' + section + '"\n';
-            }
             frontmatter += 'order: 50\n';
             frontmatter += 'published: true\n';
             frontmatter += '---\n';
@@ -72,7 +68,6 @@ jobs:
             core.exportVariable('RESOURCE_CONTENT', frontmatter);
             core.exportVariable('RESOURCE_URL', finalUrl);
             core.exportVariable('RESOURCE_CATEGORY', category);
-            core.exportVariable('RESOURCE_SECTION', section);
             core.exportVariable('RESOURCE_DESCRIPTION', finalDescription);
       
       - name: Create branch and file
@@ -102,7 +97,6 @@ jobs:
             const name = process.env.RESOURCE_NAME;
             const url = process.env.RESOURCE_URL;
             const category = process.env.RESOURCE_CATEGORY;
-            const section = process.env.RESOURCE_SECTION;
             const description = process.env.RESOURCE_DESCRIPTION;
             const filename = process.env.RESOURCE_FILENAME;
             const branchName = process.env.BRANCH_NAME;
@@ -113,7 +107,6 @@ jobs:
               '- **Name:** ' + name + '\n' +
               '- **URL:** ' + url + '\n' +
               '- **Category:** ' + category + '\n' +
-              (section ? '- **Section:** ' + section + '\n' : '') +
               '- **Description:** ' + description + '\n\n' +
               '## Review Checklist\n' +
               '- [ ] URL is correct and works\n' +

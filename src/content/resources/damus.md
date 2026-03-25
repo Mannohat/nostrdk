@@ -4,6 +4,8 @@ description: "En mobil-app til iOS, der tilbyder et decentralt, censurfrit Twitt
 url: "https://damus.io"
 category: "nostr-alternatives"
 section: "Twitter Alternative"
+type: "client"
 order: 2
 published: true
+
 ---

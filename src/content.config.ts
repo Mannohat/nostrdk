@@ -34,6 +34,25 @@ const resources = defineCollection({
 		description: z.string(),
 		url: z.string(),
 		category: z.string(),
+		/**
+		 * High-signal filter facet (single-select). Defaults keep existing content valid.
+		 * Examples: client, wallet, tool, extension, relay, marketplace, publishing, streaming, service
+		 */
+		type: z
+			.enum([
+				'client',
+				'wallet',
+				'tool',
+				'extension',
+				'relay',
+				'marketplace',
+				'publishing',
+				'streaming',
+				'service',
+			])
+			.default('service'),
+		/** Optional multi-tags for refinement (e.g. chat, payments, video) */
+		tags: z.array(z.string()).default([]),
 		section: z.string().optional(), // ← valgfri, bruges ikke af alle ressourcer
 		order: z.number(),
 		published: z.boolean().default(true),

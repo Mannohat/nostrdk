@@ -4,6 +4,8 @@ description: "En Nostr-klient, der ligner Twitter og understøtter både mobil o
 url: "https://primal.net"
 category: "nostr-alternatives"
 section: "Twitter Alternative"
+type: "client"
 order: 1
 published: true
+
 ---

@@ -7,43 +7,147 @@ const allResources = await getCollection("resources", ({ data }) => {
   return data.published === true;
 });
 
-// Group by category
-const categories = {
-  "nostr-alternatives": {
-    title: "Nostr Alternativer til Centraliserede Tjenester",
-    description: "Decentraliserede alternativer til populære services",
-  },
-  services: {
-    title: "Nostr Services",
-    description: "Specialiserede tjenester bygget på Nostr",
-  },
-  extensions: {
-    title: "Browser Udvidelser",
-    description: "Nøglestyring og signering i browseren",
-  },
-  tools: {
-    title: "Nostr Værktøjer",
-    description: "Hjælpeværktøjer til at navigere i Nostr-økosystemet",
-  },
-  relays: {
-    title: "Nostr Relays",
-    description: "Find og administrer Nostr relays",
-  },
+const TYPE_LABELS: Record<string, string> = {
+  client: "Klient",
+  wallet: "Wallet",
+  tool: "Værktøj",
+  extension: "Udvidelse",
+  relay: "Relay",
+  marketplace: "Markedsplads",
+  publishing: "Publicering",
+  streaming: "Streaming",
+  service: "Service",
 };
 
-// Sort resources by order within each category
-const resourcesByCategory = Object.keys(categories).reduce(
-  (acc, cat) => {
-    acc[cat] = allResources
-      .filter((r) => r.data.category === cat)
-      .sort((a, b) => a.data.order - b.data.order);
-    return acc;
-  },
-  {} as Record<string, typeof allResources>,
+const TYPE_LABELS_PLURAL: Record<string, string> = {
+  client: "Klienter",
+  wallet: "Wallets",
+  tool: "Værktøjer",
+  extension: "Udvidelser",
+  relay: "Relays",
+  marketplace: "Markedspladser",
+  publishing: "Publicering",
+  streaming: "Streaming",
+  service: "Services",
+};
+
+function duckDuckGoFaviconUrl(rawUrl: string) {
+  try {
+    const href = new URL(rawUrl, Astro.site).href;
+    const host = new URL(href).hostname;
+    return `https://icons.duckduckgo.com/ip3/${host}.ico`;
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeText(...parts: Array<string | undefined | null>) {
+  return parts
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function inferType(resource: (typeof allResources)[number]) {
+  // Explicit override wins (once you start populating markdown frontmatter)
+  const explicit = resource.data.type;
+  if (explicit && explicit !== "service") return explicit;
+
+  const category = resource.data.category;
+  if (category === "extensions") return "extension";
+  if (category === "relays") return "relay";
+
+  const text = normalizeText(
+    resource.data.title,
+    resource.data.description,
+    resource.data.section,
+    resource.data.url,
+  );
+
+  // Strong client signals (known clients + "client/klient")
+  if (
+    /\b(client|klient)\b/.test(text) ||
+    /\b(damus|primal|snort|coracle|iris)\b/.test(text)
+  ) {
+    return "client";
+  }
+
+  if (/\b(wallet|lightning wallet|nwc|wallet connect|lnurl)\b/.test(text)) return "wallet";
+  if (/\b(marketplace|markedsplads|market)\b/.test(text)) return "marketplace";
+  if (/\b(stream|streaming|video|music|podcast)\b/.test(text)) return "streaming";
+  if (/\b(publicer|publicering|publish|publishing|blog|artikler|news)\b/.test(text)) return "publishing";
+  if (/\b(tool|værktøj|search|søg|stats|directory|discover|discovery)\b/.test(text)) return "tool";
+
+  // Fallback
+  return explicit || "service";
+}
+
+const availableTypes = Array.from(
+  new Set(allResources.map((r) => inferType(r)).filter(Boolean)),
+).sort((a, b) =>
+  (TYPE_LABELS_PLURAL[a] ?? TYPE_LABELS[a] ?? a).localeCompare(
+    TYPE_LABELS_PLURAL[b] ?? TYPE_LABELS[b] ?? b,
+    "da",
+  ),
 );
+
+const TYPE_SECTION_META: Record<string, { title: string; description?: string }> = {
+  client: { title: "Klienter", description: "Apps til at bruge Nostr (social, notes, feeds osv.)." },
+  wallet: { title: "Wallets", description: "Lightning/NWC wallets og betaling." },
+  tool: { title: "Værktøjer", description: "Alt det praktiske til Nostr-økosystemet." },
+  extension: { title: "Udvidelser", description: "Browser-udvidelser til nøgler og signering." },
+  relay: { title: "Relays", description: "Relays og relaterede services." },
+  marketplace: { title: "Markedspladser" },
+  publishing: { title: "Publicering" },
+  streaming: { title: "Streaming" },
+  service: { title: "Services" },
+};
+
+const resourcesByType = availableTypes.reduce((acc, t) => {
+  acc[t] = allResources
+    .filter((r) => inferType(r) === t)
+    .sort((a, b) => {
+      const ao = Number.isFinite(a.data.order) ? a.data.order : 9999;
+      const bo = Number.isFinite(b.data.order) ? b.data.order : 9999;
+      if (ao !== bo) return ao - bo;
+      return a.data.title.localeCompare(b.data.title, "da");
+    });
+  return acc;
+}, {} as Record<string, typeof allResources>);
+
+const appsItemListLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Apps & Tjenester",
+  itemListOrder: "http://schema.org/ItemListOrderAscending",
+  itemListElement: allResources.map((r, idx) => {
+    const url = (() => {
+      const raw = r.data.url;
+      try {
+        return new URL(raw, Astro.site).href;
+      } catch {
+        return raw;
+      }
+    })();
+
+    return {
+      "@type": "ListItem",
+      position: idx + 1,
+      name: r.data.title,
+      url,
+      description: r.data.description,
+    };
+  }),
+};
 ---
 
-<NostrLayout title="Apps & Tjenester | Nostr.dk" description="Oversigt over decentraliserede apps og tjenester bygget på Nostr – alternativer til YouTube, Twitter, Facebook og meget mere.">
+<NostrLayout
+  title="Apps & Tjenester | Nostr.dk"
+  description="Oversigt over decentraliserede apps og tjenester bygget på Nostr – alternativer til YouTube, Twitter, Facebook og meget mere."
+  jsonLdArticle={appsItemListLd}
+>
 
   <div class="page-header">
     <h1>Apps & Tjenester</h1>
@@ -57,60 +161,82 @@ const resourcesByCategory = Object.keys(categories).reduce(
 
   <!-- Search Bar with Subtle Contribute Link -->
   <div class="search-container">
+    <label for="search-input" class="visually-hidden">Søg efter apps og tjenester</label>
     <input
       type="text"
       id="search-input"
       placeholder="🔍 Søg efter apps og tjenester..."
       class="search-input"
+      autocomplete="off"
     />
+  </div>
+
+  <!-- Filters -->
+  <div class="filters" aria-label="Filtre">
+    <div class="filters-bar">
+      <label class="filters-label" for="type-select">Type</label>
+      <select id="type-select" class="filters-select">
+        <option value="">Alle</option>
+        {availableTypes.map((t) => (
+          <option value={t}>{TYPE_LABELS_PLURAL[t] ?? TYPE_LABELS[t] ?? t}</option>
+        ))}
+      </select>
+
+      <button type="button" class="filters-clear" id="clear-filters" style="display:none;">
+        Nulstil
+      </button>
+    </div>
+
     <!-- Subtle Contribute Link – åbner nu modal i stedet for GitHub -->
     <div class="contribute-link">
       <p>
-        Mangler der noget? <button class="link-button" id="open-modal-subtle">Foreslå App / Tjeneste →</button>
+        Mangler der noget? <button type="button" class="link-button" id="open-modal-subtle" data-umami-event="apps-suggest-open-subtle">Foreslå App / Tjeneste →</button>
       </p>
     </div>
   </div>
 
-  <!-- Section filter banner (skjult som standard) -->
-  <div id="section-filter-banner" style="display:none;">
-    <span>Viser: <strong id="section-filter-label"></strong></span>
-    <button id="clear-section-filter">✕ Vis alle</button>
-  </div>
-
   <!-- Resources by Category -->
   {
-    Object.entries(categories).map(([categoryKey, categoryInfo]) => {
-      const resources = resourcesByCategory[categoryKey];
+    availableTypes.map((typeKey) => {
+      const resources = resourcesByType[typeKey];
       if (!resources || resources.length === 0) return null;
+      const meta = TYPE_SECTION_META[typeKey] ?? { title: TYPE_LABELS[typeKey] ?? typeKey };
 
       return (
-        <section class="resource-section" data-category={categoryKey}>
-          <h2 class="section-title">{categoryInfo.title}</h2>
-          <p class="section-description">{categoryInfo.description}</p>
+        <section class="resource-section" data-type={typeKey}>
+          <h2 class="section-title">{meta.title}</h2>
+          {meta.description && <p class="section-description">{meta.description}</p>}
 
           <div class="resource-grid">
             {resources.map((resource) => (
               <div
                 class="resource-card"
                 data-search-text={`${resource.data.title} ${resource.data.description} ${resource.data.section}`.toLowerCase()}
+                data-type={inferType(resource)}
               >
-                <h3>{resource.data.title}</h3>
-                {resource.data.section && (
-                  <div
-                    class="resource-section-tag"
-                    data-section={resource.data.section}
-                    role="button"
-                    tabindex="0"
-                    title={`Vis alle: ${resource.data.section}`}
-                  >
-                    🏷️ {resource.data.section}
-                  </div>
-                )}
+                <div class="resource-title-row">
+                  {duckDuckGoFaviconUrl(resource.data.url) && (
+                    <img
+                      class="resource-favicon"
+                      src={duckDuckGoFaviconUrl(resource.data.url)}
+                      alt={`${resource.data.title} ikon`}
+                      width="24"
+                      height="24"
+                      loading="lazy"
+                      decoding="async"
+                      referrerpolicy="no-referrer"
+                      onerror="this.remove()"
+                    />
+                  )}
+                  <h3>{resource.data.title}</h3>
+                </div>
                 <p>{resource.data.description}</p>
                 <a
                   href={resource.data.url}
                   target="_blank"
+                  rel="noopener noreferrer"
                   class="resource-link"
+                  data-umami-event="apps-resource-outbound"
                 >
                   Besøg {resource.data.title} →
                 </a>
@@ -135,7 +261,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
       Hjælp os med at gøre listen bedre eller udforsk mere indhold om Nostr
     </p>
     <div class="cta-buttons">
-      <button class="cta-button primary" id="open-modal-cta">
+      <button type="button" class="cta-button primary" id="open-modal-cta" data-umami-event="apps-suggest-open-cta">
         ➕ Foreslå App / Tjeneste
       </button>
       <a href="/podcasts" class="cta-button secondary">Se Podcasts →</a>
@@ -143,8 +269,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
     </div>
   </section>
 
-</NostrLayout>
-
+  <div slot="after-footer">
 <!-- =====================================================
      MODAL – Foreslå ressource
      ===================================================== -->
@@ -161,49 +286,50 @@ const resourcesByCategory = Object.keys(categories).reduce(
     </div>
 
     <!-- Form -->
-    <div class="modal-form" id="modal-form-container">
-      <div class="form-group">
-        <label for="field-name">Navn på app / tjeneste <span class="required">*</span></label>
-        <input type="text" id="field-name" placeholder="f.eks. Damus, Primal, Coracle..." maxlength="80" />
-        <span class="field-error" id="error-name"></span>
+    <form class="modal-form" id="modal-form-container" novalidate>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="field-name">Navn <span class="required">*</span></label>
+        <input type="text" id="field-name" placeholder="f.eks. Damus, Primal, Coracle" maxlength="80" autocomplete="off" required aria-describedby="error-name" />
+          <span class="field-error" id="error-name" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="field-url">Link (URL) <span class="required">*</span></label>
+          <input type="url" id="field-url" placeholder="https://…" maxlength="200" inputmode="url" autocomplete="off" required aria-describedby="error-url" />
+          <span class="field-error" id="error-url" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="field-type">Type <span class="required">*</span></label>
+          <select id="field-type" required aria-describedby="error-type">
+            <option value="">Vælg type</option>
+            <option value="client">Klient</option>
+            <option value="wallet">Wallet</option>
+            <option value="tool">Værktøj</option>
+            <option value="extension">Udvidelse</option>
+            <option value="relay">Relay</option>
+            <option value="marketplace">Markedsplads</option>
+            <option value="publishing">Publicering</option>
+            <option value="streaming">Streaming</option>
+            <option value="service">Service</option>
+          </select>
+          <span class="field-error" id="error-type" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group form-group--full">
+          <label for="field-description">Kort beskrivelse <span class="required">*</span></label>
+          <textarea id="field-description" placeholder="Hvad gør appen/tjenesten? (max 300 tegn)" maxlength="300" rows="3" required aria-describedby="error-description"></textarea>
+          <div class="char-counter"><span id="char-count">0</span> / 300</div>
+          <span class="field-error" id="error-description" aria-live="polite"></span>
+        </div>
       </div>
 
-      <div class="form-group">
-        <label for="field-url">URL <span class="required">*</span></label>
-        <input type="text" id="field-url" placeholder="https://..." maxlength="200" />
-        <span class="field-error" id="error-url"></span>
-      </div>
-
-      <div class="form-group">
-        <label for="field-category">Kategori</label>
-        <select id="field-category">
-          <option value="">Vælg kategori (valgfri)</option>
-          <option value="nostr-alternatives">Nostr Alternativ til centraliseret tjeneste</option>
-          <option value="services">Nostr Service</option>
-          <option value="extensions">Browser Udvidelse</option>
-          <option value="tools">Nostr Værktøj</option>
-          <option value="relays">Nostr Relay</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label for="field-section">Section tag</label>
-        <input type="text" id="field-section" placeholder="f.eks. Twitter Alternative, Youtube Alternative, Payments..." maxlength="50" />
-        <span class="field-hint">Eksisterende tags: Twitter Alternative, Youtube Alternative, Social Media, Payments, Streaming, Marketplace, Chat/Besked...</span>
-      </div>
-
-      <div class="form-group">
-        <label for="field-description">Kort beskrivelse <span class="required">*</span></label>
-        <textarea id="field-description" placeholder="Beskriv hvad appen/tjenesten gør – max 300 tegn..." maxlength="300" rows="3"></textarea>
-        <div class="char-counter"><span id="char-count">0</span> / 300</div>
-        <span class="field-error" id="error-description"></span>
-      </div>
-
-      <button class="submit-button" id="submit-suggestion">
+      <button type="submit" class="submit-button" id="submit-suggestion" data-umami-event="apps-suggest-submit">
         <span id="submit-text">Send forslag</span>
         <span id="submit-spinner" class="spinner" style="display:none;"></span>
       </button>
-    </div>
+    </form>
 
     <!-- Succesbesked (skjult som standard) -->
     <div class="modal-success" id="modal-success" style="display:none;">
@@ -217,7 +343,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
     </div>
 
     <!-- Fejlbesked (skjult som standard) -->
-    <div class="modal-error-banner" id="modal-error-banner" style="display:none;">
+    <div class="modal-error-banner" id="modal-error-banner" style="display:none;" role="alert" aria-live="assertive">
       <span id="modal-error-text">Der skete en fejl. Prøv igen.</span>
     </div>
   </div>
@@ -225,37 +351,83 @@ const resourcesByCategory = Object.keys(categories).reduce(
 
 <script is:inline>
   document.addEventListener("DOMContentLoaded", function () {
+    let lastFocusedBeforeModal = null;
 
     // ── Søgefunktion ──────────────────────────────────────
     const searchInput = document.getElementById("search-input");
     const resourceCards = document.querySelectorAll(".resource-card");
     const resourceSections = document.querySelectorAll(".resource-section");
     const noResults = document.getElementById("no-results");
+    const typeSelect = document.getElementById("type-select");
+    const clearFiltersBtn = document.getElementById("clear-filters");
+
+    let activeType = "";
+
+    // Allow deep links like /apps?type=client
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const t = (params.get("type") || "").trim();
+      if (t && typeSelect) {
+        typeSelect.value = t;
+        activeType = t;
+      }
+    } catch {}
+
+    function updateClearVisible() {
+      const hasAny = Boolean(activeType) || Boolean((searchInput?.value || "").trim());
+      if (clearFiltersBtn) clearFiltersBtn.style.display = hasAny ? "inline-flex" : "none";
+    }
+
+    function applyFilters() {
+      const searchTerm = (searchInput?.value || "").toLowerCase().trim();
+      let visibleCount = 0;
+
+      resourceCards.forEach(function (card) {
+        const searchText = card.getAttribute("data-search-text") || "";
+        const matchesSearch = !searchTerm || searchText.includes(searchTerm);
+
+        const type = card.getAttribute("data-type") || "";
+        const matchesType = !activeType || type === activeType;
+
+        const show = matchesSearch && matchesType;
+        card.classList.toggle("hidden", !show);
+        if (show) visibleCount++;
+      });
+
+      resourceSections.forEach(function (section) {
+        const cardsInSection = section.querySelectorAll(".resource-card");
+        const hasVisible = Array.from(cardsInSection).some(
+          (c) => !c.classList.contains("hidden")
+        );
+        section.classList.toggle("hidden", !hasVisible);
+      });
+
+      if (noResults) {
+        noResults.style.display = visibleCount === 0 ? "block" : "none";
+      }
+
+      updateClearVisible();
+    }
+
+    if (typeSelect) {
+      typeSelect.addEventListener("change", () => {
+        activeType = typeSelect.value || "";
+        applyFilters();
+      });
+    }
+
+    if (clearFiltersBtn) {
+      clearFiltersBtn.addEventListener("click", () => {
+        activeType = "";
+        if (searchInput) searchInput.value = "";
+        if (typeSelect) typeSelect.value = "";
+        applyFilters();
+      });
+    }
 
     if (searchInput) {
       searchInput.addEventListener("input", function () {
-        const searchTerm = this.value.toLowerCase().trim();
-        let visibleCount = 0;
-
-        resourceCards.forEach(function (card) {
-          const searchText = card.getAttribute("data-search-text") || "";
-          const matches = searchText.includes(searchTerm);
-          card.classList.toggle("hidden", !matches && searchTerm !== "");
-          if (matches || searchTerm === "") visibleCount++;
-        });
-
-        resourceSections.forEach(function (section) {
-          const cardsInSection = section.querySelectorAll(".resource-card");
-          const hasVisible = Array.from(cardsInSection).some(
-            (c) => !c.classList.contains("hidden")
-          );
-          section.classList.toggle("hidden", !hasVisible);
-        });
-
-        if (noResults) {
-          noResults.style.display =
-            visibleCount === 0 && searchTerm !== "" ? "block" : "none";
-        }
+        applyFilters();
       });
     }
 
@@ -267,11 +439,47 @@ const resourcesByCategory = Object.keys(categories).reduce(
     ];
     const closeBtn = document.getElementById("close-modal");
     const closeSuccess = document.getElementById("close-success");
+    const formEl = document.getElementById("modal-form-container");
+    const submitBtn = document.getElementById("submit-suggestion");
+
+    const errorIds = ["error-name", "error-url", "error-description", "error-type"];
+    const fieldIds = ["field-name", "field-url", "field-type", "field-description"];
+
+    function setFieldError(fieldId, errorId, message) {
+      const field = document.getElementById(fieldId);
+      const err = document.getElementById(errorId);
+      if (err) err.textContent = message || "";
+      if (field && field instanceof HTMLElement) {
+        if (message) field.setAttribute("aria-invalid", "true");
+        else field.removeAttribute("aria-invalid");
+      }
+    }
+
+    function resetSuggestModalState() {
+      // Ensure form view is active
+      const success = document.getElementById("modal-success");
+      const banner = document.getElementById("modal-error-banner");
+      if (success) success.style.display = "none";
+      if (banner) banner.style.display = "none";
+      if (formEl) formEl.style.display = "flex";
+
+      // Clear errors / aria-invalid
+      errorIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = "";
+      });
+      fieldIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el && el instanceof HTMLElement) el.removeAttribute("aria-invalid");
+      });
+    }
 
     function openModal() {
+      lastFocusedBeforeModal = document.activeElement;
       modal.setAttribute("aria-hidden", "false");
       modal.classList.add("is-open");
       document.body.style.overflow = "hidden";
+      resetSuggestModalState();
       setTimeout(() => document.getElementById("field-name").focus(), 100);
     }
 
@@ -279,6 +487,26 @@ const resourcesByCategory = Object.keys(categories).reduce(
       modal.setAttribute("aria-hidden", "true");
       modal.classList.remove("is-open");
       document.body.style.overflow = "";
+      if (lastFocusedBeforeModal instanceof HTMLElement) {
+        lastFocusedBeforeModal.focus();
+      }
+    }
+
+    function trapModalFocus(e) {
+      if (!modal.classList.contains("is-open") || e.key !== "Tab") return;
+      const focusable = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
 
     openButtons.forEach((btn) => btn && btn.addEventListener("click", openModal));
@@ -290,13 +518,13 @@ const resourcesByCategory = Object.keys(categories).reduce(
     suggestAnother && suggestAnother.addEventListener("click", function () {
       document.getElementById("field-name").value = "";
       document.getElementById("field-url").value = "";
-      document.getElementById("field-category").value = "";
-      document.getElementById("field-section").value = "";
+      document.getElementById("field-type").value = "";
       document.getElementById("field-description").value = "";
       charCount.textContent = "0";
       ["error-name", "error-url", "error-description"].forEach(
         (id) => (document.getElementById(id).textContent = "")
       );
+      document.getElementById("error-type").textContent = "";
       document.getElementById("modal-error-banner").style.display = "none";
       document.getElementById("modal-success").style.display = "none";
       document.getElementById("modal-form-container").style.display = "flex";
@@ -311,63 +539,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
     // Luk med Escape
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
-    });
-
-    // ── Section tag filtrering ────────────────────────────
-    let activeSectionFilter = null;
-
-    document.querySelectorAll(".resource-section-tag").forEach(function (tag) {
-      tag.addEventListener("click", function () {
-        const section = this.getAttribute("data-section");
-
-        // Klik på samme tag igen = nulstil filter
-        if (activeSectionFilter === section) {
-          activeSectionFilter = null;
-          document.querySelectorAll(".resource-section-tag").forEach(t => t.classList.remove("active"));
-          document.getElementById("section-filter-banner").style.display = "none";
-          resourceCards.forEach(c => c.classList.remove("hidden"));
-          resourceSections.forEach(s => s.classList.remove("hidden"));
-          if (noResults) noResults.style.display = "none";
-          return;
-        }
-
-        activeSectionFilter = section;
-        document.querySelectorAll(".resource-section-tag").forEach(t => t.classList.remove("active"));
-        this.classList.add("active");
-
-        const banner = document.getElementById("section-filter-banner");
-        document.getElementById("section-filter-label").textContent = section;
-        banner.style.display = "flex";
-
-        let visibleCount = 0;
-        resourceCards.forEach(function (card) {
-          const cardSection = card.querySelector(".resource-section-tag")?.getAttribute("data-section") || "";
-          const matches = cardSection === section;
-          card.classList.toggle("hidden", !matches);
-          if (matches) visibleCount++;
-        });
-
-        resourceSections.forEach(function (sec) {
-          const hasVisible = Array.from(sec.querySelectorAll(".resource-card")).some(c => !c.classList.contains("hidden"));
-          sec.classList.toggle("hidden", !hasVisible);
-        });
-
-        if (noResults) noResults.style.display = visibleCount === 0 ? "block" : "none";
-      });
-
-      tag.addEventListener("keydown", function (e) {
-        if (e.key === "Enter" || e.key === " ") this.click();
-      });
-    });
-
-    const clearSectionBtn = document.getElementById("clear-section-filter");
-    clearSectionBtn && clearSectionBtn.addEventListener("click", function () {
-      activeSectionFilter = null;
-      document.querySelectorAll(".resource-section-tag").forEach(t => t.classList.remove("active"));
-      document.getElementById("section-filter-banner").style.display = "none";
-      resourceCards.forEach(c => c.classList.remove("hidden"));
-      resourceSections.forEach(s => s.classList.remove("hidden"));
-      if (noResults) noResults.style.display = "none";
+      trapModalFocus(e);
     });
 
     // ── Tegntæller ────────────────────────────────────────
@@ -377,42 +549,45 @@ const resourcesByCategory = Object.keys(categories).reduce(
       charCount.textContent = this.value.length;
     });
 
-    // ── Indsend forslag ───────────────────────────────────
-    const submitBtn = document.getElementById("submit-suggestion");
-
-    submitBtn && submitBtn.addEventListener("click", async function () {
+    formEl && formEl.addEventListener("submit", async function (e) {
+      e.preventDefault();
       // Ryd tidligere fejl
-      ["error-name", "error-url", "error-description"].forEach(
-        (id) => (document.getElementById(id).textContent = "")
-      );
-      document.getElementById("modal-error-banner").style.display = "none";
+      resetSuggestModalState();
 
       const name = document.getElementById("field-name").value.trim();
       const url = document.getElementById("field-url").value.trim();
-      const category = document.getElementById("field-category").value;
-      const section = document.getElementById("field-section").value.trim();
       const description = document.getElementById("field-description").value.trim();
+      const type = document.getElementById("field-type").value;
+      // Backend derives category; we don't ask for more.
 
       // Klientside-validering
       let valid = true;
       if (!name) {
-        document.getElementById("error-name").textContent = "Navn er påkrævet";
+        setFieldError("field-name", "error-name", "Navn er påkrævet");
         valid = false;
       }
       if (!url) {
-        document.getElementById("error-url").textContent = "URL er påkrævet";
+        setFieldError("field-url", "error-url", "URL er påkrævet");
         valid = false;
       } else {
         try { new URL(url); } catch {
-          document.getElementById("error-url").textContent = "Indtast en gyldig URL (husk https://)";
+          setFieldError("field-url", "error-url", "Indtast en gyldig URL (husk https://)");
           valid = false;
         }
       }
       if (!description) {
-        document.getElementById("error-description").textContent = "Beskrivelse er påkrævet";
+        setFieldError("field-description", "error-description", "Beskrivelse er påkrævet");
         valid = false;
       }
-      if (!valid) return;
+      if (!type) {
+        setFieldError("field-type", "error-type", "Type er påkrævet");
+        valid = false;
+      }
+      if (!valid) {
+        const firstInvalid = formEl.querySelector('[aria-invalid="true"]');
+        if (firstInvalid && firstInvalid instanceof HTMLElement) firstInvalid.focus();
+        return;
+      }
 
       // Vis spinner
       document.getElementById("submit-text").style.display = "none";
@@ -423,18 +598,20 @@ const resourcesByCategory = Object.keys(categories).reduce(
         const res = await fetch("/.netlify/functions/suggest-resource", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, url, category, section, description }),
+          body: JSON.stringify({ name, url, description, type }),
         });
 
         const data = await res.json();
 
         if (res.ok && data.success) {
+          window.umami?.track("apps-suggest-success");
           document.getElementById("modal-form-container").style.display = "none";
           document.getElementById("modal-success").style.display = "flex";
         } else {
           throw new Error(data.error || "Ukendt fejl");
         }
       } catch (err) {
+        window.umami?.track("apps-suggest-failure");
         const banner = document.getElementById("modal-error-banner");
         document.getElementById("modal-error-text").textContent =
           err.message || "Der skete en fejl – prøv igen.";
@@ -447,13 +624,11 @@ const resourcesByCategory = Object.keys(categories).reduce(
     });
   });
 </script>
+  </div>
+</NostrLayout>
 
 <style>
   /* ── Generelle utilities ── */
-  * { -webkit-user-select: none; -moz-user-select: none; user-select: none; }
-  input, textarea, select { -webkit-user-select: text; user-select: text; }
-  ::selection { background: transparent; color: inherit; }
-
   .hidden {
     display: none !important;
     visibility: hidden !important;
@@ -466,8 +641,8 @@ const resourcesByCategory = Object.keys(categories).reduce(
 
   /* ── Søgefelt ── */
   .search-container {
-    max-width: 700px;
-    margin: 50px auto 60px;
+    max-width: 1040px;
+    margin: 20px auto 16px;
     padding: 0 20px;
   }
 
@@ -493,7 +668,7 @@ const resourcesByCategory = Object.keys(categories).reduce(
 
   /* Subtil bidrag-link – nu en knap der ligner et link */
   .contribute-link { text-align: center; margin-top: 15px; }
-  .contribute-link p { font-size: 0.95rem; color: #999; }
+  .contribute-link p { font-size: 0.95rem; color: #999; margin-bottom: 0; }
   .link-button {
     background: none;
     border: none;
@@ -508,63 +683,140 @@ const resourcesByCategory = Object.keys(categories).reduce(
   .link-button:hover { color: #c0a4e0; text-decoration: underline; }
 
   /* ── Resource sections ── */
-  .resource-section { margin-bottom: 80px; }
+  .resource-section {
+    margin-bottom: 80px;
+    max-width: 1040px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px;
+  }
   .section-description { text-align: center; font-size: 1.1rem; color: #b0b0b0; margin-bottom: 40px; }
-  .resource-section-tag {
-    display: inline-block;
-    padding: 6px 12px;
-    background: rgba(160,132,202,0.3);
-    color: #a084ca;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, transform 0.15s;
-    user-select: none;
+
+  .filters {
+    max-width: 1040px;
+    margin: 0 auto 16px;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .resource-section-tag:hover {
-    background: rgba(160, 132, 202, 0.5);
-    color: #fff;
-    transform: scale(1.05);
-  }
-
-  .resource-section-tag.active {
-    background: #6c4f96;
-    color: #fff;
-  }
-
-  #section-filter-banner {
+  .filters-bar {
+    display: grid;
+    grid-template-columns: auto minmax(220px, 360px) auto;
+    gap: 12px;
     align-items: center;
     justify-content: center;
-    gap: 16px;
-    background: rgba(108, 79, 150, 0.25);
-    border: 1px solid rgba(160, 132, 202, 0.3);
+  }
+
+  /* tighten vertical rhythm: override global resource grid margin */
+  .resource-grid {
+    margin-top: 16px;
+  }
+
+  .filters-label {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+  }
+
+  .filters-select {
+    width: 100%;
+    min-width: 180px;
+    max-width: 360px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(160, 132, 202, 0.35);
+    color: rgba(255, 255, 255, 0.92);
     border-radius: 10px;
-    padding: 12px 24px;
-    margin-bottom: 40px;
-    font-size: 1rem;
-    color: #e0e0e0;
-  }
-
-  #section-filter-banner strong { color: #a084ca; }
-
-  #clear-section-filter {
-    background: rgba(160, 132, 202, 0.2);
-    border: 1px solid rgba(160, 132, 202, 0.4);
-    color: #a084ca;
-    border-radius: 6px;
-    padding: 6px 14px;
-    cursor: pointer;
-    font-size: 0.85rem;
+    padding: 10px 12px;
+    font-size: 0.95rem;
     font-family: inherit;
-    transition: background 0.2s;
+    min-height: 44px;
+    line-height: 1.2;
+    padding-right: 48px; /* room for custom chevron */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M7 10l5 5 5-5' stroke='%23C0A4E0' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 16px) 50%;
+    background-size: 16px 16px;
   }
 
-  #clear-section-filter:hover {
-    background: rgba(160, 132, 202, 0.35);
-    color: #fff;
+  .filters-clear {
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(160, 132, 202, 0.35);
+    background: rgba(108, 79, 150, 0.12);
+    color: rgba(255, 255, 255, 0.92);
+    font-family: inherit;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    min-height: 44px;
+    line-height: 1.2;
+  }
+
+  /* prevent overflow from long titles/URLs */
+  .resource-card,
+  .resource-title-row h3,
+  .resource-card p,
+  .resource-link {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* page-local header spacing (keeps controls closer to content) */
+  .page-header {
+    padding-bottom: 24px;
+  }
+
+  .filters-clear:hover {
+    background: rgba(160, 132, 202, 0.18);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 768px) {
+    .search-container { margin: 24px auto 12px; }
+    .filters { margin-bottom: 12px; }
+    .filters-bar {
+      grid-template-columns: 1fr;
+    }
+    .filters-label {
+      display: none;
+    }
+    .filters-select {
+      max-width: none;
+    }
+    .filters-clear {
+      width: 100%;
+    }
+  }
+
+  .resource-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .resource-title-row h3 {
+    margin-bottom: 0;
+  }
+
+  .resource-favicon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    flex: 0 0 24px;
   }
 
   /* ── No results ── */
@@ -677,6 +929,16 @@ const resourcesByCategory = Object.keys(categories).reduce(
   /* Formfelter */
   .modal-form { display: flex; flex-direction: column; gap: 20px; }
 
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px 16px;
+  }
+
+  .form-group--full {
+    grid-column: 1 / -1;
+  }
+
   .form-group { display: flex; flex-direction: column; gap: 7px; }
 
   .form-group label {
@@ -699,6 +961,13 @@ const resourcesByCategory = Object.keys(categories).reduce(
     font-family: inherit;
     transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
     resize: vertical;
+    box-sizing: border-box;
+  }
+
+  .form-group input,
+  .form-group select {
+    min-height: 44px;
+    line-height: 1.2;
   }
   .form-group input:focus,
   .form-group textarea:focus,
@@ -714,6 +983,12 @@ const resourcesByCategory = Object.keys(categories).reduce(
   .field-hint { font-size: 0.78rem; color: #888; margin-top: 3px; }
 
   .field-error { font-size: 0.8rem; color: #e07070; min-height: 1em; }
+
+  @media (min-width: 720px) {
+    .form-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
 
   /* Send-knap */
   .submit-button {

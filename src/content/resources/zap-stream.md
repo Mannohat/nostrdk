@@ -4,6 +4,8 @@ description: "En decentral streaming-platform bygget på Nostr og Lightning Netw
 url: "https://zap.stream"
 category: "nostr-alternatives"
 section: "Youtube Alternative"
+type: "streaming"
 order: 1
 published: true
+
 ---

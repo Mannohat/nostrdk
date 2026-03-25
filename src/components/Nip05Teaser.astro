@@ -1,0 +1,246 @@
+---
+interface Props {
+	/** DOM id for the grid container (must be unique per page) */
+	gridId: string;
+	/** Number of profiles to sample from nostr.json before image filtering */
+	sampleSize?: number;
+	/** Max number of avatars to render */
+	maxAvatars?: number;
+	/** Use stable daily shuffle (recommended) */
+	deterministic?: boolean;
+}
+
+const {
+	gridId,
+	sampleSize = 20,
+	maxAvatars = 8,
+	deterministic = true,
+} = Astro.props;
+---
+
+<div class="nip05-teaser">
+	<p class="nip05-teaser-label">Allerede verificeret med @nostr.dk</p>
+	<div class="nip05-teaser-grid" id={gridId}></div>
+	<p class="teaser-see-more"><a href="/profiler">Se flere profiler →</a></p>
+</div>
+
+<style is:global>
+	.nip05-teaser {
+		/* Match NIP-05 form width for clean alignment */
+		max-width: 480px;
+		margin: 10px auto 30px;
+		width: 100%;
+		text-align: center;
+	}
+
+	.nip05-teaser .nip05-teaser-label {
+		font-size: 0.95rem;
+		color: rgba(255, 255, 255, 0.7);
+		display: block;
+		width: 100%;
+		text-align: center !important;
+		margin: 0 0 12px;
+		letter-spacing: normal;
+		text-transform: none;
+		font-weight: 600;
+	}
+
+	/* Match profiler-page feel: grid of tappable avatar cards */
+	.nip05-teaser-grid {
+		width: 100%;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(88px, 88px));
+		gap: 12px 16px;
+		justify-content: center;
+		align-items: start;
+		padding-bottom: 16px;
+	}
+
+	.nip05-teaser-card {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		text-decoration: none;
+		color: inherit;
+		cursor: pointer;
+		padding: 8px;
+		border-radius: 12px;
+		width: 88px;
+		transition: transform 0.2s ease, background 0.2s ease;
+	}
+
+	.nip05-teaser-card.staggered {
+		margin-top: 32px;
+	}
+
+	.nip05-teaser-card:hover {
+		transform: translateY(-2px);
+		background: rgba(108, 79, 150, 0.15);
+	}
+
+	.nip05-teaser-avatar {
+		width: 64px;
+		height: 64px;
+		border-radius: 50%;
+		object-fit: cover;
+		border: 2px solid rgba(108, 79, 150, 0.6);
+		display: block;
+	}
+
+	@media (max-width: 768px) {
+		.nip05-teaser-grid {
+			grid-template-columns: repeat(auto-fit, minmax(72px, 72px));
+			gap: 10px 12px;
+		}
+		.nip05-teaser-card {
+			width: 72px;
+		}
+		.nip05-teaser-card.staggered {
+			margin-top: 0;
+		}
+		.nip05-teaser-avatar {
+			width: 48px;
+			height: 48px;
+		}
+	}
+
+	.teaser-see-more {
+		text-align: center;
+		margin-top: 12px;
+		margin-bottom: 0;
+		font-size: 0.72rem;
+	}
+
+	.teaser-see-more a {
+		color: rgba(255, 255, 255, 0.55);
+		text-decoration: none;
+		letter-spacing: 0.03em;
+		font-weight: normal;
+		transition: color 0.2s;
+	}
+
+	.teaser-see-more a:hover {
+		color: rgba(255, 255, 255, 0.78);
+	}
+</style>
+
+<script
+	is:inline
+	define:vars={{
+		gridId,
+		sampleSize,
+		maxAvatars,
+		deterministic,
+	}}
+>
+	(async function loadTeaser() {
+		try {
+			const res = await fetch("/.well-known/nostr.json");
+			const data = await res.json();
+			const names = data.names || {};
+
+			function hashString(str) {
+				let h = 0;
+				for (let i = 0; i < str.length; i++) {
+					h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+				}
+				return h;
+			}
+
+			function mulberry32(a) {
+				return function () {
+					let t = (a += 0x6d2b79f5);
+					t = Math.imul(t ^ (t >>> 15), t | 1);
+					t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+					return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+				};
+			}
+
+			function seededShuffle(arr, seedString) {
+				const a = arr.slice();
+				const rand = mulberry32(hashString(seedString));
+				for (let i = a.length - 1; i > 0; i--) {
+					const j = Math.floor(rand() * (i + 1));
+					[a[i], a[j]] = [a[j], a[i]];
+				}
+				return a;
+			}
+
+			const seedStr = new Date().toISOString().slice(0, 10); // YYYY-MM-DD (UTC)
+			const allEntries = Object.entries(names);
+			const picked = (deterministic
+				? seededShuffle(allEntries, seedStr)
+				: allEntries.sort(() => Math.random() - 0.5)
+			)
+				.slice(0, sampleSize);
+
+			const pubkeys = picked.map(([, pk]) => pk);
+			const teaserGrid = document.getElementById(gridId);
+			if (!teaserGrid) return;
+
+			const profileRes = await fetch(
+				`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`,
+			);
+			const profiles = await profileRes.json();
+			const withPicture = picked
+				.filter(([, pk]) => profiles[pk]?.picture)
+				.slice(0, maxAvatars);
+
+			teaserGrid.innerHTML = "";
+
+			for (const [, pk] of withPicture) {
+				const profile = profiles[pk];
+				const card = document.createElement("a");
+				card.className = "nip05-teaser-card";
+				card.href = `https://primal.net/p/${pk}`;
+				card.target = "_blank";
+				card.rel = "noopener noreferrer";
+				card.setAttribute("aria-label", profile.display_name ? `Profil: ${profile.display_name}` : "Åbn profil");
+				card.setAttribute("data-umami-event", "nip05-teaser-profile-outbound");
+
+				const img = document.createElement("img");
+				img.className = "nip05-teaser-avatar";
+				img.src = profile.picture;
+				img.alt = profile.display_name ? "Profil: " + profile.display_name : "Verificeret med nostr.dk";
+				img.loading = "lazy";
+				img.onerror = () => {};
+				card.appendChild(img);
+				teaserGrid.appendChild(card);
+			}
+
+			function applyStagger() {
+				const cards = Array.from(teaserGrid.querySelectorAll(".nip05-teaser-card"));
+				cards.forEach((c) => c.classList.remove("staggered"));
+				if (window.innerWidth <= 768) return;
+				if (cards.length < 2) return;
+
+				// Wait until layout has a measurable width.
+				const gridWidth = teaserGrid.getBoundingClientRect().width;
+				const firstCard = cards[0].getBoundingClientRect().width;
+				if (!gridWidth || !firstCard) return;
+
+				const styles = getComputedStyle(teaserGrid);
+				const gap = parseFloat(styles.columnGap || styles.gap || "0") || 0;
+				const colCount = Math.max(1, Math.round((gridWidth + gap) / (firstCard + gap)));
+
+				cards.forEach((card, idx) => {
+					const colIndex = idx % colCount;
+					if (colCount > 1 && colIndex % 2 === 1) card.classList.add("staggered");
+				});
+			}
+
+			// Ensure layout is ready before applying.
+			requestAnimationFrame(() => {
+				requestAnimationFrame(applyStagger);
+			});
+
+			let resizeT;
+			window.addEventListener("resize", () => {
+				clearTimeout(resizeT);
+				resizeT = setTimeout(applyStagger, 120);
+			});
+		} catch {}
+	})();
+</script>
+

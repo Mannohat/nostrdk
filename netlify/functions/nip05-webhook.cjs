@@ -1,4 +1,4 @@
-// netlify/functions/nip05-webhook.js
+// netlify/functions/nip05-webhook.cjs
 
 const crypto = require("crypto");
 
@@ -70,7 +70,7 @@ exports.handler = async (event) => {
         Authorization: `token ${btcpayApiKey}`,
         "Content-Type": "application/json",
       },
-    }
+    },
   );
 
   if (!invoiceResponse.ok) {
@@ -113,7 +113,7 @@ exports.handler = async (event) => {
         event_type: "add-nip05",
         client_payload: { name, pubkey },
       }),
-    }
+    },
   );
 
   if (!githubResponse.ok) {
@@ -125,3 +125,4 @@ exports.handler = async (event) => {
   console.log(`NIP-05 registrering sat i kø: ${name}`);
   return { statusCode: 200, body: "OK" };
 };
+

@@ -4,6 +4,8 @@ description: "Decentral Pinterest-lignende platform til deling af billeder og id
 url: "https://pinstr.app"
 category: "nostr-alternatives"
 section: "Pinterest Alternative"
+type: "service"
 order: 1
 published: true
+
 ---

@@ -1,46 +1,63 @@
 ---
 // Nostr.dk Header
+const currentPath = Astro.url.pathname;
 ---
 
 <header>
   <div class="logo-container">
-    <a href="/" class="logo-link">
-      <img src="/NOSTRDK_26.png" alt="Nostr Logo" id="logo" />
+    <a href="/" class="logo-link" aria-label="Gå til forsiden">
+      <img
+        src="/NOSTRDK_26.png"
+        alt="Nostr Logo"
+        id="logo"
+        width="1341"
+        height="354"
+        decoding="async"
+      />
     </a>
   </div>
   
   <nav>
     <ul>
-      <li><a href="/">Hjem</a></li>
+      <li><a href="/" class={currentPath === "/" ? "is-active" : undefined} aria-current={currentPath === "/" ? "page" : undefined}>Hjem</a></li>
+      <li><a href="/#nostr-klienter">Klienter</a></li>
       <li><a href="/#nostr-ressourcer">Ressourcer</a></li>
       <li><a href="/#nostr-nip05">Nostr Adresse</a></li>
-      <li><a href="/podcasts">Podcasts</a></li>
-      <li><a href="/apps">Apps & Tjenester</a></li>
+      <li><a href="/apps" class={currentPath.startsWith("/apps") ? "is-active" : undefined} aria-current={currentPath.startsWith("/apps") ? "page" : undefined}>Apps & Tjenester</a></li>
+      <li><a href="/podcasts" class={currentPath.startsWith("/podcasts") ? "is-active" : undefined} aria-current={currentPath.startsWith("/podcasts") ? "page" : undefined}>Podcasts</a></li>
       <li><a href="/#nostr-om">Om</a></li>
       <li><a href="/#nostr-support">Support</a></li>
     </ul>
   </nav>
 
-  <div class="burger-menu" id="burger-menu" aria-expanded="false">
-    <div></div>
-    <div></div>
-    <div></div>
-  </div>
+  <button
+    class="burger-menu"
+    id="burger-menu"
+    type="button"
+    aria-expanded="false"
+    aria-controls="mobile-menu"
+    aria-label="Åbn menu"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
 </header>
 
 <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
   <a href="/">Hjem</a>
+  <a href="/#nostr-klienter">Klienter</a>
   <a href="/#nostr-ressourcer">Ressourcer</a>
   <a href="/#nostr-nip05">Nostr Adresse</a>
-  <a href="/#nostr-om">Om</a>
-  <a href="/podcasts">Podcasts</a>
   <a href="/apps">Apps & Tjenester</a>
+  <a href="/podcasts">Podcasts</a>
+  <a href="/#nostr-om">Om</a>
+  <a href="/#nostr-support">Support</a>
 </div>
 
 <style>
 header {
-  background: #1F1D2B;
-  background: radial-gradient(ellipse 40% 100% at 5% center, #3d2d6e 0%, #1F1D2B 55%);
+  background: linear-gradient(180deg, rgba(31, 29, 43, 0.97) 0%, rgba(31, 29, 43, 0.92) 100%);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #FFF;
@@ -73,14 +90,16 @@ header {
 
 .logo-container img {
   height: auto;
-  max-height: 60px;
+  width: auto;
+  max-height: 56px;
+  max-width: 100%;
+  object-fit: contain;
   border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(55, 26, 118, 0.4);
-  transition: transform 0.5s ease, box-shadow 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
 .logo-container img:hover {
-  box-shadow: 0 4px 20px rgba(108, 79, 150, 0.6);
+  opacity: 0.9;
 }
 
 nav ul {
@@ -89,17 +108,30 @@ nav ul {
   margin: 0;
   display: flex;
   gap: 25px;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 nav ul li a {
   color: #FFF;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  transition: color 0.3s;
+  padding: 10px 14px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 8px;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 nav ul li a:hover {
   color: #A084CA;
+  background: rgba(160, 132, 202, 0.12);
+}
+
+nav ul li a.is-active {
+  color: #d7c3f2;
+  background: rgba(160, 132, 202, 0.2);
 }
 
 .burger-menu {
@@ -109,9 +141,15 @@ nav ul li a:hover {
   width: 30px;
   height: 20px;
   cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 8px;
 }
 
-.burger-menu div {
+.burger-menu span {
   background-color: #FFF;
   height: 3px;
   width: 100%;
@@ -119,10 +157,10 @@ nav ul li a:hover {
 }
 
 .mobile-menu {
-  display: none;
+  display: flex;
   flex-direction: column;
   position: fixed;
-  top: 70px;
+  top: 90px;
   right: 0;
   background: linear-gradient(180deg, #1F1D2B, #29273C);
   border-top: 1px solid rgba(160, 132, 202, 0.2);
@@ -130,6 +168,11 @@ nav ul li a:hover {
   text-align: center;
   padding: 20px;
   z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
 }
 
 .mobile-menu a {
@@ -144,11 +187,18 @@ nav ul li a:hover {
   color: #A084CA;
 }
 
-.mobile-menu.active {
-  display: flex;
+.mobile-menu a.is-active {
+  color: #d7c3f2;
 }
 
-@media (max-width: 768px) {
+.mobile-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+@media (max-width: 1200px) {
   .logo-container img {
     max-height: 50px;
   }
@@ -161,6 +211,10 @@ nav ul li a:hover {
     display: flex;
   }
 
+  .mobile-menu {
+    top: 82px;
+  }
+
   header {
     padding: 16px 20px;
   }
@@ -168,44 +222,166 @@ nav ul li a:hover {
 </style>
 
 <script>
-  const burgerMenu = document.getElementById('burger-menu');
-  const mobileMenu = document.getElementById('mobile-menu');
+  // @ts-nocheck
+  /** @type {IntersectionObserver | undefined} */
+  let sectionObserver;
 
-  if (burgerMenu && mobileMenu) {
-    burgerMenu.addEventListener('click', () => {
-      const expanded = burgerMenu.getAttribute('aria-expanded') === 'true';
-      burgerMenu.setAttribute('aria-expanded', !expanded);
-      mobileMenu.setAttribute('aria-hidden', expanded);
-      mobileMenu.classList.toggle('active');
+  function getHeaderEls() {
+    return {
+      burgerMenu: document.getElementById('burger-menu'),
+      mobileMenu: document.getElementById('mobile-menu'),
+    };
+  }
+
+  function clearActiveNav() {
+    document.querySelectorAll('header nav a, #mobile-menu a').forEach((anchor) => {
+      anchor.classList.remove('is-active');
+      anchor.removeAttribute('aria-current');
     });
+  }
+
+  /** @param {string} href */
+  function markActiveByHref(href) {
+    clearActiveNav();
+    document.querySelectorAll(`header nav a[href="${href}"], #mobile-menu a[href="${href}"]`).forEach((anchor) => {
+      anchor.classList.add('is-active');
+      anchor.setAttribute('aria-current', 'page');
+    });
+  }
+
+  function setActiveNavForPath() {
+    const path = window.location.pathname;
+    if (path.startsWith('/podcasts')) {
+      markActiveByHref('/podcasts');
+      return;
+    }
+    if (path.startsWith('/apps')) {
+      markActiveByHref('/apps');
+      return;
+    }
+    if (path === '/') {
+      const hash = window.location.hash;
+      if (hash) {
+        const hashHref = `/${hash}`;
+        if (document.querySelector(`header nav a[href="${hashHref}"]`)) {
+          markActiveByHref(hashHref);
+          return;
+        }
+      }
+      markActiveByHref('/');
+    }
+  }
+
+  function setupMenuInteractions() {
+    const { burgerMenu, mobileMenu } = getHeaderEls();
+    if (!burgerMenu || !mobileMenu) return;
+    if (burgerMenu.dataset.menuBound === 'true') return;
+
+    const closeMenu = () => {
+      burgerMenu.setAttribute('aria-expanded', 'false');
+      mobileMenu.setAttribute('aria-hidden', 'true');
+      mobileMenu.classList.remove('active');
+    };
+
+    const toggleMenu = () => {
+      const expanded = burgerMenu.getAttribute('aria-expanded') === 'true';
+      burgerMenu.setAttribute('aria-expanded', String(!expanded));
+      mobileMenu.setAttribute('aria-hidden', String(expanded));
+      mobileMenu.classList.toggle('active');
+    };
+
+    burgerMenu.addEventListener('click', toggleMenu);
+    mobileMenu.querySelectorAll('a').forEach((a) => {
+      a.addEventListener('click', () => {
+        if (mobileMenu.classList.contains('active')) closeMenu();
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMenu();
+    });
+
+    burgerMenu.dataset.menuBound = 'true';
   }
 
   function setupSmoothScroll() {
     const headerHeight = 80;
-    document.querySelectorAll('a[href^="/#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        const href = this.getAttribute('href');
-        if (window.location.pathname === '/') {
+    const { burgerMenu, mobileMenu } = getHeaderEls();
+    document.querySelectorAll('a[href^="/#"]').forEach((anchor) => {
+      if (!(anchor instanceof HTMLAnchorElement)) return;
+      if (anchor.dataset.smoothBound === 'true') return;
+      anchor.addEventListener('click', function (e) {
+        /** @type {HTMLAnchorElement} */ const self = this;
+        const href = self.getAttribute('href');
+        if (window.location.pathname === '/' && href) {
           e.preventDefault();
           const targetId = href.substring(2);
           if (targetId === 'top') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
+            markActiveByHref('/');
           } else {
             const targetElement = document.getElementById(targetId);
             if (targetElement) {
               const offset = targetElement.getBoundingClientRect().top + window.scrollY - headerHeight;
               window.scrollTo({ top: offset, behavior: 'smooth' });
-              if (mobileMenu && mobileMenu.classList.contains('active')) {
-                mobileMenu.classList.remove('active');
-                burgerMenu.setAttribute('aria-expanded', 'false');
-              }
+              markActiveByHref(href);
             }
+          }
+          if (mobileMenu && burgerMenu && mobileMenu.classList.contains('active')) {
+            mobileMenu.classList.remove('active');
+            mobileMenu.setAttribute('aria-hidden', 'true');
+            burgerMenu.setAttribute('aria-expanded', 'false');
           }
         }
       });
+      anchor.dataset.smoothBound = 'true';
     });
   }
 
-  document.addEventListener('DOMContentLoaded', setupSmoothScroll);
-  document.addEventListener('astro:page-load', setupSmoothScroll);
+  function setupSectionSpy() {
+    if (sectionObserver) {
+      sectionObserver.disconnect();
+      sectionObserver = undefined;
+    }
+    if (window.location.pathname !== '/') return;
+
+    const sectionIds = ['nostr-klienter', 'nostr-ressourcer', 'nostr-nip05', 'nostr-om', 'nostr-support'];
+    const sections = sectionIds
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+    if (sections.length === 0) return;
+
+    sectionObserver = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+        if (visible.length > 0) {
+          const sectionId = visible[0].target.id;
+          markActiveByHref(`/#${sectionId}`);
+          return;
+        }
+        if (window.scrollY < 140) {
+          markActiveByHref('/');
+        }
+      },
+      {
+        root: null,
+        threshold: [0.25, 0.5, 0.75],
+        rootMargin: '-100px 0px -45% 0px',
+      },
+    );
+
+    sections.forEach((section) => sectionObserver.observe(section));
+  }
+
+  function initHeaderNav() {
+    setupMenuInteractions();
+    setupSmoothScroll();
+    setActiveNavForPath();
+    setupSectionSpy();
+  }
+
+  document.addEventListener('DOMContentLoaded', initHeaderNav);
+  document.addEventListener('astro:page-load', initHeaderNav);
 </script>

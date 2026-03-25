@@ -4,6 +4,8 @@ description: "Søgemaskine for Nostr-netværket. Find noter og brugere."
 url: "https://nostr.band/"
 category: "tools"
 section: "Search"
+type: "tool"
 order: 1
 published: true
+
 ---

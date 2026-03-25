@@ -1,0 +1,214 @@
+---
+import NostrLayout from "../../layouts/NostrLayout.astro";
+import { getCollection } from "astro:content";
+
+type TypeKey =
+  | "client"
+  | "wallet"
+  | "tool"
+  | "extension"
+  | "relay"
+  | "marketplace"
+  | "publishing"
+  | "streaming"
+  | "service";
+
+const TYPE_LABELS_PLURAL: Record<TypeKey, string> = {
+  client: "Klienter",
+  wallet: "Wallets",
+  tool: "Værktøjer",
+  extension: "Udvidelser",
+  relay: "Relays",
+  marketplace: "Markedspladser",
+  publishing: "Publicering",
+  streaming: "Streaming",
+  service: "Services",
+};
+
+const TYPE_META: Record<TypeKey, { title: string; description: string; slug: string }> = {
+  client: {
+    slug: "klienter",
+    title: "Klienter",
+    description:
+      "Nostr-klienter til mobil, desktop og web. Find flere klienter og kom i gang med Nostr på Nostr.dk.",
+  },
+  wallet: {
+    slug: "wallets",
+    title: "Wallets",
+    description: "Wallets til Lightning/NWC og betaling i Nostr-økosystemet.",
+  },
+  tool: {
+    slug: "vaerktojer",
+    title: "Værktøjer",
+    description: "Værktøjer til discovery, stats, profiler, onboarding og meget mere i Nostr.",
+  },
+  extension: {
+    slug: "udvidelser",
+    title: "Udvidelser",
+    description: "Browser-udvidelser til nøgler, signering og Nostr-integration.",
+  },
+  relay: {
+    slug: "relays",
+    title: "Relays",
+    description: "Relays og relay-relaterede services til Nostr-netværket.",
+  },
+  marketplace: {
+    slug: "markedspladser",
+    title: "Markedspladser",
+    description: "Markedspladser og handel på Nostr.",
+  },
+  publishing: {
+    slug: "publicering",
+    title: "Publicering",
+    description: "Publicering og blogging på Nostr.",
+  },
+  streaming: {
+    slug: "streaming",
+    title: "Streaming",
+    description: "Video, audio og live-streaming på Nostr.",
+  },
+  service: {
+    slug: "services",
+    title: "Services",
+    description: "Services bygget på Nostr – alt fra kommunikation til utilities.",
+  },
+};
+
+export async function getStaticPaths() {
+  // Must be self-contained: Astro hoists getStaticPaths.
+  return [
+    { params: { type: "klienter" }, props: { type: "client" } },
+    { params: { type: "wallets" }, props: { type: "wallet" } },
+    { params: { type: "vaerktojer" }, props: { type: "tool" } },
+    { params: { type: "udvidelser" }, props: { type: "extension" } },
+    { params: { type: "relays" }, props: { type: "relay" } },
+    { params: { type: "markedspladser" }, props: { type: "marketplace" } },
+    { params: { type: "publicering" }, props: { type: "publishing" } },
+    { params: { type: "streaming" }, props: { type: "streaming" } },
+    { params: { type: "services" }, props: { type: "service" } },
+  ];
+}
+
+const { type } = Astro.props as { type: TypeKey };
+const meta = TYPE_META[type];
+
+const allResources = await getCollection("resources", ({ data }) => data.published === true);
+
+function duckDuckGoFaviconUrl(rawUrl: string) {
+  try {
+    const href = new URL(rawUrl, Astro.site).href;
+    const host = new URL(href).hostname;
+    return `https://icons.duckduckgo.com/ip3/${host}.ico`;
+  } catch {
+    return undefined;
+  }
+}
+
+const resources = allResources
+  .filter((r) => (r.data.type as TypeKey) === type)
+  .sort((a, b) => (a.data.order ?? 9999) - (b.data.order ?? 9999));
+
+const itemListLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: `${meta.title} (Nostr)`,
+  itemListOrder: "http://schema.org/ItemListOrderAscending",
+  itemListElement: resources.map((r, idx) => ({
+    "@type": "ListItem",
+    position: idx + 1,
+    name: r.data.title,
+    url: (() => {
+      try {
+        return new URL(r.data.url, Astro.site).href;
+      } catch {
+        return r.data.url;
+      }
+    })(),
+    description: r.data.description,
+  })),
+};
+---
+
+<NostrLayout
+  title={`${meta.title} | Apps & Tjenester | Nostr.dk`}
+  description={meta.description}
+  jsonLdArticle={itemListLd}
+>
+  <div class="page-header">
+    <h1>{meta.title}</h1>
+    <p>{meta.description}</p>
+  </div>
+
+  <div class="filters" aria-label="Filtre">
+    <div class="filters-bar">
+      <label class="filters-label" for="type-select">Type</label>
+      <select id="type-select" class="filters-select">
+        {(Object.keys(TYPE_META) as TypeKey[]).map((k) => (
+          <option value={TYPE_META[k].slug} selected={k === type}>
+            {TYPE_LABELS_PLURAL[k]}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  <section class="resource-section">
+    <div class="resource-grid">
+      {resources.map((resource) => (
+        <div
+          class="resource-card"
+          data-search-text={`${resource.data.title} ${resource.data.description}`.toLowerCase()}
+        >
+          <div class="resource-title-row">
+            {duckDuckGoFaviconUrl(resource.data.url) && (
+              <img
+                class="resource-favicon"
+                src={duckDuckGoFaviconUrl(resource.data.url)}
+                alt={`${resource.data.title} ikon`}
+                width="24"
+                height="24"
+                loading="lazy"
+                decoding="async"
+                referrerpolicy="no-referrer"
+                onerror="this.remove()"
+              />
+            )}
+            <h2 class="resource-h2">{resource.data.title}</h2>
+          </div>
+          <p>{resource.data.description}</p>
+          <a
+            href={resource.data.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="resource-link"
+            data-umami-event="apps-resource-outbound"
+            data-umami-event-type={type}
+          >
+            Besøg {resource.data.title} →
+          </a>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <script is:inline>
+    document.addEventListener("DOMContentLoaded", () => {
+      const select = document.getElementById("type-select");
+      if (!select) return;
+      select.addEventListener("change", () => {
+        const slug = select.value;
+        window.location.href = "/apps/" + slug;
+      });
+    });
+  </script>
+
+  <style>
+    .resource-h2 {
+      font-size: 1.25rem;
+      margin: 0;
+      color: #fff;
+      line-height: 1.25;
+    }
+  </style>
+</NostrLayout>
+

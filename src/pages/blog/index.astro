@@ -6,9 +6,26 @@ import FormattedDate from '../../components/FormattedDate.astro';
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+const blogIndexItemListLd = {
+	"@context": "https://schema.org",
+	"@type": "ItemList",
+	name: "Blog",
+	itemListOrder: "http://schema.org/ItemListOrderDescending",
+	itemListElement: posts.map((post, idx) => ({
+		"@type": "ListItem",
+		position: idx + 1,
+		name: post.data.title,
+		url: new URL(`/blog/${post.id}/`, Astro.site).href,
+	})),
+};
 ---
 
-<NostrLayout title="Blog | Nostr.dk" description="Artikler og indlæg om Nostr-protokollen på dansk.">
+<NostrLayout
+	title="Blog | Nostr.dk"
+	description="Artikler og indlæg om Nostr-protokollen på dansk."
+	jsonLdArticle={blogIndexItemListLd}
+>
 	<div class="page-header">
 		<h1>Blog</h1>
 		<p>Artikler og indlæg om Nostr på dansk.</p>

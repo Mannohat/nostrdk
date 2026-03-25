@@ -4,6 +4,8 @@ description: "Simpel Chrome extension til at signere nostr events nemt og sikker
 url: "https://chrome.google.com/webstore/detail/nos2x/kpgefcfmnafjgpblomihpgmejjdanjjp"
 category: "extensions"
 section: "Browser Extensions"
+type: "extension"
 order: 2
 published: true
+
 ---

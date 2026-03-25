@@ -1,10 +1,14 @@
 ---
 import NostrLayout from "../layouts/NostrLayout.astro";
+import Nip05RegisterForm from "../components/Nip05RegisterForm.astro";
+import Nip05Teaser from "../components/Nip05Teaser.astro";
+import { SITE_DESCRIPTION } from "../consts";
+import { SUPPORT_LNURL } from "../site.config";
 ---
 
 <NostrLayout
 	title="Nostr.dk – Tag del i fremtidens decentraliserede internet"
-	description="Din indgang til Nostr – den censurresistente, decentraliserede protokol for sociale medier og meget mere."
+	description={SITE_DESCRIPTION}
 >
 	<!-- Hero Section -->
 	<section class="hero">
@@ -19,16 +23,18 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 	</section>
 
 	<!-- Collapsible Content Sections -->
-	<div
-		class="collapsible-section"
-		role="button"
-		tabindex="0"
-		aria-expanded="false"
-		onclick="toggleSection(this)"
-		onkeydown="if(event.key==='Enter'||event.key===' ')toggleSection(this)"
-	>
-		<div class="collapsible-header">1. Hvad er Nostr?</div>
-		<div class="collapsible-content">
+	<section class="collapsible-section">
+		<h2 class="collapsible-header" id="collapsible-heading-1">
+			<button
+				type="button"
+				class="collapsible-toggle"
+				aria-expanded="false"
+				aria-controls="collapsible-panel-1"
+			>
+				1. Hvad er Nostr?
+			</button>
+		</h2>
+		<div class="collapsible-content" id="collapsible-panel-1" role="region" aria-labelledby="collapsible-heading-1">
 			<p>
 				Nostr er en decentral protokol, der bl.a. giver brugerne
 				mulighed for at kommunikere og dele indhold uden at være
@@ -68,18 +74,20 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 				</li>
 			</ul>
 		</div>
-	</div>
+	</section>
 
-	<div
-		class="collapsible-section"
-		role="button"
-		tabindex="0"
-		aria-expanded="false"
-		onclick="toggleSection(this)"
-		onkeydown="if(event.key==='Enter'||event.key===' ')toggleSection(this)"
-	>
-		<div class="collapsible-header">2. Hvorfor er Nostr vigtigt?</div>
-		<div class="collapsible-content">
+	<section class="collapsible-section">
+		<h2 class="collapsible-header" id="collapsible-heading-2">
+			<button
+				type="button"
+				class="collapsible-toggle"
+				aria-expanded="false"
+				aria-controls="collapsible-panel-2"
+			>
+				2. Hvorfor er Nostr vigtigt?
+			</button>
+		</h2>
+		<div class="collapsible-content" id="collapsible-panel-2" role="region" aria-labelledby="collapsible-heading-2">
 			<p>
 				Som nævnt er Nostr en protokol og man kan allerede en masse ting
 				med protokollen som vi ikke afdækker i denne introduktion.
@@ -117,18 +125,20 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 				</li>
 			</ul>
 		</div>
-	</div>
+	</section>
 
-	<div
-		class="collapsible-section"
-		role="button"
-		tabindex="0"
-		aria-expanded="false"
-		onclick="toggleSection(this)"
-		onkeydown="if(event.key==='Enter'||event.key===' ')toggleSection(this)"
-	>
-		<div class="collapsible-header">3. Hvordan fungerer Nostr?</div>
-		<div class="collapsible-content">
+	<section class="collapsible-section">
+		<h2 class="collapsible-header" id="collapsible-heading-3">
+			<button
+				type="button"
+				class="collapsible-toggle"
+				aria-expanded="false"
+				aria-controls="collapsible-panel-3"
+			>
+				3. Hvordan fungerer Nostr?
+			</button>
+		</h2>
+		<div class="collapsible-content" id="collapsible-panel-3" role="region" aria-labelledby="collapsible-heading-3">
 			<p>
 				Nostr fungerer ved hjælp af et netværk af relæer, der
 				videresender beskeder mellem brugere. Disse relæer opbevarer
@@ -163,18 +173,20 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 				</li>
 			</ul>
 		</div>
-	</div>
+	</section>
 
-	<div
-		class="collapsible-section"
-		role="button"
-		tabindex="0"
-		aria-expanded="false"
-		onclick="toggleSection(this)"
-		onkeydown="if(event.key==='Enter'||event.key===' ')toggleSection(this)"
-	>
-		<div class="collapsible-header">4. Kom i gang med Nostr</div>
-		<div class="collapsible-content">
+	<section class="collapsible-section">
+		<h2 class="collapsible-header" id="collapsible-heading-4">
+			<button
+				type="button"
+				class="collapsible-toggle"
+				aria-expanded="false"
+				aria-controls="collapsible-panel-4"
+			>
+				4. Kom i gang med Nostr
+			</button>
+		</h2>
+		<div class="collapsible-content" id="collapsible-panel-4" role="region" aria-labelledby="collapsible-heading-4">
 			<p>
 				At komme i gang med Nostr er enkelt, men der er nogle vigtige
 				skridt, du skal følge for at beskytte din konto og få den bedst
@@ -198,7 +210,8 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					du kigge på siden her <a
 						href="https://find.nostr.dk"
 						target="_blank"
-						rel="noopener noreferrer">find.nostr.dk</a
+						rel="noopener noreferrer"
+						data-umami-event="outbound-find-nostr-dk">find.nostr.dk</a
 					> ligesom du også kan følge hashtags i flere af de kendte klienter
 					som f.eks. Damus og Primal.
 				</li>
@@ -225,12 +238,13 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 					Lightning-netværket, kan du besøge <a
 						href="https://www.enogtyve.org"
 						target="_blank"
-						rel="noopener noreferrer">Enogtyve</a
+						rel="noopener noreferrer"
+						data-umami-event="outbound-enogtyve-www">Enogtyve</a
 					> for at lære mere.
 				</li>
 			</ul>
 		</div>
-	</div>
+	</section>
 
 	<!-- Nostr Klienter Section -->
 	<section class="nostr-klienter" id="nostr-klienter">
@@ -247,22 +261,27 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</p>
 		<div class="klient-container">
 			<div class="klient-item">
-				<a href="https://primal.net" target="_blank" data-umami-event="klient-primal">
-					<img src="/primal.png" alt="Primal" loading="lazy" />
+				<a href="https://primal.net" target="_blank" rel="noopener noreferrer" data-umami-event="klient-primal">
+					<img src="/primal.png" alt="Primal" width="98" height="98" loading="lazy" />
 					<h3>Primal</h3>
 				</a>
 				<p class="klient-description">Android, iOS & Desktop</p>
-				<a href="https://primal.net" target="_blank" class="klient-link" data-umami-event="klient-primal">Besøg Primal</a>
+				<a href="https://primal.net" target="_blank" rel="noopener noreferrer" class="klient-link" data-umami-event="klient-primal">Besøg Primal</a>
 			</div>
 			<div class="klient-item">
-				<a href="https://damus.io" target="_blank" data-umami-event="klient-damus">
-					<img src="/damus.png" alt="Damus" loading="lazy" />
+				<a href="https://damus.io" target="_blank" rel="noopener noreferrer" data-umami-event="klient-damus">
+					<img src="/damus.png" alt="Damus" width="98" height="98" loading="lazy" />
 					<h3>Damus</h3>
 				</a>
 				<p class="klient-description">iOS</p>
-				<a href="https://damus.io" target="_blank" class="klient-link" data-umami-event="klient-damus">Besøg Damus</a>
+				<a href="https://damus.io" target="_blank" rel="noopener noreferrer" class="klient-link" data-umami-event="klient-damus">Besøg Damus</a>
 			</div>
 		</div>
+		<p class="teaser-see-more">
+			<a href="/apps/klienter" data-umami-event="home-see-more-clients">
+				Se flere klienter →
+			</a>
+		</p>
 	</section>
 
 	<!-- NIP-05 Section -->
@@ -281,66 +300,14 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</p>
 
 		<!-- Profil teaser -->
-		<div class="nip05-teaser">
-			<p class="nip05-teaser-label">Allerede verificeret med @nostr.dk</p>
-			<div class="nip05-teaser-grid" id="nip05TeaserGrid"></div>
-			<p class="teaser-see-more"><a href="/profiler">Se flere profiler →</a></p>
-		</div>
+		<Nip05Teaser gridId="nip05TeaserGrid" deterministic />
 
-		<!-- Inline registreringsformular -->
-		<div class="nip05-register">
-			<!-- Trin 1: Navn-tjek -->
-			<div id="nip05-step1">
-				<div class="nip05-field">
-					<div class="nip05-name-row" id="nip05NameRow">
-						<input
-							type="text"
-							id="nip05Name"
-							placeholder="ditnavnher"
-							autocomplete="off"
-							autocapitalize="none"
-							spellcheck="false"
-						/>
-						<span class="nip05-suffix">@nostr.dk</span>
-					</div>
-					<div class="nip05-status" id="nip05Status"></div>
-				</div>
-				<p class="nip05-price">
-					@nostr.dk nip-05 adresse for kun <strong>2.100 sats</strong> via
-					<a href="https://enogtyve.org/da/laer-mere/lightning/" target="_blank" rel="noopener noreferrer">Lightning</a> ⚡
-				</p>
-				<button id="nip05ProceedBtn" class="cta" disabled data-umami-event="nip05-button">Næste</button>
-			</div>
-
-			<!-- Trin 2: Indtast npub og betal -->
-			<div id="nip05-step2" style="display: none;">
-				<div class="nip05-confirmed" id="nip05Confirmed"></div>
-				<div class="nip05-field" style="margin-bottom: 1rem;">
-					<label style="display:block; font-size:0.85rem; font-weight:600; color:#e0e0e0; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Din Nostr public key</label>
-					<input
-						type="text"
-						id="nip05Pubkey"
-						placeholder="npub1… eller hex"
-						autocomplete="off"
-						autocapitalize="none"
-						spellcheck="false"
-						style="width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.7rem 0.9rem; color:#fff; font-size:0.9rem; outline:none; box-sizing:border-box; transition: border-color 0.2s;"
-					/>
-					<div class="nip05-status" id="nip05PubkeyStatus"></div>
-				</div>
-				<div class="nip05-instructions">
-					<p>Hvad sker der næste:</p>
-					<ol>
-						<li>Klik "Gå til betaling ⚡"</li>
-						<li>Betal 2.100 sats via Lightning</li>
-						<li>Din NIP-05 adresse aktiveres automatisk</li>
-					</ol>
-				</div>
-				<button id="nip05PayBtn" class="cta" disabled data-umami-event="nip05-pay-button">Gå til betaling ⚡</button>
-				<div class="nip05-status" id="nip05PayStatus"></div>
-				<button id="nip05BackBtn" class="nip05-back-btn">← Vælg et andet navn</button>
-			</div>
-		</div>
+		<Nip05RegisterForm
+			variant="home"
+			umamiNext="nip05-button"
+			umamiPay="nip05-pay-button"
+			lightningUmamiEvent="outbound-enogtyve-lightning-nip05"
+		/>
 	</section>
 
 	<!-- Nostr Ressourcer Section -->
@@ -357,15 +324,15 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</p>
 		<div class="resource-container">
 			<a href="/podcasts" class="resource-item" data-umami-event="ressource-podcasts">
-				<img src="/podcasts.png" alt="Podcasts" class="resource-icon" loading="lazy" />
+				<img src="/podcasts.png" alt="Podcasts" class="resource-icon" width="1024" height="1024" loading="lazy" />
 				<h3>Nostr Podcasts</h3>
 			</a>
 			<a href="/apps" class="resource-item" data-umami-event="ressource-apps">
-				<img src="/apps.png" alt="Apps & Tjenester" class="resource-icon" loading="lazy" />
+				<img src="/apps.png" alt="Apps & Tjenester" class="resource-icon" width="1024" height="1024" loading="lazy" />
 				<h3>Apps & Tjenester</h3>
 			</a>
-			<a href="https://t.me/enogtyvedk/510" target="_blank" class="resource-item" data-umami-event="telegram-link">
-				<img src="/telegram.png" alt="Telegram" class="resource-icon" loading="lazy" />
+			<a href="https://t.me/enogtyvedk/510" target="_blank" rel="noopener noreferrer" class="resource-item" data-umami-event="telegram-link">
+				<img src="/telegram.png" alt="Telegram" class="resource-icon" width="1024" height="1024" loading="lazy" />
 				<h3>Nostr.dk Telegram</h3>
 			</a>
 		</div>
@@ -388,7 +355,7 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 		</p>
 		<div class="resource-container">
 			<a href="mailto:nostr@nostr.dk" data-umami-event="email-link">
-				<img src="/sendmail.png" alt="Send Email" class="resource-icon" loading="lazy" />
+				<img src="/sendmail.png" alt="Send Email" class="resource-icon" width="1024" height="1024" loading="lazy" />
 				<h3>Send Email</h3>
 			</a>
 		</div>
@@ -402,31 +369,38 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			du sende lidt sats ⚡️ via Lightning-netværket. Hvad er Lightning? <a
 				href="https://enogtyve.org/da/laer-mere/lightning/"
 				target="_blank"
-				rel="noopener noreferrer">Lær mere her</a>.
+				rel="noopener noreferrer"
+				data-umami-event="outbound-enogtyve-lightning-support">Lær mere her</a>.
 		</p>
+		<p id="lnurl-copy-status" class="copy-status-msg" role="status" aria-live="polite"></p>
 		<button
-			onclick="copyToClipboard()"
+			id="copy-lnurl-btn"
 			style="background: none; border: none; padding: 10px; cursor: pointer;"
 			type="button"
 			aria-label="Klik for at kopiere LNURL til udklipsholder"
 			data-umami-event="support-qr-click"
 		>
-			<img src="/support-qr.png" alt="Support QR Code" class="support-qr" loading="lazy" />
+			<img src="/support-qr.png" alt="Support QR Code" class="support-qr" width="692" height="692" loading="lazy" />
 		</button>
 		<p class="support-instruction"><em>Klik på QR-koden for at kopiere LNURL til udklipsholder</em></p>
 	</section>
 
-	<script is:inline>
-		function toggleSection(element) {
-			element.classList.toggle("expanded");
-			element.setAttribute("aria-expanded", element.classList.contains("expanded") ? "true" : "false");
+	<script is:inline define:vars={{ SUPPORT_LNURL }}>
+		function setCopyStatus(message) {
+			const el = document.getElementById("lnurl-copy-status");
+			if (el) el.textContent = message;
 		}
-		window.toggleSection = toggleSection;
 
 		window.copyToClipboard = async function () {
-			const lnurl = "LNURL1DP68GURN8GHJ7ER9D4HJUMRWWP5KWEME9E3K7MF0D3H82UNVWQH4JAR4DYM5XKGH6R5";
+			const lnurl = SUPPORT_LNURL;
+			const okMsg = "LNURL kopieret til udklipsholder.";
+			const failMsg = "Kunne ikke kopiere. Prøv venligst igen.";
 			if (navigator.clipboard && navigator.clipboard.writeText) {
-				try { await navigator.clipboard.writeText(lnurl); alert("LNURL kopieret til udklipsholder!"); return; } catch (err) {}
+				try {
+					await navigator.clipboard.writeText(lnurl);
+					setCopyStatus(okMsg);
+					return;
+				} catch (err) {}
 			}
 			const textArea = document.createElement("textarea");
 			textArea.value = lnurl;
@@ -435,21 +409,45 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			document.body.appendChild(textArea);
 			textArea.focus();
 			textArea.select();
-			try { document.execCommand("copy"); alert("LNURL kopieret til udklipsholder!"); } catch (err) { alert("Kunne ikke kopiere. Prøv venligst igen."); }
+			try {
+				document.execCommand("copy");
+				setCopyStatus(okMsg);
+			} catch (err) {
+				setCopyStatus(failMsg);
+			}
 			document.body.removeChild(textArea);
 		};
 
-		function validatePubkey(val) {
-			return /^npub1[a-z0-9]{58}$/.test(val) || /^[0-9a-f]{64}$/.test(val);
-		}
-
 		document.addEventListener("DOMContentLoaded", function () {
+			const copyLnurlBtn = document.getElementById("copy-lnurl-btn");
+			if (copyLnurlBtn) {
+				copyLnurlBtn.addEventListener("click", () => {
+					window.copyToClipboard();
+				});
+			}
+
+			document.querySelectorAll(".collapsible-toggle").forEach((btn) => {
+				btn.addEventListener("click", () => {
+					const section = btn.closest(".collapsible-section");
+					if (!section) return;
+					section.classList.toggle("expanded");
+					btn.setAttribute(
+						"aria-expanded",
+						section.classList.contains("expanded") ? "true" : "false",
+					);
+				});
+			});
+
 			// Hero knap
 			const startButton = document.getElementById("start-button");
 			if (startButton) {
 				startButton.addEventListener("click", function () {
 					const sections = document.querySelectorAll(".collapsible-section");
-					sections.forEach((s) => { s.classList.add("expanded"); s.setAttribute("aria-expanded", "true"); });
+					sections.forEach((s) => {
+						s.classList.add("expanded");
+						const btn = s.querySelector(".collapsible-toggle");
+						if (btn) btn.setAttribute("aria-expanded", "true");
+					});
 					setTimeout(() => {
 						const first = sections[0];
 						if (first) window.scrollTo({ top: first.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" });
@@ -458,190 +456,24 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 			}
 
 			// NIP-05 profil teaser
-			(async function loadTeaser() {
-				try {
-					const res = await fetch("/.well-known/nostr.json");
-					const data = await res.json();
-					const names = data.names || {};
-					const entries = Object.entries(names).sort(() => Math.random() - 0.5).slice(0, 20);
-					const pubkeys = entries.map(([, pk]) => pk);
-					const teaserGrid = document.getElementById("nip05TeaserGrid");
-					if (!teaserGrid) return;
-
-					teaserGrid.style.cssText = "display:flex; flex-wrap:wrap; justify-content:center; gap:8px 10px; align-items:flex-start; padding-bottom:40px;";
-
-					const profileRes = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
-					const profiles = await profileRes.json();
-					const withPicture = entries.filter(([, pk]) => profiles[pk]?.picture).slice(0, 8);
-
-					const isMobile = window.innerWidth < 768;
-					const colWidth = isMobile ? "56px" : "72px";
-					const imgSize = isMobile ? "48px" : "64px";
-					const staggerOffset = isMobile ? "0px" : "36px";
-
-					let colIndex = 0, col = null, cardsInCol = 0;
-					for (const [, pk] of withPicture) {
-						const profile = profiles[pk];
-						if (!col || cardsInCol >= 2) {
-							col = document.createElement("div");
-							col.style.cssText = `display:flex; flex-direction:column; align-items:center; gap:10px; flex:0 0 ${colWidth};`;
-							if (colIndex % 2 === 1) col.style.marginTop = staggerOffset;
-							teaserGrid.appendChild(col);
-							colIndex++; cardsInCol = 0;
-						}
-						const img = document.createElement("img");
-						img.style.cssText = `width:${imgSize}; height:${imgSize}; border-radius:50%; object-fit:cover; border:2px solid rgba(108,79,150,0.6); display:block;`;
-						img.src = profile.picture; img.alt = ""; img.loading = "lazy"; img.onerror = () => {};
-						col.appendChild(img); cardsInCol++;
-					}
-				} catch {}
-			})();
-
-			// NIP-05 navn-tjek
-			let nip05NameAvailable = false, nip05CheckTimeout, confirmedName = "";
-
-			function nip05SetStatus(type, icon, text) {
-				document.getElementById("nip05Status").className = "nip05-status " + type;
-				document.getElementById("nip05Status").textContent = icon + " " + text;
-				document.getElementById("nip05NameRow").className = "nip05-name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
-			}
-
-			function nip05ClearStatus() {
-				document.getElementById("nip05Status").className = "nip05-status";
-				document.getElementById("nip05Status").textContent = "";
-				document.getElementById("nip05NameRow").className = "nip05-name-row";
-				nip05NameAvailable = false;
-				document.getElementById("nip05ProceedBtn").disabled = true;
-			}
-
-			async function nip05CheckAvailability(name) {
-				if (!name) { nip05ClearStatus(); return; }
-				if (!/^[a-z0-9_-]+$/.test(name)) {
-					nip05SetStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
-					nip05NameAvailable = false;
-					document.getElementById("nip05ProceedBtn").disabled = true;
-					return;
-				}
-				nip05SetStatus("checking", "…", "Tjekker tilgængelighed…");
-				try {
-					const res = await fetch("/.netlify/functions/check-name?name=" + encodeURIComponent(name));
-					const data = await res.json();
-					if (data.available) {
-						nip05SetStatus("available", "✓", "Ledigt!");
-						nip05NameAvailable = true;
-						document.getElementById("nip05ProceedBtn").disabled = false;
-					} else {
-						nip05SetStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
-						nip05NameAvailable = false;
-						document.getElementById("nip05ProceedBtn").disabled = true;
-					}
-				} catch {
-					nip05SetStatus("error", "!", "Kunne ikke tjekke — prøv igen");
-					nip05NameAvailable = false;
-					document.getElementById("nip05ProceedBtn").disabled = true;
-				}
-			}
-
-			const nameInput = document.getElementById("nip05Name");
-			if (nameInput) {
-				nameInput.addEventListener("input", function () {
-					const val = this.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
-					if (this.value !== val) this.value = val;
-					clearTimeout(nip05CheckTimeout);
-					if (!val) { nip05ClearStatus(); return; }
-					nip05CheckTimeout = setTimeout(() => nip05CheckAvailability(val), 500);
-				});
-			}
-
-			const proceedBtn = document.getElementById("nip05ProceedBtn");
-			if (proceedBtn) {
-				proceedBtn.addEventListener("click", function () {
-					if (!nip05NameAvailable) return;
-					confirmedName = document.getElementById("nip05Name").value.trim();
-					document.getElementById("nip05Confirmed").textContent = "✓ " + confirmedName + "@nostr.dk er ledigt";
-					document.getElementById("nip05-step1").style.display = "none";
-					document.getElementById("nip05-step2").style.display = "block";
-				});
-			}
-
-			// Pubkey validering — live feedback
-			const pubkeyInput = document.getElementById("nip05Pubkey");
-			const pubkeyStatus = document.getElementById("nip05PubkeyStatus");
-			const payBtn = document.getElementById("nip05PayBtn");
-
-			if (pubkeyInput) {
-				pubkeyInput.addEventListener("input", function () {
-					const val = this.value.trim();
-					if (!val) {
-						pubkeyStatus.className = "nip05-status";
-						pubkeyStatus.textContent = "";
-						pubkeyInput.style.borderColor = "rgba(255,255,255,0.1)";
-						payBtn.disabled = true;
-						return;
-					}
-					if (validatePubkey(val)) {
-						pubkeyStatus.className = "nip05-status available";
-						pubkeyStatus.textContent = "✓ Gyldig public key";
-						pubkeyInput.style.borderColor = "#4caf50";
-						payBtn.disabled = false;
-					} else {
-						pubkeyStatus.className = "nip05-status taken";
-						pubkeyStatus.textContent = "✗ Skal være npub1… (63 tegn) eller hex (64 tegn)";
-						pubkeyInput.style.borderColor = "#e05050";
-						payBtn.disabled = true;
-					}
-				});
-			}
-
-			if (payBtn) {
-				payBtn.addEventListener("click", async function () {
-					const pubkey = pubkeyInput.value.trim();
-					if (!validatePubkey(pubkey)) return;
-
-					payBtn.disabled = true;
-					payBtn.textContent = "Opretter betaling…";
-					const ps = document.getElementById("nip05PayStatus");
-					ps.className = "nip05-status checking";
-					ps.textContent = "… Forbinder til BTCPay…";
-
-					try {
-						const res = await fetch("/.netlify/functions/create-nip05-invoice", {
-							method: "POST",
-							headers: { "Content-Type": "application/json" },
-							body: JSON.stringify({ name: confirmedName, pubkey }),
-						});
-						const data = await res.json();
-						if (data.checkoutLink) {
-							window.location.href = data.checkoutLink;
-						} else {
-							throw new Error("Intet checkout link");
-						}
-					} catch (err) {
-						ps.className = "nip05-status error";
-						ps.textContent = "! Noget gik galt — prøv igen";
-						payBtn.disabled = false;
-						payBtn.textContent = "Gå til betaling ⚡";
-					}
-				});
-			}
-
-			const backBtn = document.getElementById("nip05BackBtn");
-			if (backBtn) {
-				backBtn.addEventListener("click", function () {
-					document.getElementById("nip05-step2").style.display = "none";
-					document.getElementById("nip05-step1").style.display = "block";
-				});
-			}
 		});
 	</script>
 
 	<style>
 		.klient-description {
 			font-size: 0.85rem;
-			color: rgba(255, 255, 255, 0.5);
+			color: rgba(255, 255, 255, 0.62);
 			margin: 8px 0;
 			font-weight: 400;
 			text-align: center;
+		}
+
+		.copy-status-msg {
+			min-height: 1.25em;
+			text-align: center;
+			color: #a084ca;
+			font-size: 0.95rem;
+			margin: 0 0 8px;
 		}
 
 		.support-instruction {
@@ -671,147 +503,5 @@ import NostrLayout from "../layouts/NostrLayout.astro";
 
 		.nip05-teaser { margin: 10px 0 30px; }
 
-		.nip05-teaser-label {
-			font-size: 0.8rem;
-			color: rgba(255, 255, 255, 0.4);
-			text-align: center;
-			margin-bottom: 14px;
-			letter-spacing: 0.04em;
-			text-transform: uppercase;
-		}
-
-		.nip05-teaser-grid {
-			display: flex;
-			flex-wrap: wrap;
-			justify-content: center;
-			gap: 8px 10px;
-			align-items: flex-start;
-		}
-
-		.nip05-register {
-			max-width: 480px;
-			margin: 30px auto 10px;
-			text-align: left;
-		}
-
-		.nip05-field { margin-bottom: 1rem; }
-
-		.nip05-name-row {
-			display: flex;
-			align-items: stretch;
-			background: rgba(0, 0, 0, 0.3);
-			border: 1px solid rgba(255, 255, 255, 0.1);
-			border-radius: 6px;
-			overflow: hidden;
-			transition: border-color 0.2s;
-		}
-
-		.nip05-name-row:focus-within { border-color: rgba(108, 79, 150, 0.8); }
-		.nip05-name-row.valid { border-color: #4caf50; }
-		.nip05-name-row.taken { border-color: #e05050; }
-
-		.nip05-name-row input {
-			flex: 1;
-			background: transparent;
-			border: none;
-			outline: none;
-			padding: 0.7rem 0.9rem;
-			font-family: "Inter", sans-serif;
-			font-size: 1rem;
-			color: #fff;
-		}
-
-		.nip05-name-row input::placeholder { color: rgba(255, 255, 255, 0.3); }
-
-		.nip05-suffix {
-			padding: 0 0.75rem;
-			color: rgba(255, 255, 255, 0.4);
-			font-size: 0.9rem;
-			white-space: nowrap;
-			border-left: 1px solid rgba(255, 255, 255, 0.1);
-			background: rgba(0, 0, 0, 0.2);
-			display: flex;
-			align-items: center;
-		}
-
-		.nip05-status {
-			font-size: 0.82rem;
-			margin-top: 0.4rem;
-			min-height: 1.1em;
-		}
-
-		.nip05-status.checking { color: rgba(255, 255, 255, 0.4); }
-		.nip05-status.available { color: #4caf50; }
-		.nip05-status.taken { color: #e05050; }
-		.nip05-status.error { color: #e08050; }
-
-		.nip05-price {
-			font-size: 0.9rem;
-			color: rgba(255, 255, 255, 0.6);
-			margin: 0.6rem 0 0;
-		}
-
-		.nip05-price strong { color: #fff; }
-
-		.nip05-register .cta {
-			margin-top: 1rem;
-			width: 100%;
-			text-align: center;
-			display: block;
-		}
-
-		.nip05-register .cta:disabled {
-			opacity: 0.3;
-			cursor: not-allowed;
-			transform: none;
-		}
-
-		.nip05-confirmed {
-			font-size: 1.2rem;
-			font-weight: 700;
-			color: #4caf50;
-			margin-bottom: 1rem;
-		}
-
-		.nip05-instructions {
-			background: rgba(0, 0, 0, 0.2);
-			border: 1px solid rgba(255, 255, 255, 0.08);
-			border-radius: 8px;
-			padding: 0.9rem 1.1rem;
-			margin-bottom: 0.5rem;
-		}
-
-		.nip05-instructions p {
-			font-size: 0.9rem;
-			color: #e0e0e0;
-			margin-bottom: 0.6rem;
-			text-align: left;
-		}
-
-		.nip05-instructions ol {
-			padding-left: 1.2rem;
-			color: #d0d0d0;
-			font-size: 0.88rem;
-			line-height: 1.8;
-			text-align: left;
-			margin-bottom: 0;
-		}
-
-		.nip05-instructions strong { color: #fff; }
-		.nip05-instructions em { color: rgba(255, 255, 255, 0.55); font-style: normal; }
-
-		.nip05-back-btn {
-			background: none;
-			border: none;
-			color: rgba(255, 255, 255, 0.4);
-			font-size: 0.82rem;
-			cursor: pointer;
-			margin-top: 0.8rem;
-			padding: 0;
-			display: block;
-			transition: color 0.2s;
-		}
-
-		.nip05-back-btn:hover { color: rgba(255, 255, 255, 0.7); }
 	</style>
 </NostrLayout>

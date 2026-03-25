@@ -1,9 +1,22 @@
 ---
 import NostrLayout from "../layouts/NostrLayout.astro";
+import Nip05RegisterForm from "../components/Nip05RegisterForm.astro";
+import fs from "node:fs/promises";
+const nostrJsonPath = new URL("../../public/.well-known/nostr.json", import.meta.url);
+let nostrNames: Record<string, string> = {};
+try {
+  const text = await fs.readFile(nostrJsonPath, "utf-8");
+  const data = JSON.parse(text);
+  nostrNames = data?.names ?? {};
+} catch {
+  nostrNames = {};
+}
+
+const entries = Object.entries(nostrNames).sort(([a], [b]) => a.localeCompare(b));
 ---
 
 <NostrLayout
-  title="Profiler verificeret med @nostr.dk | nostr.dk"
+  title="Profiler verificeret med @nostr.dk | Nostr.dk"
   description="Disse brugere har valgt at verificere deres Nostr-profil med en @nostr.dk adresse."
 >
   <div class="page-header">
@@ -11,547 +24,576 @@ import NostrLayout from "../layouts/NostrLayout.astro";
     <p>Disse brugere har valgt at verificere deres Nostr-profil med en @nostr.dk adresse.</p>
   </div>
 
+  <section class="profiler-nip05">
+    <p class="profiler-nip05-sub">
+      Tjek om dit navn er ledigt og opret en @nostr.dk adresse.
+    </p>
+    <Nip05RegisterForm
+      variant="page"
+      umamiNext="nip05-profiler-næste"
+      umamiPay="nip05-profiler-betal"
+    />
+  </section>
+
   <div class="profiler-wrap">
     <div id="loading" class="loading-msg">Henter profiler…</div>
-    <div id="grid" class="profiler-grid"></div>
-  </div>
-
-  <!-- NIP-05 registrering -->
-  <div class="register-wrap">
-    <!-- Trin 1: Tjek navn -->
-    <div id="step1" class="register-form">
-      <div class="field">
-        <label for="name">Vælg din nostr adresse</label>
-        <div class="nip05-name-row" id="nameRow">
-          <input
-            type="text"
-            id="name"
-            placeholder="ditnavnher"
-            autocomplete="off"
-            autocapitalize="none"
-            spellcheck="false"
-          />
-          <span class="nip05-suffix">@nostr.dk</span>
-        </div>
-        <div class="status" id="nameStatus"></div>
-      </div>
-
-      <p class="price-note">
-        @nostr.dk NIP-05 adresse for kun <strong>2.100 sats</strong> via
-        <a href="https://enogtyve.org/da/laer-mere/lightning/" target="_blank" rel="noopener noreferrer">Lightning</a> ⚡
-      </p>
-
-      <button
-        id="proceedBtn"
-        class="cta"
-        disabled
-        data-umami-event="nip05-profiler-næste"
-        style="margin-top: 20px; width: 100%;">Næste</button>
-    </div>
-
-    <!-- Trin 2: Indtast npub og betal -->
-    <div id="step2" class="register-form" style="display: none;">
-      <div class="confirmed-name" id="confirmedName"></div>
-
-      <div class="field">
-        <label for="pubkey">Din Nostr public key</label>
-        <input
-          type="text"
-          id="pubkey"
-          placeholder="npub1… eller hex"
-          autocomplete="off"
-          autocapitalize="none"
-          spellcheck="false"
-          class="pubkey-input"
-        />
-        <div class="status" id="pubkeyStatus"></div>
-      </div>
-
-      <div class="instructions">
-        <p>Hvad sker der næste:</p>
-        <ol>
-          <li>Klik "Gå til betaling ⚡"</li>
-          <li>Betal 2.100 sats via Lightning</li>
-          <li>Din NIP-05 adresse aktiveres automatisk</li>
-        </ol>
-      </div>
-
-      <button
-        id="payBtn"
-        class="cta"
-        disabled
-        data-umami-event="nip05-profiler-betal"
-        style="margin-top: 20px; width: 100%;">Gå til betaling ⚡</button>
-      <div class="status" id="payStatus"></div>
-      <button id="backBtn" class="back-btn">← Vælg et andet navn</button>
+    <div id="grid" class="profiler-grid">
+      {entries.map(([name, pubkey]) => (
+        <a
+          class="profil-card is-ready"
+          href={`https://primal.net/p/${pubkey}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-pubkey={pubkey}
+          data-umami-event="profiler-primal-outbound"
+          data-umami-event-profile={name}
+        >
+          <div class="profil-avatar-placeholder" />
+          <div class="profil-nip05">
+            <span class="profil-name">{name}</span>
+            <span class="profil-domain">@nostr.dk</span>
+          </div>
+        </a>
+      ))}
     </div>
   </div>
 
-</NostrLayout>
+  <div class="profiler-actions">
+    <div class="profiler-follow-row">
+      <div class="profiler-action">
+        <button
+          type="button"
+          class="profiler-follow-all"
+          id="follow-all"
+          data-umami-event="profiler-follow-all-click"
+        >
+          Følg alle
+        </button>
+        <details class="profiler-info">
+          <summary class="profiler-info-toggle" aria-label="Info om Følg alle">i</summary>
+          <div class="profiler-info-popover" role="note">
+            Kræver Nostr-signer i browseren (NIP-07, fx Alby). Opdaterer din follow-liste (kind 3).
+          </div>
+        </details>
+      </div>
 
-<style is:global>
-  .profiler-wrap {
-    padding: 0 0 80px;
-  }
+      <div class="profiler-action">
+        <button
+          type="button"
+          class="profiler-follow-copy"
+          id="copy-pubkeys"
+          data-umami-event="profiler-copy-pubkeys"
+        >
+          Kopiér liste
+        </button>
+        <details class="profiler-info">
+          <summary class="profiler-info-toggle" aria-label="Info om Kopiér liste">i</summary>
+          <div class="profiler-info-popover" role="note">
+            Kopierer alle pubkeys. Nogle klienter kan importere listen direkte; ellers kan du følge manuelt.
+          </div>
+        </details>
+      </div>
+    </div>
 
-  .loading-msg {
-    text-align: center;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 1rem;
-    padding: 60px 0;
-  }
+    <div class="profiler-follow-status" id="follow-all-status" role="status" aria-live="polite"></div>
+  </div>
 
-  .profiler-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 12px;
-    margin-top: 10px;
-    align-items: flex-start;
-    justify-content: center;
-  }
-
-  .profil-col {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    flex: 0 0 110px;
-  }
-
-  .profil-col.staggered {
-    margin-top: 50px;
-  }
-
-  .profil-card {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    text-decoration: none;
-    color: inherit;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 12px;
-    width: 110px;
-    transition: transform 0.2s ease, background 0.2s ease;
-  }
-
-  .profil-card:hover {
-    transform: translateY(-4px);
-    background: rgba(108, 79, 150, 0.15);
-  }
-
-  .profil-avatar {
-    width: 88px;
-    height: 88px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid rgba(108, 79, 150, 0.6);
-    display: block;
-    margin-bottom: 10px;
-  }
-
-  .profil-avatar-placeholder {
-    width: 88px;
-    height: 88px;
-    border-radius: 50%;
-    border: 2px solid rgba(108, 79, 150, 0.3);
-    background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
-    display: block;
-    margin-bottom: 10px;
-    flex-shrink: 0;
-  }
-
-  .profil-nip05 {
-    font-size: 0.7rem;
-    line-height: 1.3;
-    word-break: break-all;
-  }
-
-  .profil-name {
-    color: rgba(200, 180, 230, 0.85);
-    font-weight: 500;
-  }
-
-  .profil-domain {
-    color: rgba(255, 255, 255, 0.2);
-  }
-
-  /* ---- Formular ---- */
-  .register-wrap {
-    max-width: 480px;
-    margin: 0 auto;
-    padding: 0 0 80px;
-  }
-
-  .register-form {
-    text-align: left;
-  }
-
-  .field {
-    margin-bottom: 1.4rem;
-  }
-
-  .register-wrap label {
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #e0e0e0;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .nip05-name-row {
-    display: flex;
-    align-items: stretch;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-
-  .nip05-name-row:focus-within { border-color: rgba(108, 79, 150, 0.8); }
-  .nip05-name-row.valid { border-color: #4caf50; }
-  .nip05-name-row.taken { border-color: #e05050; }
-
-  .nip05-name-row input[type="text"] {
-    flex: 1;
-    background: transparent;
-    border: none;
-    outline: none;
-    padding: 0.7rem 0.9rem;
-  }
-
-  .nip05-suffix {
-    padding: 0 0.75rem;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.9rem;
-    white-space: nowrap;
-    border-left: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-  }
-
-  .pubkey-input {
-    width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    padding: 0.7rem 0.9rem;
-    color: #fff;
-    font-size: 0.9rem;
-    outline: none;
-    transition: border-color 0.2s;
-    box-sizing: border-box;
-  }
-
-  .pubkey-input:focus { border-color: rgba(108, 79, 150, 0.8); }
-
-  .status {
-    font-size: 0.82rem;
-    margin-top: 0.4rem;
-    min-height: 1.1em;
-  }
-
-  .status.checking { color: rgba(255, 255, 255, 0.4); }
-  .status.available { color: #4caf50; }
-  .status.taken { color: #e05050; }
-  .status.error { color: #e08050; }
-
-  .price-note {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0.5rem 0 0;
-  }
-
-  .price-note strong { color: #fff; }
-  .price-note a { color: rgba(255, 255, 255, 0.6); }
-
-  .cta:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .confirmed-name {
-    font-size: 1.3rem;
-    font-weight: 700;
-    color: #4caf50;
-    margin-bottom: 1.2rem;
-    text-align: center;
-  }
-
-  .instructions {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 1rem 1.2rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .instructions p {
-    font-size: 0.9rem;
-    color: #e0e0e0;
-    margin-bottom: 0.8rem;
-  }
-
-  .instructions ol {
-    padding-left: 1.2rem;
-    color: #d0d0d0;
-    font-size: 0.88rem;
-    line-height: 1.8;
-  }
-
-  .instructions strong { color: #fff; }
-  .instructions em { color: rgba(255, 255, 255, 0.6); font-style: normal; }
-
-  .back-btn {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 0.82rem;
-    cursor: pointer;
-    margin-top: 1rem;
-    padding: 0;
-    display: block;
-    transition: color 0.2s;
-  }
-
-  .back-btn:hover { color: rgba(255, 255, 255, 0.7); }
-
-  @media (max-width: 768px) {
-    .profil-col { flex: 0 0 80px; }
-    .profil-card { width: 80px; }
-    .profil-avatar, .profil-avatar-placeholder { width: 64px; height: 64px; }
-    .profil-col.staggered { margin-top: 36px; }
-    .register-wrap { padding: 0 0 40px; }
-  }
-</style>
-
-<script>
-  const NOSTR_JSON_URL = "https://nostr.dk/.well-known/nostr.json";
-
-  const grid = document.getElementById("grid")!;
-  const loading = document.getElementById("loading")!;
-
-  function makeCard(name: string, pubkey: string): HTMLAnchorElement {
-    const card = document.createElement("a");
-    card.className = "profil-card";
-    card.href = `https://primal.net/p/${pubkey}`;
-    card.target = "_blank";
-    card.rel = "noopener noreferrer";
-
-    const placeholder = document.createElement("div");
-    placeholder.className = "profil-avatar-placeholder";
-
-    const nip05 = document.createElement("div");
-    nip05.className = "profil-nip05";
-    nip05.innerHTML = `<span class="profil-name">${name}</span><span class="profil-domain">@nostr.dk</span>`;
-
-    card.appendChild(placeholder);
-    card.appendChild(nip05);
-    return card;
-  }
-
-  async function init() {
-    let names: Record<string, string> = {};
-    try {
-      const res = await fetch(NOSTR_JSON_URL);
-      const data = await res.json();
-      names = data.names || {};
-    } catch {
-      loading.textContent = "Kunne ikke hente brugerliste — prøv igen.";
-      return;
+  <style is:global>
+    .profiler-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0 22px;
+      text-align: center;
     }
 
-    const entries = Object.entries(names).sort(() => Math.random() - 0.5);
-    if (entries.length === 0) {
-      loading.textContent = "Ingen profiler endnu.";
-      return;
+    .profiler-follow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
 
-    loading.style.display = "none";
+    .profiler-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
 
-    const cards: Record<string, HTMLElement> = {};
-    let colIndex = 0;
-    let col: HTMLDivElement | null = null;
-    let cardsInCol = 0;
+    .profiler-info {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
 
-    for (const [name, pubkey] of entries) {
-      if (!col || cardsInCol >= 2) {
-        col = document.createElement("div");
-        col.className = "profil-col" + (colIndex % 2 === 1 ? " staggered" : "");
-        grid.appendChild(col);
-        colIndex++;
-        cardsInCol = 0;
+    .profiler-info-toggle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(160, 132, 202, 0.28);
+      background: rgba(108, 79, 150, 0.10);
+      color: rgba(255, 255, 255, 0.88);
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0;
+      font-family: inherit;
+      flex: 0 0 34px;
+      list-style: none;
+      user-select: none;
+    }
+
+    .profiler-info-toggle::-webkit-details-marker {
+      display: none;
+    }
+
+    .profiler-info-toggle:hover {
+      background: rgba(160, 132, 202, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .profiler-follow-status {
+      min-height: 1.25em;
+      font-size: 0.9rem;
+      color: rgba(200, 180, 230, 0.9);
+    }
+
+    .profiler-info-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 10;
+      width: min(320px, 80vw);
+      text-align: left;
+      background: rgba(10, 7, 18, 0.92);
+      border: 1px solid rgba(160, 132, 202, 0.22);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.35;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
+    }
+
+    .profiler-nip05 {
+      margin: 10px 0 30px;
+    }
+
+    .profiler-nip05 h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .profiler-nip05-sub {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.62);
+      margin: 0 auto 16px;
+      max-width: 60ch;
+    }
+
+    .profiler-follow-all,
+    .profiler-follow-copy {
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(160, 132, 202, 0.28);
+      background: rgba(108, 79, 150, 0.10);
+      color: rgba(255, 255, 255, 0.92);
+      font-family: inherit;
+      transition: background 0.2s, transform 0.15s;
+      min-height: 44px;
+    }
+
+    .profiler-follow-all:hover,
+    .profiler-follow-copy:hover {
+      background: rgba(160, 132, 202, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .profiler-follow-copy {
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .profiler-wrap {
+      padding: 0 0 80px;
+    }
+
+    .loading-msg {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 1rem;
+      padding: 60px 0;
+    }
+
+    .profiler-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 110px));
+      gap: 12px 16px;
+      margin-top: 10px;
+      justify-content: space-between;
+      width: 100%;
+      align-items: start;
+    }
+
+    .profil-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 12px;
+      width: 110px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition:
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        background 0.2s ease;
+    }
+
+    .profil-card.is-ready {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Visual "stagger" for every second card (2-column layout). */
+    .profil-card.staggered {
+      margin-top: 32px;
+    }
+
+    .profil-card:hover {
+      transform: translateY(-2px);
+      background: rgba(108, 79, 150, 0.15);
+    }
+
+    .profil-avatar {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(108, 79, 150, 0.6);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .profil-avatar-placeholder {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 2px solid rgba(108, 79, 150, 0.3);
+      background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
+      display: block;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+
+    .profil-nip05 {
+      font-size: 0.7rem;
+      line-height: 1.3;
+      word-break: break-all;
+    }
+
+    .profil-name {
+      color: rgba(200, 180, 230, 0.85);
+      font-weight: 500;
+    }
+
+    .profil-domain {
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    @media (max-width: 768px) {
+      .profiler-follow-row {
+        gap: 10px;
       }
-      const card = makeCard(name, pubkey);
-      col.appendChild(card);
-      cards[pubkey] = card;
-      cardsInCol++;
-    }
-
-    const pubkeys = entries.map(([, pubkey]) => pubkey);
-    try {
-      const res = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
-      const profiles = await res.json();
-
-      for (const [pubkey, profile] of Object.entries(profiles) as [string, any][]) {
-        if (!profile?.picture) continue;
-        const card = cards[pubkey];
-        if (!card) continue;
-        const placeholder = card.querySelector(".profil-avatar-placeholder");
-        if (!placeholder) continue;
-        const img = document.createElement("img");
-        img.className = "profil-avatar";
-        img.alt = profile.display_name || "";
-        img.loading = "lazy";
-        img.onerror = () => {};
-        img.src = profile.picture;
-        placeholder.replaceWith(img);
+      .profiler-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 80px));
+        gap: 10px 12px;
       }
-    } catch {}
-  }
-
-  init();
-</script>
-
-<script>
-  const nameInput = document.getElementById("name") as HTMLInputElement;
-  const nameRow = document.getElementById("nameRow")!;
-  const nameStatus = document.getElementById("nameStatus")!;
-  const proceedBtn = document.getElementById("proceedBtn") as HTMLButtonElement;
-  const step1 = document.getElementById("step1")!;
-  const step2 = document.getElementById("step2")!;
-  const confirmedNameEl = document.getElementById("confirmedName")!;
-  const backBtn = document.getElementById("backBtn")!;
-  const pubkeyInput = document.getElementById("pubkey") as HTMLInputElement;
-  const pubkeyStatus = document.getElementById("pubkeyStatus")!;
-  const payBtn = document.getElementById("payBtn") as HTMLButtonElement;
-  const payStatus = document.getElementById("payStatus")!;
-
-  let nameAvailable = false;
-  let checkTimeout: ReturnType<typeof setTimeout>;
-  let confirmedName = "";
-
-  function validatePubkey(val: string) {
-    return /^npub1[a-z0-9]{58}$/.test(val) || /^[0-9a-f]{64}$/.test(val);
-  }
-
-  function setStatus(type: string, icon: string, text: string) {
-    nameStatus.className = `status ${type}`;
-    nameStatus.textContent = `${icon} ${text}`;
-    nameRow.className = "nip05-name-row " + (type === "available" ? "valid" : type === "taken" ? "taken" : "");
-  }
-
-  function clearStatus() {
-    nameStatus.className = "status";
-    nameStatus.textContent = "";
-    nameRow.className = "nip05-name-row";
-    nameAvailable = false;
-    proceedBtn.disabled = true;
-  }
-
-  async function checkAvailability(name: string) {
-    if (!name) { clearStatus(); return; }
-    if (!/^[a-z0-9_-]+$/.test(name)) {
-      setStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
-      nameAvailable = false;
-      proceedBtn.disabled = true;
-      return;
-    }
-    setStatus("checking", "…", "Tjekker tilgængelighed…");
-    try {
-      const res = await fetch(`/.netlify/functions/check-name?name=${encodeURIComponent(name)}`);
-      const data = await res.json();
-      if (data.available) {
-        setStatus("available", "✓", "Ledigt!");
-        nameAvailable = true;
-        proceedBtn.disabled = false;
-      } else {
-        setStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
-        nameAvailable = false;
-        proceedBtn.disabled = true;
+      .profil-card {
+        width: 80px;
       }
-    } catch {
-      setStatus("error", "!", "Kunne ikke tjekke — prøv igen");
-      nameAvailable = false;
-      proceedBtn.disabled = true;
+      .profil-avatar,
+      .profil-avatar-placeholder {
+        width: 64px;
+        height: 64px;
+      }
+
+      /* No staggering when only one column. */
+      .profil-card.staggered {
+        margin-top: 0;
+      }
     }
-  }
+  </style>
 
-  nameInput.addEventListener("input", () => {
-    const val = nameInput.value.toLowerCase().replace(/[^a-z0-9_-]/g, "");
-    if (nameInput.value !== val) nameInput.value = val;
-    clearTimeout(checkTimeout);
-    if (!val) { clearStatus(); return; }
-    checkTimeout = setTimeout(() => checkAvailability(val), 500);
-  });
+  <script>
+    // @ts-nocheck
+    const grid = document.getElementById("grid")!;
+    const loading = document.getElementById("loading")!;
+    const followAllBtn = document.getElementById("follow-all");
+    const copyPubkeysBtn = document.getElementById("copy-pubkeys");
+    const followStatus = document.getElementById("follow-all-status");
 
-  proceedBtn.addEventListener("click", () => {
-    if (!nameAvailable) return;
-    confirmedName = nameInput.value.trim();
-    confirmedNameEl.textContent = `✓ ${confirmedName}@nostr.dk er ledigt`;
-    step1.style.display = "none";
-    step2.style.display = "block";
-  });
+    async function init() {
+      const cards = Array.from(grid.querySelectorAll("[data-pubkey]")) as HTMLElement[];
+      if (!cards.length) {
+        loading.textContent = "Ingen profiler endnu.";
+        return;
+      }
 
-  backBtn.addEventListener("click", () => {
-    step2.style.display = "none";
-    step1.style.display = "block";
-  });
+      loading.style.display = "none";
 
-  pubkeyInput.addEventListener("input", function () {
-    const val = this.value.trim();
-    if (!val) {
-      pubkeyStatus.className = "status";
-      pubkeyStatus.textContent = "";
-      pubkeyInput.style.borderColor = "rgba(255,255,255,0.1)";
-      payBtn.disabled = true;
-      return;
-    }
-    if (validatePubkey(val)) {
-      pubkeyStatus.className = "status available";
-      pubkeyStatus.textContent = "✓ Gyldig public key";
-      pubkeyInput.style.borderColor = "#4caf50";
-      payBtn.disabled = false;
-    } else {
-      pubkeyStatus.className = "status taken";
-      pubkeyStatus.textContent = "✗ Skal være npub1… (63 tegn) eller hex (64 tegn)";
-      pubkeyInput.style.borderColor = "#e05050";
-      payBtn.disabled = true;
-    }
-  });
-
-  payBtn.addEventListener("click", async () => {
-    const pubkey = pubkeyInput.value.trim();
-    if (!validatePubkey(pubkey)) return;
-
-    payBtn.disabled = true;
-    payBtn.textContent = "Opretter betaling…";
-    payStatus.className = "status checking";
-    payStatus.textContent = "… Forbinder til BTCPay…";
-
-    try {
-      const res = await fetch("/.netlify/functions/create-nip05-invoice", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: confirmedName, pubkey }),
+      const cardByPubkey: Record<string, HTMLElement> = {};
+      const shouldStagger = window.innerWidth > 768;
+      const colGapPx = 16;
+      const cardMaxWidthPx = 110;
+      const colCount = Math.max(
+        1,
+        Math.floor((grid.clientWidth + colGapPx) / (cardMaxWidthPx + colGapPx)),
+      );
+      cards.forEach((card, cardIndex) => {
+        const pubkey = card.getAttribute("data-pubkey");
+        if (!pubkey) return;
+        const colIndex = cardIndex % colCount;
+        if (shouldStagger && colCount > 1 && colIndex % 2 === 1) {
+          card.classList.add("staggered");
+        }
+        cardByPubkey[pubkey] = card;
       });
-      const data = await res.json();
-      if (data.checkoutLink) {
-        window.location.href = data.checkoutLink;
-      } else {
-        throw new Error("Intet checkout link");
-      }
-    } catch {
-      payStatus.className = "status error";
-      payStatus.textContent = "! Noget gik galt — prøv igen";
-      payBtn.disabled = false;
-      payBtn.textContent = "Gå til betaling ⚡";
+
+      // Subtle entrance animation (after DOM insertion).
+      requestAnimationFrame(() => {
+        Array.from(grid.children).forEach((child, idx) => {
+          const el = child as HTMLElement;
+          setTimeout(() => el.classList.add("is-ready"), Math.min(180, idx * 12));
+        });
+      });
+
+      const pubkeys = Object.keys(cardByPubkey);
+      try {
+        const res = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
+        const profiles = await res.json();
+
+        for (const [pubkey, profile] of Object.entries(profiles) as [string, any][]) {
+          if (!profile?.picture) continue;
+          const card = cardByPubkey[pubkey];
+          if (!card) continue;
+          const placeholder = card.querySelector(".profil-avatar-placeholder");
+          if (!placeholder) continue;
+          const img = document.createElement("img");
+          img.className = "profil-avatar";
+          img.alt = profile.display_name || "";
+          img.loading = "lazy";
+          img.onerror = () => {};
+          img.src = profile.picture;
+          placeholder.replaceWith(img);
+        }
+      } catch {}
     }
-  });
-</script>
+
+    function setStatus(msg) {
+      if (followStatus) followStatus.textContent = msg;
+    }
+
+    async function copyPubkeys(pubkeys) {
+      const text = pubkeys.join(",");
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus("Kopieret. Indsæt i din klient for at følge.");
+      } catch {
+        // Fallback for older browsers
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        try {
+          document.execCommand("copy");
+          setStatus("Kopieret. Indsæt i din klient for at følge.");
+        } catch {
+          setStatus("Kunne ikke kopiere automatisk.");
+        }
+        ta.remove();
+      }
+    }
+
+    function relayConnect(url) {
+      return new Promise((resolve, reject) => {
+        const ws = new WebSocket(url);
+        const t = setTimeout(() => {
+          try { ws.close(); } catch {}
+          reject(new Error("timeout"));
+        }, 4500);
+        ws.onopen = () => {
+          clearTimeout(t);
+          resolve(ws);
+        };
+        ws.onerror = () => {
+          clearTimeout(t);
+          reject(new Error("error"));
+        };
+      });
+    }
+
+    async function fetchLatestContacts(relayUrls, pubkeyHex) {
+      const results = await Promise.allSettled(
+        relayUrls.map(async (u) => {
+          const ws = /** @type {WebSocket} */ (await relayConnect(u));
+          return await new Promise((resolve) => {
+            const subId = "contacts_" + Math.random().toString(16).slice(2);
+            /** @type {any} */ let latest = null;
+            const cleanup = () => {
+              try { ws.close(); } catch {}
+            };
+            const timer = setTimeout(() => {
+              cleanup();
+              resolve(latest);
+            }, 2500);
+            ws.onmessage = (ev) => {
+              try {
+                const msg = JSON.parse(ev.data);
+                if (msg[0] === "EVENT" && msg[1] === subId) {
+                  const evt = msg[2];
+                  if (evt && evt.kind === 3 && evt.pubkey === pubkeyHex) {
+                    if (!latest || (evt.created_at || 0) > (latest.created_at || 0)) latest = evt;
+                  }
+                } else if (msg[0] === "EOSE" && msg[1] === subId) {
+                  clearTimeout(timer);
+                  cleanup();
+                  resolve(latest);
+                }
+              } catch {}
+            };
+            ws.send(
+              JSON.stringify([
+                "REQ",
+                subId,
+                { kinds: [3], authors: [pubkeyHex], limit: 1 },
+              ]),
+            );
+          });
+        }),
+      );
+      const ok = results
+        .filter((r) => r.status === "fulfilled" && r.value)
+        .map((r) => /** @type {any} */ (r).value);
+      if (!ok.length) return null;
+      return ok.sort((a, b) => (b.created_at || 0) - (a.created_at || 0))[0];
+    }
+
+    async function publishEvent(relayUrls, event) {
+      const results = await Promise.allSettled(
+        relayUrls.map(async (u) => {
+          const ws = /** @type {WebSocket} */ (await relayConnect(u));
+          return await new Promise((resolve, reject) => {
+            const t = setTimeout(() => {
+              try { ws.close(); } catch {}
+              reject(new Error("timeout"));
+            }, 5000);
+            ws.onmessage = (ev) => {
+              try {
+                const msg = JSON.parse(ev.data);
+                if (msg[0] === "OK" && msg[1] === event.id) {
+                  clearTimeout(t);
+                  try { ws.close(); } catch {}
+                  resolve(Boolean(msg[2]));
+                }
+              } catch {}
+            };
+            ws.send(JSON.stringify(["EVENT", event]));
+          });
+        }),
+      );
+      const okCount = results.filter((r) => r.status === "fulfilled" && r.value === true).length;
+      return okCount;
+    }
+
+    async function followAll(pubkeysToFollow) {
+      if (!window.nostr || !window.nostr.getPublicKey || !window.nostr.signEvent) {
+        setStatus("Ingen signer fundet. Brug “Kopiér liste”.");
+        return;
+      }
+
+      if (followAllBtn instanceof HTMLButtonElement) followAllBtn.disabled = true;
+      setStatus("Forbereder…");
+
+      const relayUrls = [
+        "wss://relay.damus.io",
+        "wss://relay.primal.net",
+        "wss://nos.lol",
+        "wss://relay.nostr.band",
+      ];
+
+      try {
+        const myPubkey = await window.nostr.getPublicKey();
+        setStatus("Henter din follow-liste…");
+        const latest = await fetchLatestContacts(relayUrls, myPubkey);
+
+        const existingP = new Set(
+          (latest?.tags || [])
+            .filter((t) => Array.isArray(t) && t[0] === "p" && typeof t[1] === "string")
+            .map((t) => t[1]),
+        );
+
+        pubkeysToFollow.forEach((p) => existingP.add(p));
+        // Don't follow yourself.
+        existingP.delete(myPubkey);
+
+        const tags = Array.from(existingP).map((p) => ["p", p]);
+
+        const unsigned = {
+          kind: 3,
+          created_at: Math.floor(Date.now() / 1000),
+          tags,
+          content: latest?.content || "",
+        };
+
+        setStatus("Signer…");
+        const signed = await window.nostr.signEvent(unsigned);
+
+        setStatus("Publicerer…");
+        const okCount = await publishEvent(relayUrls, signed);
+
+        window.umami?.track("profiler-follow-all-success");
+        setStatus(`Færdig. Sendt til ${okCount}/${relayUrls.length} relays.`);
+      } catch (e) {
+        window.umami?.track("profiler-follow-all-failure");
+        setStatus("Kunne ikke følge automatisk. Prøv “Kopiér liste”.");
+      } finally {
+        if (followAllBtn instanceof HTMLButtonElement) followAllBtn.disabled = false;
+      }
+    }
+
+    init();
+
+    // Info popovers are native <details> (no JS needed)
+
+    // Hook up follow/copy buttons (works even if profile fetch fails).
+    const allPubkeys = Array.from(grid.querySelectorAll("[data-pubkey]"))
+      .map((el) => el.getAttribute("data-pubkey"))
+      .filter(Boolean);
+
+    if (copyPubkeysBtn) {
+      copyPubkeysBtn.addEventListener("click", () => copyPubkeys(allPubkeys));
+    }
+    if (followAllBtn) {
+      followAllBtn.addEventListener("click", () => followAll(allPubkeys));
+    }
+  </script>
+</NostrLayout>

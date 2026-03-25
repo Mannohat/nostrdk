@@ -4,7 +4,9 @@ description: "Clawstr er en decentraliseret social platform bygget på Nostr-pro
 url: "https://clawstr.com/"
 category: "services"
 section: "Social & AI"
+type: "tool"
 order: 7
 published: true
+
 ---
 

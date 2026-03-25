@@ -1,17 +1,70 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import NostrLayout from '../layouts/NostrLayout.astro';
-import FormattedDate from '../components/FormattedDate.astro';
+import type { CollectionEntry } from "astro:content";
+import { getImage, Image } from "astro:assets";
+import NostrLayout from "./NostrLayout.astro";
+import FormattedDate from "../components/FormattedDate.astro";
 
-type Props = CollectionEntry<'blog'>['data'];
+type Props = CollectionEntry<"blog">["data"];
 const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+
+let ogImagePath = "/shaka.png";
+let ogImageWidth: string | undefined;
+let ogImageHeight: string | undefined;
+
+if (heroImage) {
+	const optimized = await getImage({ src: heroImage, width: 1200 });
+	ogImagePath = optimized.src;
+	if (optimized.attributes?.width != null) {
+		ogImageWidth = String(optimized.attributes.width);
+	}
+	if (optimized.attributes?.height != null) {
+		ogImageHeight = String(optimized.attributes.height);
+	}
+}
+
+const canonicalHref = new URL(Astro.url.pathname, Astro.site).href;
+const ogImageAbsolute = new URL(ogImagePath, Astro.site).href;
+
+const blogPostingLd: Record<string, unknown> = {
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	headline: title,
+	description,
+	datePublished: pubDate.toISOString(),
+	dateModified: (updatedDate ?? pubDate).toISOString(),
+	author: {
+		"@type": "Organization",
+		name: "Nostr.dk",
+	},
+	publisher: {
+		"@type": "Organization",
+		name: "Nostr.dk",
+		url: "https://nostr.dk",
+		email: "nostr@nostr.dk",
+	},
+	mainEntityOfPage: {
+		"@type": "WebPage",
+		"@id": canonicalHref,
+	},
+	...(heroImage ? { image: [ogImageAbsolute] } : {}),
+};
 ---
 
-<NostrLayout title={`${title} | Nostr.dk`} description={description}>
+<NostrLayout
+	title={`${title} | Nostr.dk`}
+	description={description}
+	ogImage={ogImagePath}
+	ogType="article"
+	ogImageWidth={ogImageWidth}
+	ogImageHeight={ogImageHeight}
+	articlePublishedTime={pubDate.toISOString()}
+	articleModifiedTime={(updatedDate ?? pubDate).toISOString()}
+	jsonLdArticle={blogPostingLd}
+>
 	<article class="blog-post">
 		{heroImage && (
 			<div class="hero-image">
-				<img src={heroImage} alt={title} loading="lazy" />
+				<Image src={heroImage} alt={title} loading="eager" fetchpriority="high" />
 			</div>
 		)}
 		<div class="prose">
@@ -44,6 +97,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		.hero-image img {
 			width: 100%;
 			border-radius: 12px;
+			height: auto;
 		}
 		.prose {
 			line-height: 1.8;
@@ -57,7 +111,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 			margin: 15px 0;
 		}
 		.date {
-			color: rgba(255,255,255,0.5);
+			color: rgba(255, 255, 255, 0.5);
 			font-size: 0.95rem;
 		}
 		.last-updated {
@@ -81,7 +135,7 @@ const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
 		}
 		hr {
 			border: none;
-			border-top: 1px solid rgba(160,132,202,0.3);
+			border-top: 1px solid rgba(160, 132, 202, 0.3);
 			margin: 20px auto;
 			max-width: 200px;
 		}

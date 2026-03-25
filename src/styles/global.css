@@ -329,6 +329,9 @@ textarea::placeholder {
 	padding: 30px;
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 	transition: transform 0.3s, box-shadow 0.3s;
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 }
 
 .resource-card:hover {
@@ -348,6 +351,7 @@ textarea::placeholder {
 	line-height: 1.6;
 	color: #e0e0e0;
 	padding-left: 0;
+	flex: 1;
 }
 
 .resource-card ul {
@@ -364,6 +368,8 @@ textarea::placeholder {
 	font-weight: 600;
 	transition: background-color 0.3s, transform 0.2s;
 	text-decoration: none;
+	margin-top: auto;
+	align-self: flex-start;
 }
 
 .resource-link:hover {
@@ -411,7 +417,6 @@ textarea::placeholder {
 	margin: 20px 0;
 	padding: 20px;
 	transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-	cursor: pointer;
 }
 
 .collapsible-section:hover {
@@ -424,6 +429,32 @@ textarea::placeholder {
 	font-size: 28px;
 	font-weight: 600;
 	color: #fff;
+	margin: 0;
+	line-height: 1.25;
+}
+
+.collapsible-toggle {
+	width: 100%;
+	background: transparent;
+	border: none;
+	color: inherit;
+	font: inherit;
+	text-align: left;
+	cursor: pointer;
+	padding: 0;
+}
+
+/* Screen-reader-only label (fx søgefelt) */
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
 }
 
 .collapsible-content {
@@ -595,17 +626,17 @@ textarea::placeholder {
 	display: block;
 }
 
-.nip05-teaser .teaser-see-more {
-	text-align: center;
-	font-size: 0.78rem;
+.teaser-see-more {
+	text-align: center !important;
+	font-size: clamp(0.70rem, 0.9vw, 0.78rem);
 	text-shadow: none;
 	max-width: none;
-	margin-left: 0;
-	margin-right: 0;
+	margin: 12px auto 0;
+	width: 100%;
 }
 
 .teaser-see-more a {
-	color: rgba(255, 255, 255, 0.3);
+	color: rgba(255, 255, 255, 0.55);
 	text-decoration: none;
 	letter-spacing: 0.03em;
 	font-weight: normal;
@@ -613,7 +644,7 @@ textarea::placeholder {
 }
 
 .teaser-see-more a:hover {
-	color: rgba(255, 255, 255, 0.6);
+	color: rgba(255, 255, 255, 0.78);
 }
 
 /* ===========================================
@@ -730,7 +761,7 @@ textarea::placeholder {
 	}
 
 	/* Teaser see more link */
-	.nip05-teaser .teaser-see-more {
+	.teaser-see-more {
 		text-align: center;
 		font-size: 0.78rem;
 	}
@@ -740,4 +771,14 @@ textarea::placeholder {
 	.card-wide {
 		grid-column: span 1;
 	}
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[role="button"]:focus-visible {
+	outline: 2px solid #a084ca !important;
+	outline-offset: 2px !important;
 }
