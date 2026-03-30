@@ -4,55 +4,59 @@ const currentPath = Astro.url.pathname;
 ---
 
 <header>
-  <div class="logo-container">
-    <a href="/" class="logo-link" aria-label="Gå til forsiden">
-      <img
-        src="/NOSTRDK_26.png"
-        alt="Nostr Logo"
-        id="logo"
-        width="1341"
-        height="354"
-        decoding="async"
-      />
-    </a>
-  </div>
-  
-  <nav>
-    <ul>
-      <li><a href="/" class={currentPath === "/" ? "is-active" : undefined} aria-current={currentPath === "/" ? "page" : undefined}>Hjem</a></li>
-      <li><a href="/#nostr-klienter">Klienter</a></li>
-      <li><a href="/#nostr-ressourcer">Ressourcer</a></li>
-      <li><a href="/#nostr-nip05">Nostr Adresse</a></li>
-      <li><a href="/apps" class={currentPath.startsWith("/apps") ? "is-active" : undefined} aria-current={currentPath.startsWith("/apps") ? "page" : undefined}>Apps & Tjenester</a></li>
-      <li><a href="/podcasts" class={currentPath.startsWith("/podcasts") ? "is-active" : undefined} aria-current={currentPath.startsWith("/podcasts") ? "page" : undefined}>Podcasts</a></li>
-      <li><a href="/#nostr-om">Om</a></li>
-      <li><a href="/#nostr-support">Support</a></li>
-    </ul>
-  </nav>
+  <div class="header-inner container">
+    <div class="logo-container">
+      <a href="/" class="logo-link" aria-label="Gå til forsiden">
+        <img
+          src="/NOSTRDK_26.png"
+          alt="Nostr Logo"
+          id="logo"
+          width="1341"
+          height="354"
+          decoding="async"
+        />
+      </a>
+    </div>
 
-  <button
-    class="burger-menu"
-    id="burger-menu"
-    type="button"
-    aria-expanded="false"
-    aria-controls="mobile-menu"
-    aria-label="Åbn menu"
-  >
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
+    <nav>
+      <ul>
+        <li><a href="/" class={currentPath === "/" ? "is-active" : undefined} aria-current={currentPath === "/" ? "page" : undefined}>Hjem</a></li>
+        <li><a href="/#nostr-klienter">Klienter</a></li>
+        <li><a href="/#nostr-ressourcer">Ressourcer</a></li>
+        <li><a href="/#nostr-nip05">Nostr Adresse</a></li>
+        <li><a href="/apps" class={currentPath.startsWith("/apps") ? "is-active" : undefined} aria-current={currentPath.startsWith("/apps") ? "page" : undefined}>Apps & Tjenester</a></li>
+        <li><a href="/podcasts" class={currentPath.startsWith("/podcasts") ? "is-active" : undefined} aria-current={currentPath.startsWith("/podcasts") ? "page" : undefined}>Podcasts</a></li>
+        <li><a href="/#nostr-om">Om</a></li>
+        <li><a href="/#nostr-support">Support</a></li>
+      </ul>
+    </nav>
+
+    <button
+      class="burger-menu"
+      id="burger-menu"
+      type="button"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+      aria-label="Åbn menu"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </div>
 </header>
 
 <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
-  <a href="/">Hjem</a>
-  <a href="/#nostr-klienter">Klienter</a>
-  <a href="/#nostr-ressourcer">Ressourcer</a>
-  <a href="/#nostr-nip05">Nostr Adresse</a>
-  <a href="/apps">Apps & Tjenester</a>
-  <a href="/podcasts">Podcasts</a>
-  <a href="/#nostr-om">Om</a>
-  <a href="/#nostr-support">Support</a>
+  <div class="container mobile-menu-inner">
+    <a href="/">Hjem</a>
+    <a href="/#nostr-klienter">Klienter</a>
+    <a href="/#nostr-ressourcer">Ressourcer</a>
+    <a href="/#nostr-nip05">Nostr Adresse</a>
+    <a href="/apps">Apps & Tjenester</a>
+    <a href="/podcasts">Podcasts</a>
+    <a href="/#nostr-om">Om</a>
+    <a href="/#nostr-support">Support</a>
+  </div>
 </div>
 
 <style>
@@ -61,14 +65,19 @@ header {
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: #FFF;
-  padding: 20px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  padding: 20px 0;
   position: sticky;
   top: 0;
   z-index: 1000;
   border-bottom: 1px solid rgba(160, 132, 202, 0.2);
+}
+
+/* Same max-width + horizontal padding as main `.container` (global.css) */
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .logo-container {
@@ -157,22 +166,26 @@ nav ul li a.is-active {
 }
 
 .mobile-menu {
-  display: flex;
-  flex-direction: column;
   position: fixed;
   top: 90px;
+  left: 0;
   right: 0;
   background: linear-gradient(180deg, #1F1D2B, #29273C);
   border-top: 1px solid rgba(160, 132, 202, 0.2);
   width: 100%;
-  text-align: center;
-  padding: 20px;
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
   transform: translateY(-8px);
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+}
+
+.mobile-menu-inner {
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  padding: 20px 0;
 }
 
 .mobile-menu a {
@@ -198,7 +211,7 @@ nav ul li a.is-active {
   pointer-events: auto;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1320px) {
   .logo-container img {
     max-height: 50px;
   }
@@ -216,7 +229,7 @@ nav ul li a.is-active {
   }
 
   header {
-    padding: 16px 20px;
+    padding: 16px 0;
   }
 }
 </style>
