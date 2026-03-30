@@ -3,7 +3,7 @@
 ---
 
 <footer class="site-footer">
-  <div class="footer-container">
+  <div class="footer-container container">
     <!-- Footer Navigation -->
     <div class="footer-section">
       <h3>Menu</h3>
@@ -71,7 +71,7 @@
   </div>
 
   <!-- Bottom Bar -->
-  <div class="footer-bottom">
+  <div class="footer-bottom container">
     <p>Nostr.dk 💜 | Tag del i fremtidens decentraliserede internet | Open Source Alt | <a href="/privatlivspolitik" style="color: #b0b0b0; font-weight: 400;">Privatlivspolitik</a></p>
     <button id="back-to-top" class="back-to-top" aria-label="Tilbage til toppen">
       ↑ Tilbage til toppen
@@ -142,14 +142,12 @@
   .site-footer {
     background: linear-gradient(180deg, #29273C, #1F1D2B);
     color: #fff;
-    padding: 60px 40px 20px;
+    padding: 60px 0 20px;
     margin-top: 80px;
     border-top: 2px solid rgba(160, 132, 202, 0.3);
   }
 
   .footer-container {
-    max-width: 1400px;
-    margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 40px;
@@ -244,8 +242,6 @@
   }
 
   .footer-bottom {
-    max-width: 1400px;
-    margin: 0 auto;
     padding-top: 30px;
     border-top: 1px solid rgba(160, 132, 202, 0.2);
     display: flex;
@@ -289,9 +285,7 @@
   }
 
   @media (max-width: 768px) {
-    .site-footer {
-      padding: 40px 20px 20px;
-    }
+    .site-footer { padding: 40px 0 20px; }
 
     .footer-container {
       grid-template-columns: 1fr;
