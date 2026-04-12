@@ -8,7 +8,8 @@
     # Tilføjet api.github.com til connect-src så Netlify Function kan kalde GitHub API server-side.
     # Selve /.netlify/functions/* er same-origin og dækkes allerede af 'self'.
     # Profiler henter nostr.json via /.netlify/functions/nostr-well-known (same-origin); browser behøver ikke connect-src til nostr.dk.
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is https://mempool.space https://api.github.com; img-src 'self' data: https:; frame-src https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
+    # Umami loader fra cloud.umami.is men sender hits til api-gateway.umami.dev (se script.js → /api/send).
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cloud.umami.is; connect-src 'self' https://cloud.umami.is https://api-gateway.umami.dev https://mempool.space https://api.github.com; img-src 'self' data: https:; frame-src https://www.youtube.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;"
 
 [[headers]]
   for = "/_astro/*"
