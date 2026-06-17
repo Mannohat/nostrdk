@@ -10,6 +10,8 @@ const blog = defineCollection({
 			pubDate: z.coerce.date(),
 			updatedDate: z.coerce.date().optional(),
 			heroImage: image().optional(),
+			/** Post language. English posts live under content/blog/en/. */
+			language: z.enum(['da', 'en']).default('da'),
 		}),
 });
 

@@ -1,11 +1,14 @@
 ---
 import { getCollection } from 'astro:content';
-import NostrLayout from '../../layouts/NostrLayout.astro';
-import FormattedDate from '../../components/FormattedDate.astro';
+import NostrLayout from '../../../layouts/NostrLayout.astro';
+import FormattedDate from '../../../components/FormattedDate.astro';
 
-const posts = (await getCollection('blog', ({ id }) => !id.startsWith('en/'))).sort(
+const posts = (await getCollection('blog', ({ id }) => id.startsWith('en/'))).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+// English posts live under content/blog/en/ — strip the prefix for the route.
+const slugOf = (id: string) => id.replace(/^en\//, '');
 
 const blogIndexItemListLd = {
 	"@context": "https://schema.org",
@@ -16,30 +19,30 @@ const blogIndexItemListLd = {
 		"@type": "ListItem",
 		position: idx + 1,
 		name: post.data.title,
-		url: new URL(`/blog/${post.id}/`, Astro.site).href,
+		url: new URL(`/en/blog/${slugOf(post.id)}/`, Astro.site).href,
 	})),
 };
 ---
 
 <NostrLayout
 	title="Blog | Nostr.dk"
-	description="Artikler og indlæg om Nostr-protokollen på dansk."
+	description="Articles and posts about the Nostr protocol."
 	jsonLdArticle={blogIndexItemListLd}
 >
 	<div class="page-header">
 		<h1>Blog</h1>
-		<p>Artikler og indlæg om Nostr på dansk.</p>
+		<p>Articles and posts about Nostr.</p>
 	</div>
 
 	{posts.length === 0 ? (
 		<div class="empty">
-			<p>Ingen indlæg endnu. Kom snart tilbage!</p>
+			<p>No posts yet. Check back soon!</p>
 		</div>
 	) : (
 		<ul class="post-list">
 			{posts.map((post) => (
 				<li>
-					<a href={`/blog/${post.id}/`}>
+					<a href={`/en/blog/${slugOf(post.id)}/`}>
 						<h2>{post.data.title}</h2>
 						<p class="date"><FormattedDate date={post.data.pubDate} /></p>
 						<p>{post.data.description}</p>

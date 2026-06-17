@@ -26,6 +26,8 @@ export const DA_TO_EN: Readonly<Record<string, string>> = {
 	'/profiler': '/en/profiles',
 	'/getnip05': '/en/get-nip05',
 	'/privatlivspolitik': '/en/privacy-policy',
+	// Blog posts (Danish slug → English slug).
+	'/blog/velkommen-til-nostr': '/en/blog/write-about-nostr',
 };
 
 /** English (`/en`) path → Danish (root) path. Derived from `DA_TO_EN`. */
@@ -42,6 +44,8 @@ export const EN_TO_DA: Readonly<Record<string, string>> = Object.fromEntries(
 export const EN_LIVE: ReadonlySet<string> = new Set<string>([
 	'/en/privacy-policy', // privatlivspolitik
 	'/en/podcasts', // podcasts
+	'/en/blog', // blog index
+	'/en/blog/write-about-nostr', // blog post: velkommen-til-nostr
 	// '/en/',            // home          — add when src/pages/en/index.astro lands
 	// '/en/apps',        // apps          — add when src/pages/en/apps.astro lands
 	// '/en/blog',        // blog
