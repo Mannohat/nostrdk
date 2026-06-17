@@ -1,15 +1,21 @@
 ---
 // Nostr.dk Header
+import LangSwitcher from "./LangSwitcher.astro";
+import { getLangFromPath } from "../i18n/routes";
+import { t } from "../i18n/ui";
+
 const currentPath = Astro.url.pathname;
+const lang = getLangFromPath(currentPath);
+const h = t(lang).header;
 ---
 
 <header>
   <div class="header-inner container">
     <div class="logo-container">
-      <a href="/" class="logo-link" aria-label="Gå til forsiden">
+      <a href="/" class="logo-link" aria-label={h.toHome}>
         <img
           src="/NOSTRDK_26.png"
-          alt="Nostr Logo"
+          alt={h.logoAlt}
           id="logo"
           width="1341"
           height="354"
@@ -20,16 +26,18 @@ const currentPath = Astro.url.pathname;
 
     <nav>
       <ul>
-        <li><a href="/" class={currentPath === "/" ? "is-active" : undefined} aria-current={currentPath === "/" ? "page" : undefined}>Hjem</a></li>
-        <li><a href="/#nostr-klienter">Klienter</a></li>
-        <li><a href="/#nostr-ressourcer">Ressourcer</a></li>
-        <li><a href="/#nostr-nip05">Nostr Adresse</a></li>
-        <li><a href="/apps" class={currentPath.startsWith("/apps") ? "is-active" : undefined} aria-current={currentPath.startsWith("/apps") ? "page" : undefined}>Apps & Tjenester</a></li>
-        <li><a href="/podcasts" class={currentPath.startsWith("/podcasts") ? "is-active" : undefined} aria-current={currentPath.startsWith("/podcasts") ? "page" : undefined}>Podcasts</a></li>
-        <li><a href="/#nostr-om">Om</a></li>
-        <li><a href="/#nostr-support">Support</a></li>
+        <li><a href="/" class={currentPath === "/" ? "is-active" : undefined} aria-current={currentPath === "/" ? "page" : undefined}>{h.home}</a></li>
+        <li><a href="/#nostr-klienter">{h.clients}</a></li>
+        <li><a href="/#nostr-ressourcer">{h.resources}</a></li>
+        <li><a href="/#nostr-nip05">{h.nostrAddress}</a></li>
+        <li><a href="/apps" class={currentPath.startsWith("/apps") ? "is-active" : undefined} aria-current={currentPath.startsWith("/apps") ? "page" : undefined}>{h.apps}</a></li>
+        <li><a href="/podcasts" class={currentPath.startsWith("/podcasts") ? "is-active" : undefined} aria-current={currentPath.startsWith("/podcasts") ? "page" : undefined}>{h.podcasts}</a></li>
+        <li><a href="/#nostr-om">{h.about}</a></li>
+        <li><a href="/#nostr-support">{h.support}</a></li>
       </ul>
     </nav>
+
+    <LangSwitcher />
 
     <button
       class="burger-menu"
@@ -37,7 +45,7 @@ const currentPath = Astro.url.pathname;
       type="button"
       aria-expanded="false"
       aria-controls="mobile-menu"
-      aria-label="Åbn menu"
+      aria-label={h.openMenu}
     >
       <span></span>
       <span></span>
@@ -48,14 +56,14 @@ const currentPath = Astro.url.pathname;
 
 <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
   <div class="container mobile-menu-inner">
-    <a href="/">Hjem</a>
-    <a href="/#nostr-klienter">Klienter</a>
-    <a href="/#nostr-ressourcer">Ressourcer</a>
-    <a href="/#nostr-nip05">Nostr Adresse</a>
-    <a href="/apps">Apps & Tjenester</a>
-    <a href="/podcasts">Podcasts</a>
-    <a href="/#nostr-om">Om</a>
-    <a href="/#nostr-support">Support</a>
+    <a href="/">{h.home}</a>
+    <a href="/#nostr-klienter">{h.clients}</a>
+    <a href="/#nostr-ressourcer">{h.resources}</a>
+    <a href="/#nostr-nip05">{h.nostrAddress}</a>
+    <a href="/apps">{h.apps}</a>
+    <a href="/podcasts">{h.podcasts}</a>
+    <a href="/#nostr-om">{h.about}</a>
+    <a href="/#nostr-support">{h.support}</a>
   </div>
 </div>
 

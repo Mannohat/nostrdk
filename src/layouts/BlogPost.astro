@@ -3,9 +3,14 @@ import type { CollectionEntry } from "astro:content";
 import { getImage, Image } from "astro:assets";
 import NostrLayout from "./NostrLayout.astro";
 import FormattedDate from "../components/FormattedDate.astro";
+import { getLangFromPath } from "../i18n/routes";
+import { t } from "../i18n/ui";
 
 type Props = CollectionEntry<"blog">["data"];
 const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+
+const lang = getLangFromPath(Astro.url.pathname);
+const updatedLabel = t(lang).blog.updated;
 
 let ogImagePath = "/shaka.png";
 let ogImageWidth: string | undefined;
@@ -73,7 +78,7 @@ const blogPostingLd: Record<string, unknown> = {
 					<FormattedDate date={pubDate} />
 					{updatedDate && (
 						<span class="last-updated">
-							· Opdateret <FormattedDate date={updatedDate} />
+							· {updatedLabel} <FormattedDate date={updatedDate} />
 						</span>
 					)}
 				</div>

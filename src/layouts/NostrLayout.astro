@@ -3,6 +3,12 @@ import NostrHeader from "../components/NostrHeader.astro";
 import NostrFooter from "../components/NostrFooter.astro";
 import "../styles/global.css";
 import { UMAMI_WEBSITE_ID } from "../site.config";
+import {
+	getLangFromPath,
+	daKeyForPath,
+	DA_TO_EN,
+	EN_LIVE,
+} from "../i18n/routes";
 
 interface Props {
 	title: string;
@@ -35,10 +41,31 @@ const {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site).href;
 const ogImageUrl = new URL(ogImage, Astro.site).href;
+
+// --- i18n: language + hreflang alternates (registry-driven, gated by EN_LIVE) ---
+const lang = getLangFromPath(Astro.url.pathname);
+const ogLocale = lang === "en" ? "en_US" : "da_DK";
+
+// Build absolute alternate URLs matching Astro's trailing-slash convention.
+const withSlash = (p: string) => (p.endsWith("/") ? p : `${p}/`);
+const absUrl = (p: string) => new URL(withSlash(p), Astro.site).href;
+
+const daKey = daKeyForPath(Astro.url.pathname);
+const enPath = daKey != null ? DA_TO_EN[daKey] : undefined;
+const alternates =
+	daKey != null && enPath != null
+		? {
+				da: absUrl(daKey),
+				// Only advertise the English alternate once that page is actually live,
+				// so Danish-only pages never point at a 404.
+				en: EN_LIVE.has(enPath) ? absUrl(enPath) : null,
+				xDefault: absUrl(daKey), // x-default → Danish (canonical original)
+			}
+		: null;
 ---
 
 <!doctype html>
-<html lang="da">
+<html lang={lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -52,6 +79,17 @@ const ogImageUrl = new URL(ogImage, Astro.site).href;
     <!-- Canonical -->
     <link rel="canonical" href={canonicalURL} />
 
+    <!-- hreflang alternates (only emitted for registry pages; x-default → Danish) -->
+    {alternates && (
+      <>
+        <link rel="alternate" hreflang="da" href={alternates.da} />
+        {alternates.en && (
+          <link rel="alternate" hreflang="en" href={alternates.en} />
+        )}
+        <link rel="alternate" hreflang="x-default" href={alternates.xDefault} />
+      </>
+    )}
+
     <!-- Open Graph -->
     <meta property="og:type" content={ogType} />
     <meta property="og:url" content={canonicalURL} />
@@ -60,7 +98,7 @@ const ogImageUrl = new URL(ogImage, Astro.site).href;
     <meta property="og:image" content={ogImageUrl} />
     {ogImageWidth && <meta property="og:image:width" content={ogImageWidth} />}
     {ogImageHeight && <meta property="og:image:height" content={ogImageHeight} />}
-    <meta property="og:locale" content="da_DK" />
+    <meta property="og:locale" content={ogLocale} />
     {articlePublishedTime && (
       <meta property="article:published_time" content={articlePublishedTime} />
     )}
@@ -88,6 +126,7 @@ const ogImageUrl = new URL(ogImage, Astro.site).href;
     />
 
     <!-- JSON-LD Structured Data -->
+    {lang === "da" && (
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -104,6 +143,25 @@ const ogImageUrl = new URL(ogImage, Astro.site).href;
         }
       }
     </script>
+    )}
+    {lang === "en" && (
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Nostr.dk",
+        "url": "https://nostr.dk",
+        "description": "English resource about the Nostr protocol – the censorship-resistant, decentralized protocol for social media and much more.",
+        "inLanguage": "en",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Nostr.dk",
+          "url": "https://nostr.dk",
+          "email": "nostr@nostr.dk"
+        }
+      }
+    </script>
+    )}
     {jsonLdArticle && (
       <script type="application/ld+json" set:html={JSON.stringify(jsonLdArticle)} />
     )}

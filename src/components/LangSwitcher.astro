@@ -1,0 +1,56 @@
+---
+/**
+ * Language switcher. Maps the CURRENT page to its counterpart in the other
+ * language and links to it — but only when a real counterpart exists
+ * (`switcherTarget` returns null on a Danish page whose English version is not
+ * live yet, in which case nothing renders). This keeps the Danish site visually
+ * unchanged until English pages actually land.
+ */
+import { getLangFromPath, switcherTarget, type Lang } from '../i18n/routes';
+import { t } from '../i18n/ui';
+
+const pathname = Astro.url.pathname;
+const lang = getLangFromPath(pathname);
+const otherLang: Lang = lang === 'en' ? 'da' : 'en';
+const target = switcherTarget(pathname, otherLang);
+
+const s = t(lang).switcher;
+const label = otherLang === 'en' ? s.toEnLabel : s.toDaLabel;
+const title = otherLang === 'en' ? s.toEnTitle : s.toDaTitle;
+---
+
+{
+	target && (
+		<a
+			class="lang-switcher"
+			href={target}
+			hreflang={otherLang}
+			title={title}
+			aria-label={title}
+			data-umami-event="lang-switch"
+		>
+			{label}
+		</a>
+	)
+}
+
+<style>
+	.lang-switcher {
+		color: #fff;
+		font-size: 14px;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		padding: 8px 12px;
+		min-height: 44px;
+		display: inline-flex;
+		align-items: center;
+		border-radius: 8px;
+		border: 1px solid rgba(160, 132, 202, 0.4);
+		transition: color 0.2s ease, background-color 0.2s ease;
+	}
+
+	.lang-switcher:hover {
+		color: #a084ca;
+		background: rgba(160, 132, 202, 0.12);
+	}
+</style>
