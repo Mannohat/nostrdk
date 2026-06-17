@@ -40,13 +40,13 @@ export const EN_TO_DA: Readonly<Record<string, string>> = Object.fromEntries(
  * pointing at it. Strings MUST match the values in `DA_TO_EN` exactly.
  */
 export const EN_LIVE: ReadonlySet<string> = new Set<string>([
+	'/en/privacy-policy', // privatlivspolitik
 	// '/en/',            // home          — add when src/pages/en/index.astro lands
 	// '/en/apps',        // apps          — add when src/pages/en/apps.astro lands
 	// '/en/podcasts',    // podcasts      — …
 	// '/en/blog',        // blog
 	// '/en/profiles',    // profiler
 	// '/en/get-nip05',   // getnip05
-	// '/en/privacy-policy', // privatlivspolitik
 ]);
 
 /** Strip a trailing slash except for the bare root `'/'`. */
