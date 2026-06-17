@@ -18,6 +18,9 @@ const podcasts = defineCollection({
 	schema: z.object({
 		title: z.string(),
 		description: z.string(),
+		/** Optional English translations (used by /en pages; fall back to Danish). */
+		titleEn: z.string().optional(),
+		descriptionEn: z.string().optional(),
 		videoId: z.string().optional(),
 		imageUrl: z.string().optional(),
 		externalUrl: z.string().optional(),

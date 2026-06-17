@@ -1,0 +1,198 @@
+---
+import NostrLayout from "../../layouts/NostrLayout.astro";
+import { getCollection } from "astro:content";
+
+const allPodcasts = await getCollection("podcasts", ({ data }) => {
+  return data.published === true;
+});
+
+// English title/description with fallback to Danish.
+type Podcast = (typeof allPodcasts)[number];
+const tt = (p: Podcast) => p.data.titleEn ?? p.data.title;
+const dd = (p: Podcast) => p.data.descriptionEn ?? p.data.description;
+
+const featured = allPodcasts
+  .filter((p) => p.data.category === "featured")
+  .sort((a, b) => a.data.order - b.data.order);
+
+const beginners = allPodcasts
+  .filter((p) => p.data.category === "beginner")
+  .sort((a, b) => a.data.order - b.data.order);
+
+const guides = allPodcasts
+  .filter((p) => p.data.category === "guides")
+  .sort((a, b) => a.data.order - b.data.order);
+
+const series = allPodcasts
+  .filter((p) => p.data.category === "series")
+  .sort((a, b) => a.data.order - b.data.order);
+
+const podcastsItemListLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Podcasts",
+  itemListOrder: "http://schema.org/ItemListOrderAscending",
+  itemListElement: allPodcasts.map((p, idx) => {
+    const url =
+      p.data.externalUrl ||
+      (p.data.videoId
+        ? `https://www.youtube.com/watch?v=${p.data.videoId}`
+        : new URL("/en/podcasts", Astro.site).href);
+
+    return {
+      "@type": "ListItem",
+      position: idx + 1,
+      name: tt(p),
+      url,
+      description: dd(p),
+      image: p.data.imageUrl ? [p.data.imageUrl] : undefined,
+    };
+  }),
+};
+---
+
+<NostrLayout
+  title="Podcasts | Nostr.dk"
+  description="Podcasts and videos about the Nostr protocol – for beginners and the experienced."
+  jsonLdArticle={podcastsItemListLd}
+>
+
+  <div class="page-header">
+    <h1>Nostr Podcasts</h1>
+    <p>Here you'll find interesting podcasts covering different aspects of Nostr.</p>
+  </div>
+
+  {
+    featured.length > 0 && (
+      <>
+        <h2 class="section-title">Featured</h2>
+        <div class="card-grid featured-grid">
+          {featured.map((podcast) => (
+            <div class="card card-wide card-center">
+              <h3>{tt(podcast)}</h3>
+              <p>{dd(podcast)}</p>
+              {podcast.data.videoId && (
+                <div class="video-wrapper">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${podcast.data.videoId}`}
+                    title={`YouTube: ${tt(podcast)}`}
+                    loading="lazy"
+                    allowfullscreen
+                  ></iframe>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </>
+    )
+  }
+
+  {
+    beginners.length > 0 && (
+      <>
+        <h2 class="section-title">For Beginners</h2>
+        <div class="card-grid">
+          {beginners.map((podcast) => (
+            <div class="card card-center">
+              <h3>{tt(podcast)}</h3>
+              <p>{dd(podcast)}</p>
+              {podcast.data.videoId && (
+                <div class="video-wrapper">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${podcast.data.videoId}`}
+                    title={`YouTube: ${tt(podcast)}`}
+                    loading="lazy"
+                    allowfullscreen
+                  ></iframe>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </>
+    )
+  }
+
+  {
+    guides.length > 0 && (
+      <>
+        <h2 class="section-title">Guides</h2>
+        <div class="card-grid">
+          {guides.map((podcast) => (
+            <div class="card card-center">
+              <h3>{tt(podcast)}</h3>
+              <p>{dd(podcast)}</p>
+              {podcast.data.videoId && (
+                <div class="video-wrapper">
+                <iframe
+                  src={`https://www.youtube.com/embed/${podcast.data.videoId}`}
+                  title={`YouTube: ${tt(podcast)}`}
+                  loading="lazy"
+                  allowfullscreen
+                ></iframe>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </>
+    )
+  }
+
+  {
+    series.length > 0 && (
+      <>
+        <h2 class="section-title">Nostr Podcast Series</h2>
+        <div class="card-grid">
+          {series.map((podcast) => (
+            <div class="card card-center">
+              {podcast.data.externalUrl ? (
+                <a
+                  href={podcast.data.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-umami-event="podcast-series-outbound"
+                  data-umami-event-podcast={podcast.data.title}
+                >
+                  <h3>{tt(podcast)}</h3>
+                </a>
+              ) : (
+                <h3>{tt(podcast)}</h3>
+              )}
+              <p>{dd(podcast)}</p>
+              {podcast.data.imageUrl && podcast.data.externalUrl && (
+                <a
+                  href={podcast.data.externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  data-umami-event="podcast-series-outbound"
+                  data-umami-event-podcast={podcast.data.title}
+                >
+                  <img
+                    src={podcast.data.imageUrl}
+                    alt={`${tt(podcast)} cover`}
+                    width="640"
+                    height="640"
+                    loading="lazy"
+                  />
+                </a>
+              )}
+              {podcast.data.videoId && (
+                <div class="video-wrapper">
+                <iframe
+                  src={`https://www.youtube.com/embed/${podcast.data.videoId}`}
+                  title={`YouTube: ${tt(podcast)}`}
+                  loading="lazy"
+                  allowfullscreen
+                ></iframe>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </>
+    )
+  }
+
+</NostrLayout>
