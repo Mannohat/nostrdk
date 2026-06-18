@@ -2,7 +2,10 @@
 import NostrLayout from "../../layouts/NostrLayout.astro";
 import Nip05RegisterForm from "../../components/Nip05RegisterForm.astro";
 import fs from "node:fs/promises";
-const nostrJsonPath = new URL("../../../public/.well-known/nostr.json", import.meta.url);
+import path from "node:path";
+// Read from the project root (cwd at build) — robust regardless of where Astro
+// bundles this page module (import.meta.url traversal broke under Astro 6).
+const nostrJsonPath = path.join(process.cwd(), "public", ".well-known", "nostr.json");
 let nostrNames: Record<string, string> = {};
 try {
   const text = await fs.readFile(nostrJsonPath, "utf-8");
