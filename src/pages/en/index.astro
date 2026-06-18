@@ -1,0 +1,496 @@
+---
+import NostrLayout from "../../layouts/NostrLayout.astro";
+import Nip05RegisterForm from "../../components/Nip05RegisterForm.astro";
+import Nip05Teaser from "../../components/Nip05Teaser.astro";
+import { SUPPORT_LNURL } from "../../site.config";
+import { localizedHref, getLangFromPath } from "../../i18n/routes";
+
+const lang = getLangFromPath(Astro.url.pathname);
+---
+
+<NostrLayout
+	title="Nostr.dk – Join the decentralized internet of the future"
+	description="Your gateway to Nostr – the censorship-resistant, decentralized protocol for social media and much more."
+>
+	<!-- Hero Section -->
+	<section class="hero">
+		<h1>Join the decentralized internet of the future</h1>
+		<p>
+			Nostr gives you ownership of your data – an open protocol for
+			social media and much more.
+		</p>
+		<button class="cta" id="start-button" data-umami-event="hero-button"
+			>Let me read more about it</button
+		>
+	</section>
+
+	<!-- Collapsible Content Sections -->
+	<section class="collapsible-section">
+		<h2 class="collapsible-header" id="collapsible-heading-1">
+			<button
+				type="button"
+				class="collapsible-toggle"
+				aria-expanded="false"
+				aria-controls="collapsible-panel-1"
+			>
+				1. What is Nostr?
+			</button>
+		</h2>
+		<div class="collapsible-content" id="collapsible-panel-1" role="region" aria-labelledby="collapsible-heading-1">
+			<p>
+				Nostr is a decentralized protocol that, among other things, lets
+				users communicate and share content without depending on central
+				control or servers. This means that no single entity owns or
+				controls the network, which makes Nostr censorship-resistant and
+				more robust than traditional social platforms.
+			</p>
+			<p>
+				<strong
+					>Nostr stands for "Notes and Other Stuff Transmitted by
+					Relays".</strong
+				>
+			</p>
+			<p>
+				Nostr uses public and private keys to identify users. Each user
+				has a key pair, and you can have several if you want to:
+			</p>
+			<ul>
+				<li>
+					<strong>Public key (npub)</strong>: This acts as your
+					identity on Nostr and can be compared to a username. Your
+					public key, also called "npub", is visible to everyone and is
+					used to identify you when you send messages or update your
+					profile.
+				</li>
+				<li>
+					<strong>Private key (nsec)</strong>: This is your password,
+					which is extremely important to protect. Your private key,
+					also called "nsec", is used to sign all your messages and
+					actions on Nostr. If someone gains access to your private
+					key, they can take over your account, and there is no way to
+					reset or recover it. That is why it is important to store your
+					private key securely, for example in a password manager.
+				</li>
+			</ul>
+		</div>
+	</section>
+
+	<section class="collapsible-section">
+		<h2 class="collapsible-header" id="collapsible-heading-2">
+			<button
+				type="button"
+				class="collapsible-toggle"
+				aria-expanded="false"
+				aria-controls="collapsible-panel-2"
+			>
+				2. Why is Nostr important?
+			</button>
+		</h2>
+		<div class="collapsible-content" id="collapsible-panel-2" role="region" aria-labelledby="collapsible-heading-2">
+			<p>
+				As mentioned, Nostr is a protocol, and you can already do plenty
+				of things with it that we won't cover in this introduction.
+				BUUUT! one significant – and right now clearly the most
+				widespread use of Nostr is within social networking, since it
+				solves some of the big challenges that existing social media
+				face:
+			</p>
+			<ul>
+				<li>
+					<strong>Censorship</strong>: Traditional social media
+					platforms are subject to control from centralized
+					authorities, who can censor or delete content. On Nostr,
+					users choose for themselves which relays they want to connect
+					to, and no single entity can control what gets posted.
+				</li>
+				<li>
+					<strong>Data security</strong>: On central platforms like
+					Facebook and Twitter, all your data is stored on their
+					servers, and you have no control over how it is used or
+					stored. On Nostr, users can choose for themselves which
+					relays their data is sent to, and no third parties have
+					access to your private keys or messages.
+				</li>
+				<li>
+					<strong>Privacy</strong>: Nostr gives you full control over
+					your actions and messages. Every message you send, and every
+					update you make to your profile, is signed with your private
+					key. This ensures that only you, with your private key
+					(nsec), can perform these actions. With a Nostr address,
+					which you can read more about further down this page, you can
+					assure yourself and those who want to follow you that they
+					find the correct profile and not a copy that might try to
+					impersonate you.
+				</li>
+			</ul>
+		</div>
+	</section>
+
+	<section class="collapsible-section">
+		<h2 class="collapsible-header" id="collapsible-heading-3">
+			<button
+				type="button"
+				class="collapsible-toggle"
+				aria-expanded="false"
+				aria-controls="collapsible-panel-3"
+			>
+				3. How does Nostr work?
+			</button>
+		</h2>
+		<div class="collapsible-content" id="collapsible-panel-3" role="region" aria-labelledby="collapsible-heading-3">
+			<p>
+				Nostr works using a network of relays that forward messages
+				between users. These relays don't store your data permanently,
+				but distribute it to other users and applications you are
+				connected with. Anyone with the technical prerequisites to set up
+				a Nostr relay can do so, but it isn't necessary for you to use
+				Nostr, and by far most clients already come set up with a range
+				of relays from the start. You can add or remove relays at any
+				time.
+			</p>
+			<p><strong>Creating a Nostr account:</strong></p>
+			<ul>
+				<li>
+					<strong>Choose a client</strong>: To use Nostr you need to
+					choose a client. Clients are the applications that connect
+					you to the Nostr network. There are clients for web, desktop
+					and mobile, so you can choose the one that best fits your
+					needs.
+				</li>
+				<li>
+					<strong>Generate your keys</strong>: When you create an
+					account in a Nostr client, a public and private key pair is
+					generated automatically. Your public key (npub) acts as your
+					"username", and your private key (nsec) is used to sign your
+					actions.
+				</li>
+				<li>
+					<strong>Store your private key securely</strong>: Since your
+					private key acts as a password, it is important to store it
+					securely. Consider using a password manager to protect your
+					key so you don't lose it.
+				</li>
+			</ul>
+		</div>
+	</section>
+
+	<section class="collapsible-section">
+		<h2 class="collapsible-header" id="collapsible-heading-4">
+			<button
+				type="button"
+				class="collapsible-toggle"
+				aria-expanded="false"
+				aria-controls="collapsible-panel-4"
+			>
+				4. Get started with Nostr
+			</button>
+		</h2>
+		<div class="collapsible-content" id="collapsible-panel-4" role="region" aria-labelledby="collapsible-heading-4">
+			<p>
+				Getting started with Nostr is simple, but there are a few
+				important steps you should follow to protect your account and get
+				the best possible experience:
+			</p>
+			<ul>
+				<li>
+					<strong>Choose a client</strong>: Choose a Nostr-compatible
+					client, such as:
+					<ul>
+						<li>Damus (iOS)</li>
+						<li>Primal (Android, iOS & Desktop)</li>
+					</ul>
+				</li>
+				<li>
+					<strong>Add contacts</strong>: Once you're set up, you can
+					start building your network by adding other users you want to
+					follow. You can find users by searching for their public key
+					or by adding their NIP-05 identity. To find other Danes on
+					Nostr you can check out this page <a
+						href="https://find.nostr.dk"
+						target="_blank"
+						rel="noopener noreferrer"
+						data-umami-event="outbound-find-nostr-dk">find.nostr.dk</a
+					> just as you can also follow hashtags in several of the well-known
+					clients such as Damus and Primal.
+				</li>
+				<li>
+					<strong>Verification via NIP-05</strong>: You can set up a
+					Nostr address that ties a recognizable identity, such as
+					'alias@nostr.dk', to your public key. This makes it easier
+					for others to find you and confirm the authenticity of your
+					profile, since it prevents anyone from making a copy to
+					impersonate you.
+				</li>
+				<li>
+					<strong>Set up your Lightning wallet (optional)</strong>:
+					Nostr supports payments via the Lightning network, which
+					makes it possible to send and receive small donations, called
+					'zaps'. This isn't necessary to use Nostr, but it's an
+					exciting and fun way to pay people if you, for example, like a
+					post, an article or something else. It also makes it possible
+					for others to pay you. This model is known as Value4Value and
+					is being used increasingly. To use this feature you need to
+					set up a Lightning wallet that can be connected to your Nostr
+					account. If you aren't familiar with Value4Value, Bitcoin or
+					the Lightning network, you can visit <a
+						href="https://www.enogtyve.org"
+						target="_blank"
+						rel="noopener noreferrer"
+						data-umami-event="outbound-enogtyve-www">Enogtyve</a
+					> to learn more.
+				</li>
+			</ul>
+		</div>
+	</section>
+
+	<!-- Nostr Clients Section -->
+	<section class="nostr-klienter" id="nostr-klienter">
+		<h2>Nostr Clients</h2>
+		<p>
+			There are many Nostr clients and services, but here are a few
+			suggestions to get started. Primal and Damus resemble Twitter and
+			present information in a way you might know from Twitter. Primal can
+			be used on Android, iOS and desktop, while Damus is only available on
+			iOS. If you want to learn more about Bitcoin and Lightning or try the
+			Value4Value model, Primal is probably the easiest to start with.
+			Remember that you can always switch to another client and all your
+			data will follow along.
+		</p>
+		<div class="klient-container">
+			<div class="klient-item">
+				<a href="https://primal.net" target="_blank" rel="noopener noreferrer" data-umami-event="klient-primal">
+					<img src="/primal.png" alt="Primal" width="98" height="98" loading="lazy" />
+					<h3>Primal</h3>
+				</a>
+				<p class="klient-description">Android, iOS & Desktop</p>
+				<a href="https://primal.net" target="_blank" rel="noopener noreferrer" class="klient-link" data-umami-event="klient-primal">Visit Primal</a>
+			</div>
+			<div class="klient-item">
+				<a href="https://damus.io" target="_blank" rel="noopener noreferrer" data-umami-event="klient-damus">
+					<img src="/damus.png" alt="Damus" width="98" height="98" loading="lazy" />
+					<h3>Damus</h3>
+				</a>
+				<p class="klient-description">iOS</p>
+				<a href="https://damus.io" target="_blank" rel="noopener noreferrer" class="klient-link" data-umami-event="klient-damus">Visit Damus</a>
+			</div>
+		</div>
+		<p class="teaser-see-more">
+			<a href={localizedHref("/apps?type=client", lang)} data-umami-event="home-see-more-clients">
+				See more clients →
+			</a>
+		</p>
+	</section>
+
+	<!-- NIP-05 Section -->
+	<section class="nostr-nip05" id="nostr-nip05">
+		<h2>
+			Get a Nostr address <span style="font-size: 0.75em;">(NIP-05 address)</span>
+		</h2>
+		<p>
+			You can set up a verified identity that makes it possible to tie a
+			recognizable address (e.g. "alias@nostr.dk") to your public key. This
+			makes it easier for others to find you and confirm that your profile
+			is yours and not someone impersonating you. Check whether your
+			desired name is available below, follow the instructions and pay
+			2,100 sats via Lightning — your address is active within a few
+			minutes.
+		</p>
+
+		<!-- Profile teaser -->
+		<Nip05Teaser gridId="nip05TeaserGrid" deterministic />
+
+		<Nip05RegisterForm
+			variant="home"
+			umamiNext="nip05-button"
+			umamiPay="nip05-pay-button"
+			lightningUmamiEvent="outbound-enogtyve-lightning-nip05"
+		/>
+	</section>
+
+	<!-- Nostr Resources Section -->
+	<section class="nostr-ressourcer" id="nostr-ressourcer">
+		<h2>Nostr Resources</h2>
+		<p>
+			Most services and companies like YouTube, Google, Facebook, Twitter,
+			Instagram, Meetups.com, Pinterest, etc. have access to your data and
+			can shut down your account if they want to. With Nostr you get the
+			ability to own your own data, which ensures that you always have
+			access to your account. You can also keep your posts, followers and
+			the people you follow across all Nostr-based services. This also
+			means you can easily switch to another platform/client.
+		</p>
+		<div class="resource-container">
+			<a href={localizedHref("/podcasts", lang)} class="resource-item" data-umami-event="ressource-podcasts">
+				<img src="/podcasts.png" alt="Podcasts" class="resource-icon" width="1024" height="1024" loading="lazy" />
+				<h3>Nostr Podcasts</h3>
+			</a>
+			<a href={localizedHref("/apps", lang)} class="resource-item" data-umami-event="ressource-apps">
+				<img src="/apps.png" alt="Apps & Services" class="resource-icon" width="1024" height="1024" loading="lazy" />
+				<h3>Apps & Services</h3>
+			</a>
+			<a href="https://t.me/enogtyvedk/510" target="_blank" rel="noopener noreferrer" class="resource-item" data-umami-event="telegram-link">
+				<img src="/telegram.png" alt="Telegram" class="resource-icon" width="1024" height="1024" loading="lazy" />
+				<h3>Nostr.dk Telegram</h3>
+			</a>
+		</div>
+	</section>
+
+	<!-- About Section -->
+	<section class="nostr-om" id="nostr-om">
+		<h2>About Nostr.dk</h2>
+		<p>
+			The purpose of Nostr.dk is to be a Danish resource that helps the
+			curious gain an overall understanding of the protocol and easily get
+			started using the protocol for social interaction of the future.
+			There are plenty of great resources in English, which you can easily
+			find by searching for Nostr.
+		</p>
+		<p>
+			If you have questions, hop into the Telegram group, which you'll find
+			a link to above. If you'd like to get in touch with Nostr.dk, feel
+			free to send us an email.
+		</p>
+		<div class="resource-container">
+			<a href="mailto:nostr@nostr.dk" data-umami-event="email-link">
+				<img src="/sendmail.png" alt="Send Email" class="resource-icon" width="1024" height="1024" loading="lazy" />
+				<h3>Send Email</h3>
+			</a>
+		</div>
+	</section>
+
+	<!-- Support Section -->
+	<section class="nostr-support" id="nostr-support">
+		<h2>Support Nostr.dk</h2>
+		<p>
+			If you want to support our work spreading Nostr in Denmark, you can
+			send a little sats ⚡️ via the Lightning network. What is Lightning? <a
+				href="https://enogtyve.org/da/laer-mere/lightning/"
+				target="_blank"
+				rel="noopener noreferrer"
+				data-umami-event="outbound-enogtyve-lightning-support">Learn more here</a>.
+		</p>
+		<p id="lnurl-copy-status" class="copy-status-msg" role="status" aria-live="polite"></p>
+		<button
+			id="copy-lnurl-btn"
+			style="background: none; border: none; padding: 10px; cursor: pointer;"
+			type="button"
+			aria-label="Click to copy the LNURL to clipboard"
+			data-umami-event="support-qr-click"
+		>
+			<img src="/support-qr.png" alt="Support QR Code" class="support-qr" width="692" height="692" loading="lazy" />
+		</button>
+		<p class="support-instruction"><em>Click the QR code to copy the LNURL to clipboard</em></p>
+	</section>
+
+	<script is:inline define:vars={{ SUPPORT_LNURL }}>
+		function setCopyStatus(message) {
+			const el = document.getElementById("lnurl-copy-status");
+			if (el) el.textContent = message;
+		}
+
+		window.copyToClipboard = async function () {
+			const lnurl = SUPPORT_LNURL;
+			const okMsg = "LNURL copied to clipboard.";
+			const failMsg = "Couldn't copy automatically. Copy manually: " + lnurl;
+			if (navigator.clipboard && navigator.clipboard.writeText) {
+				try {
+					await navigator.clipboard.writeText(lnurl);
+					setCopyStatus(okMsg);
+					return;
+				} catch (err) {}
+			}
+			// No `document.execCommand("copy")` fallback (deprecated).
+			// Provide a manual-copy flow instead.
+			try {
+				window.prompt("Copy LNURL:", lnurl);
+			} catch {}
+			setCopyStatus(failMsg);
+		};
+
+		document.addEventListener("DOMContentLoaded", function () {
+			const copyLnurlBtn = document.getElementById("copy-lnurl-btn");
+			if (copyLnurlBtn) {
+				copyLnurlBtn.addEventListener("click", () => {
+					window.copyToClipboard();
+				});
+			}
+
+			document.querySelectorAll(".collapsible-toggle").forEach((btn) => {
+				btn.addEventListener("click", () => {
+					const section = btn.closest(".collapsible-section");
+					if (!section) return;
+					section.classList.toggle("expanded");
+					btn.setAttribute(
+						"aria-expanded",
+						section.classList.contains("expanded") ? "true" : "false",
+					);
+				});
+			});
+
+			// Hero button
+			const startButton = document.getElementById("start-button");
+			if (startButton) {
+				startButton.addEventListener("click", function () {
+					const sections = document.querySelectorAll(".collapsible-section");
+					sections.forEach((s) => {
+						s.classList.add("expanded");
+						const btn = s.querySelector(".collapsible-toggle");
+						if (btn) btn.setAttribute("aria-expanded", "true");
+					});
+					setTimeout(() => {
+						const first = sections[0];
+						if (first) window.scrollTo({ top: first.getBoundingClientRect().top + window.scrollY - 80, behavior: "smooth" });
+					}, 300);
+				});
+			}
+
+			// NIP-05 profile teaser
+		});
+	</script>
+
+	<style>
+		.klient-description {
+			font-size: 0.85rem;
+			color: rgba(255, 255, 255, 0.62);
+			margin: 8px 0;
+			font-weight: 400;
+			text-align: center;
+		}
+
+		.copy-status-msg {
+			min-height: 1.25em;
+			text-align: center;
+			color: #a084ca;
+			font-size: 0.95rem;
+			margin: 0 0 8px;
+		}
+
+		.support-instruction {
+			text-align: center;
+			margin-top: 15px;
+			font-size: 1rem;
+		}
+
+		.support-qr {
+			cursor: pointer;
+			touch-action: manipulation;
+			-webkit-user-select: none;
+			user-select: none;
+			width: 90%;
+			max-width: 200px;
+			display: block;
+			margin: 20px auto;
+			padding: 10px;
+			transition: transform 0.2s ease;
+		}
+
+		@media (max-width: 768px) {
+			.support-qr { max-width: 320px; }
+		}
+
+		.support-qr:active { transform: scale(0.95); }
+
+		.nip05-teaser { margin: 10px 0 30px; }
+
+	</style>
+</NostrLayout>
