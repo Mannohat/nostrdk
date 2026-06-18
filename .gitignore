@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # Local Netlify folder
 .netlify
+
+# Claude Code local tooling (preview launch config, local settings)
+.claude/

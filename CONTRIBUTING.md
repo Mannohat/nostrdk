@@ -102,6 +102,7 @@ published: true
 |------|----------|-------------|
 | `title` | ✅ Ja | Navn på app/tjeneste |
 | `description` | ✅ Ja | 1-2 sætninger på dansk (afslut med punktum) |
+| `descriptionEn` | ❌ Nej | Engelsk beskrivelse til `/en`-siden (falder tilbage til `description` hvis udeladt) |
 | `url` | ✅ Ja | Link til ressourcen |
 | `category` | ✅ Ja | Se kategorier nedenfor |
 | `section` | ❌ Nej | Valgfri tag (f.eks. "Wallet", "Meetup Alternative") |
