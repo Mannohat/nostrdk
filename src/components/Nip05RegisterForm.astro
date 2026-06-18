@@ -8,6 +8,7 @@ import {
 	type Nip05FormIds,
 	type Nip05StatusClass,
 } from "../scripts/nip05-register.client.ts";
+import { getLangFromPath } from "../i18n/routes";
 
 interface Props {
 	variant: "home" | "page";
@@ -20,6 +21,90 @@ const { variant, umamiNext, umamiPay, lightningUmamiEvent } = Astro.props;
 
 const ids: Nip05FormIds = variant === "home" ? NIP05_IDS_HOME : NIP05_IDS_PAGE;
 const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : "status";
+
+// Lang-aware strings. Danish values are kept byte-identical to the original
+// markup so the Danish output never changes.
+const lang = getLangFromPath(Astro.url.pathname);
+
+// Server-rendered strings.
+const s =
+	lang === "en"
+		? {
+				chooseAddress: "Choose your Nostr address",
+				namePlaceholder: "yournamehere",
+				priceBefore: "@nostr.dk NIP-05 address for only",
+				priceBeforeHome: "@nostr.dk NIP-05 address for only",
+				priceAmount: "2,100 sats",
+				next: "Next",
+				pubkeyLabel: "Your Nostr public key",
+				pubkeyPlaceholder: "npub1… or hex",
+				whatsNext: "What happens next:",
+				step1Li: 'Click "Go to payment ⚡"',
+				step2Li: "Pay 2,100 sats via Lightning",
+				step3Li: "Your NIP-05 address is activated automatically",
+				goToPayment: "Go to payment ⚡",
+				chooseAnother: "← Choose another name",
+			}
+		: {
+				chooseAddress: "Vælg din nostr adresse",
+				namePlaceholder: "ditnavnher",
+				priceBefore: "@nostr.dk NIP-05 adresse for kun",
+				priceBeforeHome: "@nostr.dk nip-05 adresse for kun",
+				priceAmount: "2.100 sats",
+				next: "Næste",
+				pubkeyLabel: "Din Nostr public key",
+				pubkeyPlaceholder: "npub1… eller hex",
+				whatsNext: "Hvad sker der næste:",
+				step1Li: 'Klik "Gå til betaling ⚡"',
+				step2Li: "Betal 2.100 sats via Lightning",
+				step3Li: "Din NIP-05 adresse aktiveres automatisk",
+				goToPayment: "Gå til betaling ⚡",
+				chooseAnother: "← Vælg et andet navn",
+			};
+
+// Client-side (injected into the inline script via define:vars).
+const t =
+	lang === "en"
+		? {
+				onlyLower: "Only lowercase letters, numbers, _ and - are allowed",
+				checking: "Checking availability…",
+				error: "Error",
+				available: "Available!",
+				taken: "That name is already taken — try another",
+				checkLocalFail:
+					"Couldn't check locally. Try `netlify dev` (typically :8888) or the live site.",
+				checkFail: "Couldn't check — please try again",
+				isAvailableSuffix: "is available",
+				validPubkey: "Valid public key",
+				invalidPubkey: "Must be npub1… (63 chars) or hex (64 chars)",
+				creatingPayment: "Creating payment…",
+				connectingBtcpay: "… Connecting to BTCPay…",
+				noCheckoutLink: "No checkout link",
+				payLocalFail:
+					"! Couldn't create payment locally. Try `netlify dev` (:8888) or the live site.",
+				paymentFail: "! Something went wrong — please try again",
+				goToPayment: "Go to payment ⚡",
+			}
+		: {
+				onlyLower: "Kun små bogstaver, tal, _ og - er tilladt",
+				checking: "Tjekker tilgængelighed…",
+				error: "Fejl",
+				available: "Ledigt!",
+				taken: "Navnet er allerede taget — prøv et andet",
+				checkLocalFail:
+					"Kunne ikke tjekke lokalt. Prøv `netlify dev` (typisk :8888) eller live site.",
+				checkFail: "Kunne ikke tjekke — prøv igen",
+				isAvailableSuffix: "er ledigt",
+				validPubkey: "Gyldig public key",
+				invalidPubkey: "Skal være npub1… (63 tegn) eller hex (64 tegn)",
+				creatingPayment: "Opretter betaling…",
+				connectingBtcpay: "… Forbinder til BTCPay…",
+				noCheckoutLink: "Intet checkout link",
+				payLocalFail:
+					"! Kunne ikke oprette betaling lokalt. Prøv `netlify dev` (:8888) eller live site.",
+				paymentFail: "! Noget gik galt — prøv igen",
+				goToPayment: "Gå til betaling ⚡",
+			};
 ---
 
 {
@@ -31,12 +116,12 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 		>
 			<div id={ids.step1} class="register-form">
 				<div class="field">
-					<label for={ids.nameInput}>Vælg din nostr adresse</label>
+					<label for={ids.nameInput}>{s.chooseAddress}</label>
 					<div class="nip05-name-row" id={ids.nameRow}>
 						<input
 							type="text"
 							id={ids.nameInput}
-							placeholder="ditnavnher"
+							placeholder={s.namePlaceholder}
 							autocomplete="off"
 							autocapitalize="none"
 							spellcheck="false"
@@ -47,7 +132,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 				</div>
 
 				<p class="price-note">
-					@nostr.dk NIP-05 adresse for kun <strong>2.100 sats</strong> via{" "}
+					{s.priceBefore} <strong>{s.priceAmount}</strong> via{" "}
 					<a
 						href="https://enogtyve.org/da/laer-mere/lightning/"
 						target="_blank"
@@ -63,7 +148,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 					style="margin-top: 20px; width: 100%;"
 					data-umami-event={umamiNext}
 				>
-					Næste
+					{s.next}
 				</button>
 			</div>
 
@@ -71,11 +156,11 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 				<div class="confirmed-name" id={ids.confirmedName} />
 
 				<div class="field">
-					<label for={ids.pubkeyInput}>Din Nostr public key</label>
+					<label for={ids.pubkeyInput}>{s.pubkeyLabel}</label>
 					<input
 						type="text"
 						id={ids.pubkeyInput}
-						placeholder="npub1… eller hex"
+						placeholder={s.pubkeyPlaceholder}
 						autocomplete="off"
 						autocapitalize="none"
 						spellcheck="false"
@@ -85,11 +170,11 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 				</div>
 
 				<div class="instructions">
-					<p>Hvad sker der næste:</p>
+					<p>{s.whatsNext}</p>
 					<ol>
-						<li>Klik "Gå til betaling ⚡"</li>
-						<li>Betal 2.100 sats via Lightning</li>
-						<li>Din NIP-05 adresse aktiveres automatisk</li>
+						<li>{s.step1Li}</li>
+						<li>{s.step2Li}</li>
+						<li>{s.step3Li}</li>
 					</ol>
 				</div>
 
@@ -101,11 +186,11 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 					style="margin-top: 20px; width: 100%;"
 					data-umami-event={umamiPay}
 				>
-					Gå til betaling ⚡
+					{s.goToPayment}
 				</button>
 				<div class={statusClassName} id={ids.payStatus} role="status" aria-live="polite" aria-atomic="true" />
 				<button type="button" id={ids.backBtn} class="back-btn">
-					← Vælg et andet navn
+					{s.chooseAnother}
 				</button>
 			</div>
 		</div>
@@ -121,12 +206,12 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 		>
 			<div id={ids.step1}>
 				<div class="nip05-field">
-					<label for={ids.nameInput} class="visually-hidden">Vælg din nostr adresse</label>
+					<label for={ids.nameInput} class="visually-hidden">{s.chooseAddress}</label>
 					<div class="nip05-name-row" id={ids.nameRow}>
 						<input
 							type="text"
 							id={ids.nameInput}
-							placeholder="ditnavnher"
+							placeholder={s.namePlaceholder}
 							autocomplete="off"
 							autocapitalize="none"
 							spellcheck="false"
@@ -136,7 +221,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 					<div class="nip05-status" id={ids.nameStatus} role="status" aria-live="polite" aria-atomic="true" />
 				</div>
 				<p class="nip05-price">
-					@nostr.dk nip-05 adresse for kun <strong>2.100 sats</strong> via{" "}
+					{s.priceBeforeHome} <strong>{s.priceAmount}</strong> via{" "}
 					<a
 						href="https://enogtyve.org/da/laer-mere/lightning/"
 						target="_blank"
@@ -145,7 +230,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 					⚡
 				</p>
 				<button type="button" id={ids.proceedBtn} class="cta" disabled data-umami-event={umamiNext}>
-					Næste
+					{s.next}
 				</button>
 			</div>
 
@@ -161,7 +246,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 					<input
 						type="text"
 						id={ids.pubkeyInput}
-						placeholder="npub1… eller hex"
+						placeholder={s.pubkeyPlaceholder}
 						autocomplete="off"
 						autocapitalize="none"
 						spellcheck="false"
@@ -170,19 +255,19 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 					<div class="nip05-status" id={ids.pubkeyStatus} role="status" aria-live="polite" aria-atomic="true" />
 				</div>
 				<div class="nip05-instructions">
-					<p>Hvad sker der næste:</p>
+					<p>{s.whatsNext}</p>
 					<ol>
-						<li>Klik "Gå til betaling ⚡"</li>
-						<li>Betal 2.100 sats via Lightning</li>
-						<li>Din NIP-05 adresse aktiveres automatisk</li>
+						<li>{s.step1Li}</li>
+						<li>{s.step2Li}</li>
+						<li>{s.step3Li}</li>
 					</ol>
 				</div>
 				<button type="button" id={ids.payBtn} class="cta" disabled data-umami-event={umamiPay}>
-					Gå til betaling ⚡
+					{s.goToPayment}
 				</button>
 				<div class="nip05-status" id={ids.payStatus} role="status" aria-live="polite" aria-atomic="true" />
 				<button type="button" id={ids.backBtn} class="nip05-back-btn">
-					← Vælg et andet navn
+					{s.chooseAnother}
 				</button>
 			</div>
 		</div>
@@ -194,10 +279,12 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 	define:vars={{
 		idsSerialized: JSON.stringify(ids),
 		statusClassSerialized: statusClassName,
+		tSerialized: JSON.stringify(t),
 	}}
 >
 	const ids = JSON.parse(idsSerialized);
 	const statusClass = statusClassSerialized;
+	const t = JSON.parse(tSerialized);
 
 	function validatePubkey(val) {
 		return /^npub1[a-z0-9]{58}$/.test(val) || /^[0-9a-f]{64}$/.test(val);
@@ -317,24 +404,24 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 				return;
 			}
 			if (!/^[a-z0-9_-]+$/.test(name)) {
-				setNameStatus("taken", "✗", "Kun små bogstaver, tal, _ og - er tilladt");
+				setNameStatus("taken", "✗", t.onlyLower);
 				nameAvailable = false;
 				proceedBtn.disabled = true;
 				return;
 			}
-			setNameStatus("checking", "…", "Tjekker tilgængelighed…");
+			setNameStatus("checking", "…", t.checking);
 			try {
 				const { res, data } = await fetchJsonWithNetlifyFallback(
 					`/.netlify/functions/check-name?name=${encodeURIComponent(name)}`,
 				);
-				if (!res.ok) throw new Error(data?.error || "Fejl");
+				if (!res.ok) throw new Error(data?.error || t.error);
 				if (data.available) {
-					setNameStatus("available", "✓", "Ledigt!");
+					setNameStatus("available", "✓", t.available);
 					window.umami?.track("nip05-name-available");
 					nameAvailable = true;
 					proceedBtn.disabled = false;
 				} else {
-					setNameStatus("taken", "✗", "Navnet er allerede taget — prøv et andet");
+					setNameStatus("taken", "✗", t.taken);
 					window.umami?.track("nip05-name-taken");
 					nameAvailable = false;
 					proceedBtn.disabled = true;
@@ -344,8 +431,8 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 					"error",
 					"!",
 					isLocalDev()
-						? "Kunne ikke tjekke lokalt. Prøv `netlify dev` (typisk :8888) eller live site."
-						: "Kunne ikke tjekke — prøv igen",
+						? t.checkLocalFail
+						: t.checkFail,
 				);
 				nameAvailable = false;
 				proceedBtn.disabled = true;
@@ -370,7 +457,7 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 		proceedBtn.addEventListener("click", () => {
 			if (!nameAvailable) return;
 			confirmedName = nameInput.value.trim();
-			confirmedNameEl.textContent = `✓ ${confirmedName}@nostr.dk er ledigt`;
+			confirmedNameEl.textContent = `✓ ${confirmedName}@nostr.dk ${t.isAvailableSuffix}`;
 			step1.style.display = "none";
 			step2.style.display = "block";
 		});
@@ -391,12 +478,12 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 			}
 			if (validatePubkey(val)) {
 				pubkeyStatus.className = `${statusClass} available`;
-				pubkeyStatus.textContent = "✓ Gyldig public key";
+				pubkeyStatus.textContent = "✓ " + t.validPubkey;
 				pubkeyInput.style.borderColor = "#4caf50";
 				payBtn.disabled = false;
 			} else {
 				pubkeyStatus.className = `${statusClass} taken`;
-				pubkeyStatus.textContent = "✗ Skal være npub1… (63 tegn) eller hex (64 tegn)";
+				pubkeyStatus.textContent = "✗ " + t.invalidPubkey;
 				pubkeyInput.style.borderColor = "#e05050";
 				payBtn.disabled = true;
 			}
@@ -407,9 +494,9 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 			if (!validatePubkey(pubkey)) return;
 
 			payBtn.disabled = true;
-			payBtn.textContent = "Opretter betaling…";
+			payBtn.textContent = t.creatingPayment;
 			payStatus.className = `${statusClass} checking`;
-			payStatus.textContent = "… Forbinder til BTCPay…";
+			payStatus.textContent = t.connectingBtcpay;
 
 			try {
 				const { res, data } = await fetchJsonWithNetlifyFallback(
@@ -420,21 +507,21 @@ const statusClassName: Nip05StatusClass = variant === "home" ? "nip05-status" : 
 						body: JSON.stringify({ name: confirmedName, pubkey }),
 					},
 				);
-				if (!res.ok) throw new Error(data?.error || "Fejl");
+				if (!res.ok) throw new Error(data?.error || t.error);
 				if (data.checkoutLink) {
 					window.umami?.track("nip05-invoice-created");
 					window.location.href = data.checkoutLink;
 				} else {
-					throw new Error("Intet checkout link");
+					throw new Error(t.noCheckoutLink);
 				}
 			} catch {
 				window.umami?.track("nip05-invoice-failed");
 				payStatus.className = `${statusClass} error`;
 				payStatus.textContent = isLocalDev()
-					? "! Kunne ikke oprette betaling lokalt. Prøv `netlify dev` (:8888) eller live site."
-					: "! Noget gik galt — prøv igen";
+					? t.payLocalFail
+					: t.paymentFail;
 				payBtn.disabled = false;
-				payBtn.textContent = "Gå til betaling ⚡";
+				payBtn.textContent = t.goToPayment;
 			}
 		});
 	}

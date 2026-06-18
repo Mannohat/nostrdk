@@ -1,0 +1,21 @@
+---
+import NostrLayout from "../../layouts/NostrLayout.astro";
+import Nip05RegisterForm from "../../components/Nip05RegisterForm.astro";
+import Nip05Teaser from "../../components/Nip05Teaser.astro";
+---
+
+<NostrLayout
+  title="Get your NIP-05 identity | Nostr.dk"
+  description="Register a NIP-05 address on nostr.dk and verify your Nostr identity."
+>
+  <div class="page-header">
+    <h1>Get your Nostr identity</h1>
+    <p>
+      Register a NIP-05 address on nostr.dk and verify your Nostr profile.
+    </p>
+  </div>
+
+  <Nip05Teaser gridId="teaserGrid" deterministic />
+
+  <Nip05RegisterForm variant="page" umamiNext="nip05-næste" umamiPay="nip05-betal" />
+</NostrLayout>

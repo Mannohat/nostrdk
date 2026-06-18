@@ -66,6 +66,8 @@ export const EN_LIVE: ReadonlySet<string> = new Set<string>([
 	'/en/apps/publishing',
 	'/en/apps/streaming',
 	'/en/apps/services',
+	'/en/get-nip05', // getnip05
+	'/en/profiles', // profiler
 	// '/en/',            // home          — add when src/pages/en/index.astro lands
 	// '/en/blog',        // blog
 	// '/en/profiles',    // profiler

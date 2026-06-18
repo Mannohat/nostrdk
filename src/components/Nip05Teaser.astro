@@ -16,12 +16,24 @@ const {
 	maxAvatars = 8,
 	deterministic = true,
 } = Astro.props;
+
+import { getLangFromPath, localizedHref } from "../i18n/routes";
+const lang = getLangFromPath(Astro.url.pathname);
+const s =
+	lang === "en"
+		? { label: "Already verified with @nostr.dk", seeMore: "See more profiles →" }
+		: { label: "Allerede verificeret med @nostr.dk", seeMore: "Se flere profiler →" };
+// Injected into the inline script for client-rendered alt/aria text.
+const t =
+	lang === "en"
+		? { profilePrefix: "Profile:", openProfile: "Open profile", verifiedAlt: "Verified with nostr.dk" }
+		: { profilePrefix: "Profil:", openProfile: "Åbn profil", verifiedAlt: "Verificeret med nostr.dk" };
 ---
 
 <div class="nip05-teaser">
-	<p class="nip05-teaser-label">Allerede verificeret med @nostr.dk</p>
+	<p class="nip05-teaser-label">{s.label}</p>
 	<div class="nip05-teaser-grid" id={gridId}></div>
-	<p class="teaser-see-more"><a href="/profiler">Se flere profiler →</a></p>
+	<p class="teaser-see-more"><a href={localizedHref("/profiler", lang)}>{s.seeMore}</a></p>
 </div>
 
 <style is:global>
@@ -132,6 +144,7 @@ const {
 		sampleSize,
 		maxAvatars,
 		deterministic,
+		t,
 	}}
 >
 	(async function loadTeaser() {
@@ -196,13 +209,13 @@ const {
 				card.href = `https://primal.net/p/${pk}`;
 				card.target = "_blank";
 				card.rel = "noopener noreferrer";
-				card.setAttribute("aria-label", profile.display_name ? `Profil: ${profile.display_name}` : "Åbn profil");
+				card.setAttribute("aria-label", profile.display_name ? `${t.profilePrefix} ${profile.display_name}` : t.openProfile);
 				card.setAttribute("data-umami-event", "nip05-teaser-profile-outbound");
 
 				const img = document.createElement("img");
 				img.className = "nip05-teaser-avatar";
 				img.src = profile.picture;
-				img.alt = profile.display_name ? "Profil: " + profile.display_name : "Verificeret med nostr.dk";
+				img.alt = profile.display_name ? t.profilePrefix + " " + profile.display_name : t.verifiedAlt;
 				img.loading = "lazy";
 				img.onerror = () => {};
 				card.appendChild(img);

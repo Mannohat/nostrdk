@@ -1,0 +1,592 @@
+---
+import NostrLayout from "../../layouts/NostrLayout.astro";
+import Nip05RegisterForm from "../../components/Nip05RegisterForm.astro";
+import fs from "node:fs/promises";
+const nostrJsonPath = new URL("../../../public/.well-known/nostr.json", import.meta.url);
+let nostrNames: Record<string, string> = {};
+try {
+  const text = await fs.readFile(nostrJsonPath, "utf-8");
+  const data = JSON.parse(text);
+  nostrNames = data?.names ?? {};
+} catch {
+  nostrNames = {};
+}
+
+const entries = Object.entries(nostrNames).sort(([a], [b]) => a.localeCompare(b));
+---
+
+<NostrLayout
+  title="Profiles verified with @nostr.dk | Nostr.dk"
+  description="These users have chosen to verify their Nostr profile with an @nostr.dk address."
+>
+  <div class="page-header">
+    <h1>Profiles verified with @nostr.dk</h1>
+    <p>These users have chosen to verify their Nostr profile with an @nostr.dk address.</p>
+  </div>
+
+  <section class="profiler-nip05">
+    <p class="profiler-nip05-sub">
+      Check if your name is available and create an @nostr.dk address.
+    </p>
+    <Nip05RegisterForm
+      variant="page"
+      umamiNext="nip05-profiler-næste"
+      umamiPay="nip05-profiler-betal"
+    />
+  </section>
+
+  <div class="profiler-wrap">
+    <div id="loading" class="loading-msg">Loading profiles…</div>
+    <div id="grid" class="profiler-grid">
+      {entries.map(([name, pubkey]) => (
+        <a
+          class="profil-card is-ready"
+          href={`https://primal.net/p/${pubkey}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-pubkey={pubkey}
+          data-umami-event="profiler-primal-outbound"
+          data-umami-event-profile={name}
+        >
+          <div class="profil-avatar-placeholder" />
+          <div class="profil-nip05">
+            <span class="profil-name">{name}</span>
+            <span class="profil-domain">@nostr.dk</span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <div class="profiler-actions">
+    <div class="profiler-follow-row">
+      <div class="profiler-action">
+        <button
+          type="button"
+          class="profiler-follow-all"
+          id="follow-all"
+          data-umami-event="profiler-follow-all-click"
+        >
+          Follow all
+        </button>
+        <details class="profiler-info">
+          <summary class="profiler-info-toggle" aria-label="Info about Follow all">i</summary>
+          <div class="profiler-info-popover" role="note">
+            Requires a Nostr signer in the browser (NIP-07, e.g. Alby). Updates your follow list (kind 3).
+          </div>
+        </details>
+      </div>
+
+      <div class="profiler-action">
+        <button
+          type="button"
+          class="profiler-follow-copy"
+          id="copy-pubkeys"
+          data-umami-event="profiler-copy-pubkeys"
+        >
+          Copy list
+        </button>
+        <details class="profiler-info">
+          <summary class="profiler-info-toggle" aria-label="Info about Copy list">i</summary>
+          <div class="profiler-info-popover" role="note">
+            Copies all pubkeys. Some clients can import the list directly; otherwise you can follow manually.
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div class="profiler-follow-status" id="follow-all-status" role="status" aria-live="polite"></div>
+  </div>
+
+  <script>
+    // @ts-nocheck
+    const grid = document.getElementById("grid")!;
+    const loading = document.getElementById("loading")!;
+    const followAllBtn = document.getElementById("follow-all");
+    const copyPubkeysBtn = document.getElementById("copy-pubkeys");
+    const followStatus = document.getElementById("follow-all-status");
+
+    async function init() {
+      const cards = Array.from(grid.querySelectorAll("[data-pubkey]")) as HTMLElement[];
+      if (!cards.length) {
+        loading.textContent = "No profiles yet.";
+        return;
+      }
+
+      loading.style.display = "none";
+
+      const cardByPubkey: Record<string, HTMLElement> = {};
+      const shouldStagger = window.innerWidth > 768;
+      const colGapPx = 16;
+      const cardMaxWidthPx = 110;
+      const colCount = Math.max(
+        1,
+        Math.floor((grid.clientWidth + colGapPx) / (cardMaxWidthPx + colGapPx)),
+      );
+      cards.forEach((card, cardIndex) => {
+        const pubkey = card.getAttribute("data-pubkey");
+        if (!pubkey) return;
+        const colIndex = cardIndex % colCount;
+        if (shouldStagger && colCount > 1 && colIndex % 2 === 1) {
+          card.classList.add("staggered");
+        }
+        cardByPubkey[pubkey] = card;
+      });
+
+      // Subtle entrance animation (after DOM insertion).
+      requestAnimationFrame(() => {
+        Array.from(grid.children).forEach((child, idx) => {
+          const el = child as HTMLElement;
+          setTimeout(() => el.classList.add("is-ready"), Math.min(180, idx * 12));
+        });
+      });
+
+      const pubkeys = Object.keys(cardByPubkey);
+      try {
+        const res = await fetch(`/.netlify/functions/nostr-profiles?pubkeys=${pubkeys.join(",")}`);
+        const profiles = await res.json();
+
+        for (const [pubkey, profile] of Object.entries(profiles) as [string, any][]) {
+          if (!profile?.picture) continue;
+          const card = cardByPubkey[pubkey];
+          if (!card) continue;
+          const placeholder = card.querySelector(".profil-avatar-placeholder");
+          if (!placeholder) continue;
+          const img = document.createElement("img");
+          img.className = "profil-avatar";
+          img.alt = profile.display_name || "";
+          img.loading = "lazy";
+          img.onerror = () => {};
+          img.src = profile.picture;
+          placeholder.replaceWith(img);
+        }
+      } catch {}
+    }
+
+    function setStatus(msg) {
+      if (followStatus) followStatus.textContent = msg;
+    }
+
+    async function copyPubkeys(pubkeys) {
+      const text = pubkeys.join(",");
+      try {
+        await navigator.clipboard.writeText(text);
+        setStatus("Copied. Paste into your client to follow.");
+      } catch {
+        // No `document.execCommand("copy")` fallback (deprecated).
+        // Provide a manual-copy flow instead.
+        try {
+          window.prompt("Copy pubkeys:", text);
+          setStatus("Copy manually from the prompt and paste into your client.");
+        } catch {
+          setStatus("Couldn't copy automatically. Try another browser.");
+        }
+      }
+    }
+
+    function relayConnect(url) {
+      return new Promise((resolve, reject) => {
+        const ws = new WebSocket(url);
+        const t = setTimeout(() => {
+          try { ws.close(); } catch {}
+          reject(new Error("timeout"));
+        }, 4500);
+        ws.onopen = () => {
+          clearTimeout(t);
+          resolve(ws);
+        };
+        ws.onerror = () => {
+          clearTimeout(t);
+          reject(new Error("error"));
+        };
+      });
+    }
+
+    async function fetchLatestContacts(relayUrls, pubkeyHex) {
+      const results = await Promise.allSettled(
+        relayUrls.map(async (u) => {
+          const ws = /** @type {WebSocket} */ (await relayConnect(u));
+          return await new Promise((resolve) => {
+            const subId = "contacts_" + Math.random().toString(16).slice(2);
+            /** @type {any} */ let latest = null;
+            const cleanup = () => {
+              try { ws.close(); } catch {}
+            };
+            const timer = setTimeout(() => {
+              cleanup();
+              resolve(latest);
+            }, 2500);
+            ws.onmessage = (ev) => {
+              try {
+                const msg = JSON.parse(ev.data);
+                if (msg[0] === "EVENT" && msg[1] === subId) {
+                  const evt = msg[2];
+                  if (evt && evt.kind === 3 && evt.pubkey === pubkeyHex) {
+                    if (!latest || (evt.created_at || 0) > (latest.created_at || 0)) latest = evt;
+                  }
+                } else if (msg[0] === "EOSE" && msg[1] === subId) {
+                  clearTimeout(timer);
+                  cleanup();
+                  resolve(latest);
+                }
+              } catch {}
+            };
+            ws.send(
+              JSON.stringify([
+                "REQ",
+                subId,
+                { kinds: [3], authors: [pubkeyHex], limit: 1 },
+              ]),
+            );
+          });
+        }),
+      );
+      const ok = results
+        .filter((r) => r.status === "fulfilled" && r.value)
+        .map((r) => /** @type {any} */ (r).value);
+      if (!ok.length) return null;
+      return ok.sort((a, b) => (b.created_at || 0) - (a.created_at || 0))[0];
+    }
+
+    async function publishEvent(relayUrls, event) {
+      const results = await Promise.allSettled(
+        relayUrls.map(async (u) => {
+          const ws = /** @type {WebSocket} */ (await relayConnect(u));
+          return await new Promise((resolve, reject) => {
+            const t = setTimeout(() => {
+              try { ws.close(); } catch {}
+              reject(new Error("timeout"));
+            }, 5000);
+            ws.onmessage = (ev) => {
+              try {
+                const msg = JSON.parse(ev.data);
+                if (msg[0] === "OK" && msg[1] === event.id) {
+                  clearTimeout(t);
+                  try { ws.close(); } catch {}
+                  resolve(Boolean(msg[2]));
+                }
+              } catch {}
+            };
+            ws.send(JSON.stringify(["EVENT", event]));
+          });
+        }),
+      );
+      const okCount = results.filter((r) => r.status === "fulfilled" && r.value === true).length;
+      return okCount;
+    }
+
+    async function followAll(pubkeysToFollow) {
+      if (!window.nostr || !window.nostr.getPublicKey || !window.nostr.signEvent) {
+        setStatus("No signer found. Use “Copy list”.");
+        return;
+      }
+
+      if (followAllBtn instanceof HTMLButtonElement) followAllBtn.disabled = true;
+      setStatus("Preparing…");
+
+      const relayUrls = [
+        "wss://relay.damus.io",
+        "wss://relay.primal.net",
+        "wss://nos.lol",
+        "wss://relay.nostr.band",
+      ];
+
+      try {
+        const myPubkey = await window.nostr.getPublicKey();
+        setStatus("Fetching your follow list…");
+        const latest = await fetchLatestContacts(relayUrls, myPubkey);
+
+        const existingP = new Set(
+          (latest?.tags || [])
+            .filter((t) => Array.isArray(t) && t[0] === "p" && typeof t[1] === "string")
+            .map((t) => t[1]),
+        );
+
+        pubkeysToFollow.forEach((p) => existingP.add(p));
+        // Don't follow yourself.
+        existingP.delete(myPubkey);
+
+        const tags = Array.from(existingP).map((p) => ["p", p]);
+
+        const unsigned = {
+          kind: 3,
+          created_at: Math.floor(Date.now() / 1000),
+          tags,
+          content: latest?.content || "",
+        };
+
+        setStatus("Signing…");
+        const signed = await window.nostr.signEvent(unsigned);
+
+        setStatus("Publishing…");
+        const okCount = await publishEvent(relayUrls, signed);
+
+        window.umami?.track("profiler-follow-all-success");
+        setStatus(`Done. Sent to ${okCount}/${relayUrls.length} relays.`);
+      } catch (e) {
+        window.umami?.track("profiler-follow-all-failure");
+        setStatus("Couldn't follow automatically. Use “Copy list”.");
+      } finally {
+        if (followAllBtn instanceof HTMLButtonElement) followAllBtn.disabled = false;
+      }
+    }
+
+    init();
+
+    // Info popovers are native <details> (no JS needed)
+
+    // Hook up follow/copy buttons (works even if profile fetch fails).
+    const allPubkeys = Array.from(grid.querySelectorAll("[data-pubkey]"))
+      .map((el) => el.getAttribute("data-pubkey"))
+      .filter(Boolean);
+
+    if (copyPubkeysBtn) {
+      copyPubkeysBtn.addEventListener("click", () => copyPubkeys(allPubkeys));
+    }
+    if (followAllBtn) {
+      followAllBtn.addEventListener("click", () => followAll(allPubkeys));
+    }
+  </script>
+
+  <style is:global>
+    .profiler-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0 22px;
+      text-align: center;
+    }
+
+    .profiler-follow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .profiler-action {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+
+    .profiler-info {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .profiler-info-toggle {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid rgba(160, 132, 202, 0.28);
+      background: rgba(108, 79, 150, 0.10);
+      color: rgba(255, 255, 255, 0.88);
+      font-weight: 800;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0;
+      font-family: inherit;
+      flex: 0 0 34px;
+      list-style: none;
+      user-select: none;
+    }
+
+    .profiler-info-toggle::-webkit-details-marker {
+      display: none;
+    }
+
+    .profiler-info-toggle:hover {
+      background: rgba(160, 132, 202, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .profiler-follow-status {
+      min-height: 1.25em;
+      font-size: 0.9rem;
+      color: rgba(200, 180, 230, 0.9);
+    }
+
+    .profiler-info-popover {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      z-index: 10;
+      width: min(320px, 80vw);
+      text-align: left;
+      background: rgba(10, 7, 18, 0.92);
+      border: 1px solid rgba(160, 132, 202, 0.22);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 0.78rem;
+      color: rgba(255, 255, 255, 0.82);
+      line-height: 1.35;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(10px);
+    }
+
+    .profiler-nip05 {
+      margin: 10px 0 30px;
+    }
+
+    .profiler-nip05 h2 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .profiler-nip05-sub {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.62);
+      margin: 0 auto 16px;
+      max-width: 60ch;
+    }
+
+    .profiler-follow-all,
+    .profiler-follow-copy {
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid rgba(160, 132, 202, 0.28);
+      background: rgba(108, 79, 150, 0.10);
+      color: rgba(255, 255, 255, 0.92);
+      font-family: inherit;
+      transition: background 0.2s, transform 0.15s;
+      min-height: 44px;
+    }
+
+    .profiler-follow-all:hover,
+    .profiler-follow-copy:hover {
+      background: rgba(160, 132, 202, 0.16);
+      transform: translateY(-1px);
+    }
+
+    .profiler-follow-copy {
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.78);
+    }
+
+    .profiler-wrap {
+      padding: 0 0 80px;
+    }
+
+    .loading-msg {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 1rem;
+      padding: 60px 0;
+    }
+
+    .profiler-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(110px, 110px));
+      gap: 12px 16px;
+      margin-top: 10px;
+      justify-content: space-between;
+      width: 100%;
+      align-items: start;
+    }
+
+    .profil-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 12px;
+      width: 110px;
+      opacity: 0;
+      transform: translateY(6px);
+      transition:
+        opacity 0.25s ease,
+        transform 0.25s ease,
+        background 0.2s ease;
+    }
+
+    .profil-card.is-ready {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Visual "stagger" for every second card (2-column layout). */
+    .profil-card.staggered {
+      margin-top: 32px;
+    }
+
+    .profil-card:hover {
+      transform: translateY(-2px);
+      background: rgba(108, 79, 150, 0.15);
+    }
+
+    .profil-avatar {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(108, 79, 150, 0.6);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .profil-avatar-placeholder {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 2px solid rgba(108, 79, 150, 0.3);
+      background: linear-gradient(135deg, rgba(108, 79, 150, 0.2), rgba(55, 26, 118, 0.2));
+      display: block;
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+
+    .profil-nip05 {
+      font-size: 0.7rem;
+      line-height: 1.3;
+      word-break: break-all;
+    }
+
+    .profil-name {
+      color: rgba(200, 180, 230, 0.85);
+      font-weight: 500;
+    }
+
+    .profil-domain {
+      color: rgba(255, 255, 255, 0.45);
+    }
+
+    @media (max-width: 768px) {
+      .profiler-follow-row {
+        gap: 10px;
+      }
+      .profiler-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 80px));
+        gap: 10px 12px;
+      }
+      .profil-card {
+        width: 80px;
+      }
+      .profil-avatar,
+      .profil-avatar-placeholder {
+        width: 64px;
+        height: 64px;
+      }
+
+      /* No staggering when only one column. */
+      .profil-card.staggered {
+        margin-top: 0;
+      }
+    }
+  </style>
+</NostrLayout>
