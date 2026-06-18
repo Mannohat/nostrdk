@@ -1,10 +1,13 @@
 ---
 // NostrFooter.astro - Improved footer with navigation and social links
-import { getLangFromPath } from "../i18n/routes";
+import { getLangFromPath, localizedHref } from "../i18n/routes";
 import { t } from "../i18n/ui";
 
 const lang = getLangFromPath(Astro.url.pathname);
 const f = t(lang).footer;
+// Route internal links to their live English counterpart on /en pages
+// (safe no-op for Danish).
+const L = (href: string) => localizedHref(href, lang);
 ---
 
 <footer class="site-footer">
@@ -13,12 +16,12 @@ const f = t(lang).footer;
     <div class="footer-section">
       <h3>{f.menuHeading}</h3>
       <ul class="footer-links">
-        <li><a href="/">{f.home}</a></li>
-        <li><a href="/#nostr-klienter">{f.clients}</a></li>
-        <li><a href="/#nostr-nip05">{f.nostrAddress}</a></li>
-        <li><a href="/#nostr-ressourcer">{f.resources}</a></li>
-        <li><a href="/#nostr-om">{f.about}</a></li>
-        <li><a href="/#nostr-support">{f.support}</a></li>
+        <li><a href={L("/")}>{f.home}</a></li>
+        <li><a href={L("/#nostr-klienter")}>{f.clients}</a></li>
+        <li><a href={L("/#nostr-nip05")}>{f.nostrAddress}</a></li>
+        <li><a href={L("/#nostr-ressourcer")}>{f.resources}</a></li>
+        <li><a href={L("/#nostr-om")}>{f.about}</a></li>
+        <li><a href={L("/#nostr-support")}>{f.support}</a></li>
       </ul>
     </div>
 
@@ -26,11 +29,11 @@ const f = t(lang).footer;
     <div class="footer-section">
       <h3>{f.pagesHeading}</h3>
       <ul class="footer-links">
-        <li><a href="/blog">{f.blog}</a></li>
-        <li><a href="/profiler">{f.profiles}</a></li>
-        <li><a href="/getnip05">{f.nip05}</a></li>
-        <li><a href="/podcasts">{f.podcasts}</a></li>
-        <li><a href="/apps">{f.apps}</a></li>
+        <li><a href={L("/blog")}>{f.blog}</a></li>
+        <li><a href={L("/profiler")}>{f.profiles}</a></li>
+        <li><a href={L("/getnip05")}>{f.nip05}</a></li>
+        <li><a href={L("/podcasts")}>{f.podcasts}</a></li>
+        <li><a href={L("/apps")}>{f.apps}</a></li>
       </ul>
     </div>
 
@@ -77,7 +80,7 @@ const f = t(lang).footer;
 
   <!-- Bottom Bar -->
   <div class="footer-bottom container">
-    <p>Nostr.dk 💜 | {f.tagline} | <a href="/privatlivspolitik" style="color: #b0b0b0; font-weight: 400;">{f.privacy}</a></p>
+    <p>Nostr.dk 💜 | {f.tagline} | <a href={L("/privatlivspolitik")} style="color: #b0b0b0; font-weight: 400;">{f.privacy}</a></p>
     <button id="back-to-top" class="back-to-top" aria-label={f.backToTop}>
       ↑ {f.backToTop}
     </button>

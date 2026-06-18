@@ -1,18 +1,25 @@
 ---
 // Nostr.dk Header
 import LangSwitcher from "./LangSwitcher.astro";
-import { getLangFromPath } from "../i18n/routes";
+import { getLangFromPath, localizedHref } from "../i18n/routes";
 import { t } from "../i18n/ui";
 
 const currentPath = Astro.url.pathname;
 const lang = getLangFromPath(currentPath);
 const h = t(lang).header;
+
+// Route internal hrefs to their live English counterpart on /en pages
+// (safe no-op for Danish). Active-state checks use the localized targets too.
+const L = (href: string) => localizedHref(href, lang);
+const homePath = L("/");
+const appsPath = L("/apps");
+const podcastsPath = L("/podcasts");
 ---
 
 <header>
   <div class="header-inner container">
     <div class="logo-container">
-      <a href="/" class="logo-link" aria-label={h.toHome}>
+      <a href={homePath} class="logo-link" aria-label={h.toHome}>
         <img
           src="/NOSTRDK_26.png"
           alt={h.logoAlt}
@@ -26,14 +33,14 @@ const h = t(lang).header;
 
     <nav>
       <ul>
-        <li><a href="/" class={currentPath === "/" ? "is-active" : undefined} aria-current={currentPath === "/" ? "page" : undefined}>{h.home}</a></li>
-        <li><a href="/#nostr-klienter">{h.clients}</a></li>
-        <li><a href="/#nostr-ressourcer">{h.resources}</a></li>
-        <li><a href="/#nostr-nip05">{h.nostrAddress}</a></li>
-        <li><a href="/apps" class={currentPath.startsWith("/apps") ? "is-active" : undefined} aria-current={currentPath.startsWith("/apps") ? "page" : undefined}>{h.apps}</a></li>
-        <li><a href="/podcasts" class={currentPath.startsWith("/podcasts") ? "is-active" : undefined} aria-current={currentPath.startsWith("/podcasts") ? "page" : undefined}>{h.podcasts}</a></li>
-        <li><a href="/#nostr-om">{h.about}</a></li>
-        <li><a href="/#nostr-support">{h.support}</a></li>
+        <li><a href={homePath} class={currentPath === homePath ? "is-active" : undefined} aria-current={currentPath === homePath ? "page" : undefined}>{h.home}</a></li>
+        <li><a href={L("/#nostr-klienter")}>{h.clients}</a></li>
+        <li><a href={L("/#nostr-ressourcer")}>{h.resources}</a></li>
+        <li><a href={L("/#nostr-nip05")}>{h.nostrAddress}</a></li>
+        <li><a href={appsPath} class={currentPath.startsWith(appsPath) ? "is-active" : undefined} aria-current={currentPath.startsWith(appsPath) ? "page" : undefined}>{h.apps}</a></li>
+        <li><a href={podcastsPath} class={currentPath.startsWith(podcastsPath) ? "is-active" : undefined} aria-current={currentPath.startsWith(podcastsPath) ? "page" : undefined}>{h.podcasts}</a></li>
+        <li><a href={L("/#nostr-om")}>{h.about}</a></li>
+        <li><a href={L("/#nostr-support")}>{h.support}</a></li>
       </ul>
     </nav>
 
@@ -56,14 +63,14 @@ const h = t(lang).header;
 
 <div class="mobile-menu" id="mobile-menu" aria-hidden="true">
   <div class="container mobile-menu-inner">
-    <a href="/">{h.home}</a>
-    <a href="/#nostr-klienter">{h.clients}</a>
-    <a href="/#nostr-ressourcer">{h.resources}</a>
-    <a href="/#nostr-nip05">{h.nostrAddress}</a>
-    <a href="/apps">{h.apps}</a>
-    <a href="/podcasts">{h.podcasts}</a>
-    <a href="/#nostr-om">{h.about}</a>
-    <a href="/#nostr-support">{h.support}</a>
+    <a href={homePath}>{h.home}</a>
+    <a href={L("/#nostr-klienter")}>{h.clients}</a>
+    <a href={L("/#nostr-ressourcer")}>{h.resources}</a>
+    <a href={L("/#nostr-nip05")}>{h.nostrAddress}</a>
+    <a href={appsPath}>{h.apps}</a>
+    <a href={podcastsPath}>{h.podcasts}</a>
+    <a href={L("/#nostr-om")}>{h.about}</a>
+    <a href={L("/#nostr-support")}>{h.support}</a>
   </div>
 </div>
 
@@ -270,26 +277,35 @@ nav ul li a.is-active {
     });
   }
 
+  // Locale base: '' on the Danish site, '/en' under /en. Keeps nav state working
+  // for both languages without changing Danish behavior.
+  function getLangBase() {
+    const p = window.location.pathname;
+    return (p === '/en' || p.startsWith('/en/')) ? '/en' : '';
+  }
+
   function setActiveNavForPath() {
+    const base = getLangBase();
+    const homePath = base + '/';
     const path = window.location.pathname;
-    if (path.startsWith('/podcasts')) {
-      markActiveByHref('/podcasts');
+    if (path.startsWith(base + '/podcasts')) {
+      markActiveByHref(base + '/podcasts');
       return;
     }
-    if (path.startsWith('/apps')) {
-      markActiveByHref('/apps');
+    if (path.startsWith(base + '/apps')) {
+      markActiveByHref(base + '/apps');
       return;
     }
-    if (path === '/') {
+    if (path === homePath) {
       const hash = window.location.hash;
       if (hash) {
-        const hashHref = `/${hash}`;
+        const hashHref = homePath + hash;
         if (document.querySelector(`header nav a[href="${hashHref}"]`)) {
           markActiveByHref(hashHref);
           return;
         }
       }
-      markActiveByHref('/');
+      markActiveByHref(homePath);
     }
   }
 
@@ -328,18 +344,19 @@ nav ul li a.is-active {
   function setupSmoothScroll() {
     const headerHeight = 80;
     const { burgerMenu, mobileMenu } = getHeaderEls();
-    document.querySelectorAll('a[href^="/#"]').forEach((anchor) => {
+    document.querySelectorAll('a[href*="/#"]').forEach((anchor) => {
       if (!(anchor instanceof HTMLAnchorElement)) return;
       if (anchor.dataset.smoothBound === 'true') return;
       anchor.addEventListener('click', function (e) {
         /** @type {HTMLAnchorElement} */ const self = this;
         const href = self.getAttribute('href');
-        if (window.location.pathname === '/' && href) {
+        const homePath = getLangBase() + '/';
+        if (window.location.pathname === homePath && href) {
           e.preventDefault();
-          const targetId = href.substring(2);
+          const targetId = href.split('#')[1];
           if (targetId === 'top') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            markActiveByHref('/');
+            markActiveByHref(homePath);
           } else {
             const targetElement = document.getElementById(targetId);
             if (targetElement) {
@@ -364,7 +381,8 @@ nav ul li a.is-active {
       sectionObserver.disconnect();
       sectionObserver = undefined;
     }
-    if (window.location.pathname !== '/') return;
+    const homePath = getLangBase() + '/';
+    if (window.location.pathname !== homePath) return;
 
     const sectionIds = ['nostr-klienter', 'nostr-ressourcer', 'nostr-nip05', 'nostr-om', 'nostr-support'];
     const sections = sectionIds
@@ -379,11 +397,11 @@ nav ul li a.is-active {
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
         if (visible.length > 0) {
           const sectionId = visible[0].target.id;
-          markActiveByHref(`/#${sectionId}`);
+          markActiveByHref(`${homePath}#${sectionId}`);
           return;
         }
         if (window.scrollY < 140) {
-          markActiveByHref('/');
+          markActiveByHref(homePath);
         }
       },
       {
