@@ -1,6 +1,7 @@
 ---
 title: "0xChat"
 description: "Decentraliseret beskedtjeneste."
+descriptionEn: "Decentralized messaging service."
 url: "https://0xchat.com/"
 category: "services"
 section: "Chat/Besked"

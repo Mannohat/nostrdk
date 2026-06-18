@@ -1,6 +1,7 @@
 ---
 title: "Slidestr"
 description: "Decentral billeddelingsplatform, som ligner Instagram."
+descriptionEn: "Decentralized photo-sharing platform similar to Instagram."
 url: "https://slidestr.net/"
 category: "nostr-alternatives"
 section: "Instagram Alternative"

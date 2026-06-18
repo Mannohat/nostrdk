@@ -1,6 +1,7 @@
 ---
 title: "Zapddit"
 description: "Et andet Reddit-alternativ på Nostr."
+descriptionEn: "Another Reddit alternative on Nostr."
 url: "https://zapddit.com"
 category: "nostr-alternatives"
 section: "Reddit Alternative"

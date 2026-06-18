@@ -1,6 +1,7 @@
 ---
 title: "Npub.pro"
 description: "Byg din egen hjemmeside på Nostr-netværket."
+descriptionEn: "Build your own website on the Nostr network."
 url: "https://npub.pro/"
 category: "tools"
 section: "Website Builder"

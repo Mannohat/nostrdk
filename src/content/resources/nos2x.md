@@ -1,6 +1,7 @@
 ---
 title: "Nos2x"
 description: "Simpel Chrome extension til at signere nostr events nemt og sikkert"
+descriptionEn: "Simple Chrome extension to sign Nostr events easily and securely."
 url: "https://chrome.google.com/webstore/detail/nos2x/kpgefcfmnafjgpblomihpgmejjdanjjp"
 category: "extensions"
 section: "Browser Extensions"

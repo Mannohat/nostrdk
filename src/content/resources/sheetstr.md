@@ -1,6 +1,7 @@
 ---
 title: "Sheetstr"
 description: "Decentraliseret regneark-applikation bygget på Nostr."
+descriptionEn: "Decentralized spreadsheet application built on Nostr."
 url: "https://sheetstr.amethyst.social/"
 category: "nostr-alternatives"
 section: "Excel Alternative"

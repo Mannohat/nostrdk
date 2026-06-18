@@ -37,6 +37,9 @@ const resources = defineCollection({
 	schema: z.object({
 		title: z.string(),
 		description: z.string(),
+		/** Optional English translations (used by /en pages; fall back to Danish). */
+		titleEn: z.string().optional(),
+		descriptionEn: z.string().optional(),
 		url: z.string(),
 		category: z.string(),
 		/**

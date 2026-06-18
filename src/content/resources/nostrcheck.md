@@ -1,6 +1,7 @@
 ---
 title: "Nostrcheck.me"
 description: "Verifikation af Nostr-profiler med NIP-05."
+descriptionEn: "Verification of Nostr profiles with NIP-05."
 url: "https://nostrcheck.me/"
 category: "tools"
 section: "Verification"

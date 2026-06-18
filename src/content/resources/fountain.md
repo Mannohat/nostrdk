@@ -1,6 +1,7 @@
 ---
 title: "Fountain.fm"
 description: "Podcasts og Musik på Nostr"
+descriptionEn: "Podcasts and music on Nostr."
 url: "https://fountain.fm"
 category: "nostr-alternatives"
 section: "Streaming"

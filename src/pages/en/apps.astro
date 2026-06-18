@@ -1,0 +1,1100 @@
+---
+import NostrLayout from "../../layouts/NostrLayout.astro";
+import { getCollection } from "astro:content";
+import { localizedHref, getLangFromPath } from "../../i18n/routes";
+
+const lang = getLangFromPath(Astro.url.pathname);
+
+// Get all published resources
+const allResources = await getCollection("resources", ({ data }) => {
+  return data.published === true;
+});
+
+// English description with fallback to Danish.
+const descOf = (r: (typeof allResources)[number]) =>
+  r.data.descriptionEn ?? r.data.description;
+
+const TYPE_LABELS: Record<string, string> = {
+  client: "Client",
+  wallet: "Wallet",
+  tool: "Tool",
+  extension: "Extension",
+  relay: "Relay",
+  marketplace: "Marketplace",
+  publishing: "Publishing",
+  streaming: "Streaming",
+  service: "Service",
+};
+
+const TYPE_LABELS_PLURAL: Record<string, string> = {
+  client: "Clients",
+  wallet: "Wallets",
+  tool: "Tools",
+  extension: "Extensions",
+  relay: "Relays",
+  marketplace: "Marketplaces",
+  publishing: "Publishing",
+  streaming: "Streaming",
+  service: "Services",
+};
+
+function duckDuckGoFaviconUrl(rawUrl: string) {
+  try {
+    const href = new URL(rawUrl, Astro.site).href;
+    const host = new URL(href).hostname;
+    return `https://icons.duckduckgo.com/ip3/${host}.ico`;
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeText(...parts: Array<string | undefined | null>) {
+  return parts
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function inferType(resource: (typeof allResources)[number]) {
+  // Explicit override wins (once you start populating markdown frontmatter)
+  const explicit = resource.data.type;
+  if (explicit && explicit !== "service") return explicit;
+
+  const category = resource.data.category;
+  if (category === "extensions") return "extension";
+  if (category === "relays") return "relay";
+
+  const text = normalizeText(
+    resource.data.title,
+    resource.data.description,
+    resource.data.section,
+    resource.data.url,
+  );
+
+  // Strong client signals (known clients + "client/klient")
+  if (
+    /\b(client|klient)\b/.test(text) ||
+    /\b(damus|primal|snort|coracle|iris)\b/.test(text)
+  ) {
+    return "client";
+  }
+
+  if (/\b(wallet|lightning wallet|nwc|wallet connect|lnurl)\b/.test(text)) return "wallet";
+  if (/\b(marketplace|markedsplads|market)\b/.test(text)) return "marketplace";
+  if (/\b(stream|streaming|video|music|podcast)\b/.test(text)) return "streaming";
+  if (/\b(publicer|publicering|publish|publishing|blog|artikler|news)\b/.test(text)) return "publishing";
+  if (/\b(tool|værktøj|search|søg|stats|directory|discover|discovery)\b/.test(text)) return "tool";
+
+  // Fallback
+  return explicit || "service";
+}
+
+const availableTypes = Array.from(
+  new Set(allResources.map((r) => inferType(r)).filter(Boolean)),
+).sort((a, b) =>
+  (TYPE_LABELS_PLURAL[a] ?? TYPE_LABELS[a] ?? a).localeCompare(
+    TYPE_LABELS_PLURAL[b] ?? TYPE_LABELS[b] ?? b,
+    "en",
+  ),
+);
+
+const TYPE_SECTION_META: Record<string, { title: string; description?: string }> = {
+  client: { title: "Clients", description: "Apps for using Nostr (social, notes, feeds, etc.)." },
+  wallet: { title: "Wallets", description: "Lightning/NWC wallets and payments." },
+  tool: { title: "Tools", description: "All the practical things for the Nostr ecosystem." },
+  extension: { title: "Extensions", description: "Browser extensions for keys and signing." },
+  relay: { title: "Relays", description: "Relays and related services." },
+  marketplace: { title: "Marketplaces" },
+  publishing: { title: "Publishing" },
+  streaming: { title: "Streaming" },
+  service: { title: "Services" },
+};
+
+const resourcesByType = availableTypes.reduce((acc, t) => {
+  acc[t] = allResources
+    .filter((r) => inferType(r) === t)
+    .sort((a, b) => {
+      const ao = Number.isFinite(a.data.order) ? a.data.order : 9999;
+      const bo = Number.isFinite(b.data.order) ? b.data.order : 9999;
+      if (ao !== bo) return ao - bo;
+      return a.data.title.localeCompare(b.data.title, "en");
+    });
+  return acc;
+}, {} as Record<string, typeof allResources>);
+
+const appsItemListLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Apps & Services",
+  itemListOrder: "http://schema.org/ItemListOrderAscending",
+  itemListElement: allResources.map((r, idx) => {
+    const url = (() => {
+      const raw = r.data.url;
+      try {
+        return new URL(raw, Astro.site).href;
+      } catch {
+        return raw;
+      }
+    })();
+
+    return {
+      "@type": "ListItem",
+      position: idx + 1,
+      name: r.data.title,
+      url,
+      description: descOf(r),
+    };
+  }),
+};
+---
+
+<NostrLayout
+  title="Apps & Services | Nostr.dk"
+  description="Overview of decentralized apps and services built on Nostr – alternatives to YouTube, Twitter, Facebook and much more."
+  jsonLdArticle={appsItemListLd}
+>
+
+  <div class="page-header">
+    <h1>Apps & Services</h1>
+    <p>
+      Almost all the services and companies such as YouTube, Google,
+      Facebook, Twitter, etc. own your data and can lock you out of your
+      account. Nostr gives you the ability to own your own data, secures your
+      access, and lets you keep your followers across Nostr-based services.
+    </p>
+  </div>
+
+  <!-- Search Bar with Subtle Contribute Link -->
+  <div class="search-container">
+    <label for="search-input" class="visually-hidden">Search for apps and services</label>
+    <input
+      type="text"
+      id="search-input"
+      placeholder="🔍 Search for apps and services..."
+      class="search-input"
+      autocomplete="off"
+    />
+  </div>
+
+  <!-- Filters -->
+  <div class="filters" aria-label="Filters">
+    <div class="filters-bar">
+      <label class="filters-label" for="type-select">Type</label>
+      <select id="type-select" class="filters-select">
+        <option value="">All</option>
+        {availableTypes.map((t) => (
+          <option value={t}>{TYPE_LABELS_PLURAL[t] ?? TYPE_LABELS[t] ?? t}</option>
+        ))}
+      </select>
+
+      <button type="button" class="filters-clear" id="clear-filters" style="display:none;">
+        Reset
+      </button>
+    </div>
+
+    <!-- Subtle Contribute Link – opens modal instead of GitHub -->
+    <div class="contribute-link">
+      <p>
+        Missing something? <button type="button" class="link-button" id="open-modal-subtle" data-umami-event="apps-suggest-open-subtle">Suggest App / Service →</button>
+      </p>
+    </div>
+  </div>
+
+  <!-- Resources by Category -->
+  {
+    availableTypes.map((typeKey) => {
+      const resources = resourcesByType[typeKey];
+      if (!resources || resources.length === 0) return null;
+      const meta = TYPE_SECTION_META[typeKey] ?? { title: TYPE_LABELS[typeKey] ?? typeKey };
+
+      return (
+        <section class="resource-section" data-type={typeKey}>
+          <h2 class="section-title">{meta.title}</h2>
+          {meta.description && <p class="section-description">{meta.description}</p>}
+
+          <div class="resource-grid">
+            {resources.map((resource) => (
+              <div
+                class="resource-card"
+                data-search-text={`${resource.data.title} ${descOf(resource)} ${resource.data.section}`.toLowerCase()}
+                data-type={inferType(resource)}
+              >
+                <div class="resource-title-row">
+                  {duckDuckGoFaviconUrl(resource.data.url) && (
+                    <img
+                      class="resource-favicon"
+                      src={duckDuckGoFaviconUrl(resource.data.url)}
+                      alt={`${resource.data.title} icon`}
+                      width="24"
+                      height="24"
+                      loading="lazy"
+                      decoding="async"
+                      referrerpolicy="no-referrer"
+                      onerror="this.remove()"
+                    />
+                  )}
+                  <h3>{resource.data.title}</h3>
+                </div>
+                <p>{descOf(resource)}</p>
+                <a
+                  href={resource.data.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="resource-link"
+                  data-umami-event="apps-resource-outbound"
+                >
+                  Visit {resource.data.title} →
+                </a>
+              </div>
+            ))}
+          </div>
+        </section>
+      );
+    })
+  }
+
+  <!-- No results message (hidden by default) -->
+  <div id="no-results" class="no-results" style="display: none;">
+    <h2>No results found</h2>
+    <p>Try searching for something else.</p>
+  </div>
+
+  <!-- CTA Section – primary button opens modal -->
+  <section class="cta-section">
+    <h2>Contribute to Nostr.dk</h2>
+    <p>
+      Help us make the list better or explore more content about Nostr
+    </p>
+    <div class="cta-buttons">
+      <button type="button" class="cta-button primary" id="open-modal-cta" data-umami-event="apps-suggest-open-cta">
+        ➕ Suggest App / Service
+      </button>
+      <a href={localizedHref("/podcasts", lang)} class="cta-button secondary">See Podcasts →</a>
+      <a href={localizedHref("/", lang)} class="cta-button secondary">Go to Homepage →</a>
+    </div>
+  </section>
+
+  <div slot="after-footer">
+<!-- =====================================================
+     MODAL – Suggest resource
+     ===================================================== -->
+<div id="suggest-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-box">
+    <!-- Close button -->
+    <button class="modal-close" id="close-modal" aria-label="Close">&times;</button>
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-icon">➕</div>
+      <h2 id="modal-title">Suggest a resource</h2>
+      <p>Know an app or service that's missing? Send a suggestion – we'll review it as soon as possible.</p>
+    </div>
+
+    <!-- Form -->
+    <form class="modal-form" id="modal-form-container" novalidate>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="field-name">Name <span class="required">*</span></label>
+        <input type="text" id="field-name" placeholder="e.g. Damus, Primal, Coracle" maxlength="80" autocomplete="off" required aria-describedby="error-name" />
+          <span class="field-error" id="error-name" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="field-url">Link (URL) <span class="required">*</span></label>
+          <input type="url" id="field-url" placeholder="https://…" maxlength="200" inputmode="url" autocomplete="off" required aria-describedby="error-url" />
+          <span class="field-error" id="error-url" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="field-type">Type <span class="required">*</span></label>
+          <select id="field-type" required aria-describedby="error-type">
+            <option value="">Choose type</option>
+            <option value="client">Client</option>
+            <option value="wallet">Wallet</option>
+            <option value="tool">Tool</option>
+            <option value="extension">Extension</option>
+            <option value="relay">Relay</option>
+            <option value="marketplace">Marketplace</option>
+            <option value="publishing">Publishing</option>
+            <option value="streaming">Streaming</option>
+            <option value="service">Service</option>
+          </select>
+          <span class="field-error" id="error-type" aria-live="polite"></span>
+        </div>
+
+        <div class="form-group form-group--full">
+          <label for="field-description">Short description <span class="required">*</span></label>
+          <textarea id="field-description" placeholder="What does the app/service do? (max 300 characters)" maxlength="300" rows="3" required aria-describedby="error-description"></textarea>
+          <div class="char-counter"><span id="char-count">0</span> / 300</div>
+          <span class="field-error" id="error-description" aria-live="polite"></span>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-button" id="submit-suggestion" data-umami-event="apps-suggest-submit">
+        <span id="submit-text">Send suggestion</span>
+        <span id="submit-spinner" class="spinner" style="display:none;"></span>
+      </button>
+    </form>
+
+    <!-- Success message (hidden by default) -->
+    <div class="modal-success" id="modal-success" style="display:none;">
+      <div class="success-icon">✅</div>
+      <h3>Thanks for your suggestion!</h3>
+      <p>Your suggestion has now been sent and will be reviewed as soon as possible.</p>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; justify-content:center;">
+        <button class="cta-button primary" id="suggest-another">Suggest another →</button>
+        <button class="cta-button secondary" id="close-success">Close</button>
+      </div>
+    </div>
+
+    <!-- Error message (hidden by default) -->
+    <div class="modal-error-banner" id="modal-error-banner" style="display:none;" role="alert" aria-live="assertive">
+      <span id="modal-error-text">Something went wrong. Please try again.</span>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  document.addEventListener("DOMContentLoaded", function () {
+    let lastFocusedBeforeModal = null;
+
+    // ── Search ────────────────────────────────────────────
+    const searchInput = document.getElementById("search-input");
+    const resourceCards = document.querySelectorAll(".resource-card");
+    const resourceSections = document.querySelectorAll(".resource-section");
+    const noResults = document.getElementById("no-results");
+    const typeSelect = document.getElementById("type-select");
+    const clearFiltersBtn = document.getElementById("clear-filters");
+
+    let activeType = "";
+
+    // Restore state from URL (deep links like /en/apps?type=client&q=primal)
+    try {
+      const params = new URLSearchParams(window.location.search || "");
+      const t = (params.get("type") || "").trim();
+      const q = (params.get("q") || "").trim();
+      if (t && typeSelect) {
+        typeSelect.value = t;
+        activeType = t;
+      }
+      if (q && searchInput) {
+        searchInput.value = q;
+      }
+    } catch {}
+
+    function syncUrl() {
+      try {
+        const url = new URL(window.location.href);
+        const q = (searchInput?.value || "").trim();
+        if (activeType) url.searchParams.set("type", activeType);
+        else url.searchParams.delete("type");
+        if (q) url.searchParams.set("q", q);
+        else url.searchParams.delete("q");
+        // Keep it tidy
+        if (!url.searchParams.toString()) url.search = "";
+        window.history.replaceState({}, "", url.toString());
+      } catch {}
+    }
+
+    function updateClearVisible() {
+      const hasAny = Boolean(activeType) || Boolean((searchInput?.value || "").trim());
+      if (clearFiltersBtn) clearFiltersBtn.style.display = hasAny ? "inline-flex" : "none";
+    }
+
+    function applyFilters() {
+      const searchTerm = (searchInput?.value || "").toLowerCase().trim();
+      let visibleCount = 0;
+
+      resourceCards.forEach(function (card) {
+        const searchText = card.getAttribute("data-search-text") || "";
+        const matchesSearch = !searchTerm || searchText.includes(searchTerm);
+
+        const type = card.getAttribute("data-type") || "";
+        const matchesType = !activeType || type === activeType;
+
+        const show = matchesSearch && matchesType;
+        card.classList.toggle("hidden", !show);
+        if (show) visibleCount++;
+      });
+
+      resourceSections.forEach(function (section) {
+        const cardsInSection = section.querySelectorAll(".resource-card");
+        const hasVisible = Array.from(cardsInSection).some(
+          (c) => !c.classList.contains("hidden")
+        );
+        section.classList.toggle("hidden", !hasVisible);
+      });
+
+      if (noResults) {
+        noResults.style.display = visibleCount === 0 ? "block" : "none";
+      }
+
+      syncUrl();
+      updateClearVisible();
+    }
+
+    if (typeSelect) {
+      typeSelect.addEventListener("change", () => {
+        activeType = typeSelect.value || "";
+        applyFilters();
+      });
+    }
+
+    if (clearFiltersBtn) {
+      clearFiltersBtn.addEventListener("click", () => {
+        activeType = "";
+        if (searchInput) searchInput.value = "";
+        if (typeSelect) typeSelect.value = "";
+        applyFilters();
+      });
+    }
+
+    if (searchInput) {
+      let qT;
+      searchInput.addEventListener("input", function () {
+        // slight debounce for typing
+        clearTimeout(qT);
+        qT = setTimeout(applyFilters, 80);
+      });
+    }
+
+    // Apply once on load after restoring URL state
+    applyFilters();
+
+    // ── Modal: open / close ──────────────────────────────
+    const modal = document.getElementById("suggest-modal");
+    const openButtons = [
+      document.getElementById("open-modal-cta"),
+      document.getElementById("open-modal-subtle"),
+    ];
+    const closeBtn = document.getElementById("close-modal");
+    const closeSuccess = document.getElementById("close-success");
+    const formEl = document.getElementById("modal-form-container");
+    const submitBtn = document.getElementById("submit-suggestion");
+
+    const errorIds = ["error-name", "error-url", "error-description", "error-type"];
+    const fieldIds = ["field-name", "field-url", "field-type", "field-description"];
+
+    function setFieldError(fieldId, errorId, message) {
+      const field = document.getElementById(fieldId);
+      const err = document.getElementById(errorId);
+      if (err) err.textContent = message || "";
+      if (field && field instanceof HTMLElement) {
+        if (message) field.setAttribute("aria-invalid", "true");
+        else field.removeAttribute("aria-invalid");
+      }
+    }
+
+    function resetSuggestModalState() {
+      // Ensure form view is active
+      const success = document.getElementById("modal-success");
+      const banner = document.getElementById("modal-error-banner");
+      if (success) success.style.display = "none";
+      if (banner) banner.style.display = "none";
+      if (formEl) formEl.style.display = "flex";
+
+      // Clear errors / aria-invalid
+      errorIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = "";
+      });
+      fieldIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el && el instanceof HTMLElement) el.removeAttribute("aria-invalid");
+      });
+    }
+
+    function openModal() {
+      lastFocusedBeforeModal = document.activeElement;
+      modal.setAttribute("aria-hidden", "false");
+      modal.classList.add("is-open");
+      document.body.style.overflow = "hidden";
+      resetSuggestModalState();
+      setTimeout(() => document.getElementById("field-name").focus(), 100);
+    }
+
+    function closeModal() {
+      modal.setAttribute("aria-hidden", "true");
+      modal.classList.remove("is-open");
+      document.body.style.overflow = "";
+      if (lastFocusedBeforeModal instanceof HTMLElement) {
+        lastFocusedBeforeModal.focus();
+      }
+    }
+
+    function trapModalFocus(e) {
+      if (!modal.classList.contains("is-open") || e.key !== "Tab") return;
+      const focusable = modal.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    openButtons.forEach((btn) => btn && btn.addEventListener("click", openModal));
+    closeBtn && closeBtn.addEventListener("click", closeModal);
+    closeSuccess && closeSuccess.addEventListener("click", closeModal);
+
+    // Reset the form and show it again
+    const suggestAnother = document.getElementById("suggest-another");
+    suggestAnother && suggestAnother.addEventListener("click", function () {
+      document.getElementById("field-name").value = "";
+      document.getElementById("field-url").value = "";
+      document.getElementById("field-type").value = "";
+      document.getElementById("field-description").value = "";
+      charCount.textContent = "0";
+      ["error-name", "error-url", "error-description"].forEach(
+        (id) => (document.getElementById(id).textContent = "")
+      );
+      document.getElementById("error-type").textContent = "";
+      document.getElementById("modal-error-banner").style.display = "none";
+      document.getElementById("modal-success").style.display = "none";
+      document.getElementById("modal-form-container").style.display = "flex";
+      document.getElementById("field-name").focus();
+    });
+
+    // Close on backdrop click
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) closeModal();
+    });
+
+    // Close with Escape
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+      trapModalFocus(e);
+    });
+
+    // ── Character counter ─────────────────────────────────
+    const descField = document.getElementById("field-description");
+    const charCount = document.getElementById("char-count");
+    descField && descField.addEventListener("input", function () {
+      charCount.textContent = this.value.length;
+    });
+
+    formEl && formEl.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      // Clear previous errors
+      resetSuggestModalState();
+
+      const name = document.getElementById("field-name").value.trim();
+      const url = document.getElementById("field-url").value.trim();
+      const description = document.getElementById("field-description").value.trim();
+      const type = document.getElementById("field-type").value;
+      // Backend derives category; we don't ask for more.
+
+      // Client-side validation
+      let valid = true;
+      if (!name) {
+        setFieldError("field-name", "error-name", "Name is required");
+        valid = false;
+      }
+      if (!url) {
+        setFieldError("field-url", "error-url", "URL is required");
+        valid = false;
+      } else {
+        try { new URL(url); } catch {
+          setFieldError("field-url", "error-url", "Enter a valid URL (remember https://)");
+          valid = false;
+        }
+      }
+      if (!description) {
+        setFieldError("field-description", "error-description", "Description is required");
+        valid = false;
+      }
+      if (!type) {
+        setFieldError("field-type", "error-type", "Type is required");
+        valid = false;
+      }
+      if (!valid) {
+        const firstInvalid = formEl.querySelector('[aria-invalid="true"]');
+        if (firstInvalid && firstInvalid instanceof HTMLElement) firstInvalid.focus();
+        return;
+      }
+
+      // Show spinner
+      document.getElementById("submit-text").style.display = "none";
+      document.getElementById("submit-spinner").style.display = "inline-block";
+      submitBtn.disabled = true;
+
+      try {
+        const res = await fetch("/.netlify/functions/suggest-resource", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, url, description, type }),
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          window.umami?.track("apps-suggest-success");
+          document.getElementById("modal-form-container").style.display = "none";
+          document.getElementById("modal-success").style.display = "flex";
+        } else {
+          throw new Error(data.error || "Unknown error");
+        }
+      } catch (err) {
+        window.umami?.track("apps-suggest-failure");
+        const banner = document.getElementById("modal-error-banner");
+        document.getElementById("modal-error-text").textContent =
+          err.message || "Something went wrong – please try again.";
+        banner.style.display = "block";
+      } finally {
+        document.getElementById("submit-text").style.display = "inline";
+        document.getElementById("submit-spinner").style.display = "none";
+        submitBtn.disabled = false;
+      }
+    });
+  });
+</script>
+  </div>
+</NostrLayout>
+
+<style>
+  /* ── Generelle utilities ── */
+  .hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* ── Søgefelt ── */
+  .search-container {
+    max-width: 1040px;
+    margin: 20px auto 16px;
+    padding: 0 20px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 20px 28px;
+    font-size: 1.15rem;
+    font-weight: 500;
+    border: 3px solid rgba(160, 132, 202, 0.4);
+    border-radius: 50px;
+    background: linear-gradient(135deg, rgba(108,79,150,0.15), rgba(55,26,118,0.15));
+    color: #fff;
+    transition: all 0.3s;
+    text-align: center;
+  }
+  .search-input:focus {
+    outline: none;
+    border-color: #a084ca;
+    background: linear-gradient(135deg, rgba(108,79,150,0.25), rgba(55,26,118,0.25));
+    box-shadow: 0 0 30px rgba(160,132,202,0.4);
+  }
+  .search-input::placeholder { color: rgba(255,255,255,0.6); font-weight: 400; }
+
+  /* Subtil bidrag-link – nu en knap der ligner et link */
+  .contribute-link { text-align: center; margin-top: 15px; }
+  .contribute-link p { font-size: 0.95rem; color: #999; margin-bottom: 0; }
+  .link-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #a084ca;
+    font-weight: 600;
+    font-size: inherit;
+    padding: 0;
+    transition: all 0.3s;
+    font-family: inherit;
+  }
+  .link-button:hover { color: #c0a4e0; text-decoration: underline; }
+
+  /* ── Resource sections ── */
+  .resource-section {
+    margin-bottom: 80px;
+    max-width: 1040px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 20px;
+  }
+  .section-description { text-align: center; font-size: 1.1rem; color: #b0b0b0; margin-bottom: 40px; }
+
+  .filters {
+    max-width: 1040px;
+    margin: 0 auto 16px;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .filters-bar {
+    display: grid;
+    grid-template-columns: auto minmax(220px, 360px) auto;
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* tighten vertical rhythm: override global resource grid margin */
+  .resource-grid {
+    margin-top: 16px;
+  }
+
+  .filters-label {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 600;
+  }
+
+  .filters-select {
+    width: 100%;
+    min-width: 180px;
+    max-width: 360px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(160, 132, 202, 0.35);
+    color: rgba(255, 255, 255, 0.92);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    min-height: 44px;
+    line-height: 1.2;
+    padding-right: 48px; /* room for custom chevron */
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M7 10l5 5 5-5' stroke='%23C0A4E0' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 16px) 50%;
+    background-size: 16px 16px;
+  }
+
+  .filters-clear {
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(160, 132, 202, 0.35);
+    background: rgba(108, 79, 150, 0.12);
+    color: rgba(255, 255, 255, 0.92);
+    font-family: inherit;
+    transition: background 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    white-space: nowrap;
+    min-height: 44px;
+    line-height: 1.2;
+  }
+
+  /* prevent overflow from long titles/URLs */
+  .resource-card,
+  .resource-title-row h3,
+  .resource-card p,
+  .resource-link {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  /* page-local header spacing (keeps controls closer to content) */
+  .page-header {
+    padding-bottom: 24px;
+  }
+
+  .filters-clear:hover {
+    background: rgba(160, 132, 202, 0.18);
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 768px) {
+    .search-container { margin: 24px auto 12px; }
+    .filters { margin-bottom: 12px; }
+    .filters-bar {
+      grid-template-columns: 1fr;
+    }
+    .filters-label {
+      display: none;
+    }
+    .filters-select {
+      max-width: none;
+    }
+    .filters-clear {
+      width: 100%;
+    }
+  }
+
+  .resource-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .resource-title-row h3 {
+    margin-bottom: 0;
+  }
+
+  .resource-favicon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    flex: 0 0 24px;
+  }
+
+  /* ── No results ── */
+  .no-results { text-align: center; padding: 80px 20px; }
+  .no-results h2 { font-size: 2rem; margin-bottom: 15px; color: #a084ca; }
+  .no-results p { font-size: 1.1rem; color: #b0b0b0; }
+
+  /* ── CTA-sektion ── */
+  .cta-section {
+    text-align: center;
+    padding: 60px 20px;
+    background: linear-gradient(135deg, rgba(108,79,150,0.2), rgba(55,26,118,0.2));
+    border-radius: 16px;
+    margin: 80px 0 40px;
+  }
+  .cta-section h2 { font-size: 2.5rem; margin-bottom: 20px; }
+  .cta-section p { font-size: 1.2rem; color: #c0c0c0; margin-bottom: 30px; }
+  .cta-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+
+  .cta-button {
+    padding: 15px 35px;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s;
+    display: inline-block;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+  .cta-button.primary { background: #6c4f96; color: #fff; }
+  .cta-button.primary:hover { background: #563c73; transform: scale(1.05); }
+  .cta-button.secondary { background: transparent; color: #a084ca; border: 2px solid #a084ca; }
+  .cta-button.secondary:hover { background: rgba(160,132,202,0.1); transform: scale(1.05); }
+
+  /* ══════════════════════════════════════════════════
+     MODAL
+  ══════════════════════════════════════════════════ */
+
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(10, 5, 25, 0.85);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  .modal-overlay.is-open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal-box {
+    background: linear-gradient(145deg, #1a0f2e, #120a22);
+    border: 1px solid rgba(160, 132, 202, 0.25);
+    border-radius: 20px;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(160,132,202,0.1);
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 40px;
+    position: relative;
+    transform: translateY(20px);
+    transition: transform 0.25s ease;
+  }
+  .modal-overlay.is-open .modal-box {
+    transform: translateY(0);
+  }
+
+  /* Luk-knap */
+  .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: rgba(160,132,202,0.15);
+    border: none;
+    color: #a084ca;
+    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: background 0.2s, color 0.2s;
+  }
+  .modal-close:hover { background: rgba(160,132,202,0.3); color: #fff; }
+
+  /* Modal header */
+  .modal-header { text-align: center; margin-bottom: 32px; }
+  .modal-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .modal-header h2 {
+    font-size: 1.6rem;
+    color: #fff;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .modal-header p { font-size: 0.95rem; color: #b0b0b0; line-height: 1.5; }
+
+  /* Formfelter */
+  .modal-form { display: flex; flex-direction: column; gap: 20px; }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px 16px;
+  }
+
+  .form-group--full {
+    grid-column: 1 / -1;
+  }
+
+  .form-group { display: flex; flex-direction: column; gap: 7px; }
+
+  .form-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #c0a4e0;
+    letter-spacing: 0.02em;
+  }
+  .required { color: #e07070; }
+
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    background: rgba(108, 79, 150, 0.15);
+    border: 2px solid rgba(160, 132, 202, 0.25);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+    resize: vertical;
+    box-sizing: border-box;
+  }
+
+  .form-group input,
+  .form-group select {
+    min-height: 44px;
+    line-height: 1.2;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #a084ca;
+    background: rgba(108, 79, 150, 0.25);
+    box-shadow: 0 0 0 3px rgba(160, 132, 202, 0.15);
+  }
+  .form-group select option { background: #1a0f2e; color: #fff; }
+
+  .char-counter { font-size: 0.78rem; color: #888; text-align: right; margin-top: 3px; }
+  .field-hint { font-size: 0.78rem; color: #888; margin-top: 3px; }
+
+  .field-error { font-size: 0.8rem; color: #e07070; min-height: 1em; }
+
+  @media (min-width: 720px) {
+    .form-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  /* Send-knap */
+  .submit-button {
+    background: linear-gradient(135deg, #6c4f96, #4a2d7a);
+    border: none;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 15px 30px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .submit-button:hover:not(:disabled) {
+    background: linear-gradient(135deg, #7d5cae, #5a3a8a);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(108, 79, 150, 0.5);
+  }
+  .submit-button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* Spinner */
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Succesbesked */
+  .modal-success {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 20px 0;
+    gap: 16px;
+  }
+  .success-icon { font-size: 3rem; }
+  .modal-success h3 { font-size: 1.4rem; color: #fff; }
+  .modal-success p { color: #b0b0b0; font-size: 0.95rem; }
+
+  /* Fejlbanner */
+  .modal-error-banner {
+    background: rgba(200, 60, 60, 0.2);
+    border: 1px solid rgba(200, 60, 60, 0.4);
+    border-radius: 8px;
+    padding: 12px 16px;
+    color: #f08080;
+    font-size: 0.9rem;
+    margin-top: 12px;
+    text-align: center;
+  }
+
+  /* ── Scrollbar i modal ── */
+  .modal-box::-webkit-scrollbar { width: 6px; }
+  .modal-box::-webkit-scrollbar-track { background: transparent; }
+  .modal-box::-webkit-scrollbar-thumb { background: rgba(160,132,202,0.3); border-radius: 3px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .search-container { padding: 0 10px; }
+    .search-input { padding: 16px 20px; font-size: 1rem; }
+    .contribute-link p { font-size: 0.9rem; }
+    .cta-buttons { flex-direction: column; align-items: center; }
+    .cta-button { width: 100%; max-width: 300px; }
+    .modal-box { padding: 28px 20px; }
+    .modal-header h2 { font-size: 1.4rem; }
+  }
+</style>

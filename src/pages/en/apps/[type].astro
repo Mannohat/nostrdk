@@ -1,0 +1,217 @@
+---
+import NostrLayout from "../../../layouts/NostrLayout.astro";
+import { getCollection } from "astro:content";
+
+type TypeKey =
+  | "client"
+  | "wallet"
+  | "tool"
+  | "extension"
+  | "relay"
+  | "marketplace"
+  | "publishing"
+  | "streaming"
+  | "service";
+
+const TYPE_LABELS_PLURAL: Record<TypeKey, string> = {
+  client: "Clients",
+  wallet: "Wallets",
+  tool: "Tools",
+  extension: "Extensions",
+  relay: "Relays",
+  marketplace: "Marketplaces",
+  publishing: "Publishing",
+  streaming: "Streaming",
+  service: "Services",
+};
+
+const TYPE_META: Record<TypeKey, { title: string; description: string; slug: string }> = {
+  client: {
+    slug: "clients",
+    title: "Clients",
+    description:
+      "Nostr clients for mobile, desktop and web. Find more clients and get started with Nostr on Nostr.dk.",
+  },
+  wallet: {
+    slug: "wallets",
+    title: "Wallets",
+    description: "Wallets for Lightning/NWC and payments in the Nostr ecosystem.",
+  },
+  tool: {
+    slug: "tools",
+    title: "Tools",
+    description: "Tools for discovery, stats, profiles, onboarding and much more in Nostr.",
+  },
+  extension: {
+    slug: "extensions",
+    title: "Extensions",
+    description: "Browser extensions for keys, signing and Nostr integration.",
+  },
+  relay: {
+    slug: "relays",
+    title: "Relays",
+    description: "Relays and relay-related services for the Nostr network.",
+  },
+  marketplace: {
+    slug: "marketplaces",
+    title: "Marketplaces",
+    description: "Marketplaces and commerce on Nostr.",
+  },
+  publishing: {
+    slug: "publishing",
+    title: "Publishing",
+    description: "Publishing and blogging on Nostr.",
+  },
+  streaming: {
+    slug: "streaming",
+    title: "Streaming",
+    description: "Video, audio and live streaming on Nostr.",
+  },
+  service: {
+    slug: "services",
+    title: "Services",
+    description: "Services built on Nostr – everything from communication to utilities.",
+  },
+};
+
+export async function getStaticPaths() {
+  // Must be self-contained: Astro hoists getStaticPaths.
+  return [
+    { params: { type: "clients" }, props: { type: "client" } },
+    { params: { type: "wallets" }, props: { type: "wallet" } },
+    { params: { type: "tools" }, props: { type: "tool" } },
+    { params: { type: "extensions" }, props: { type: "extension" } },
+    { params: { type: "relays" }, props: { type: "relay" } },
+    { params: { type: "marketplaces" }, props: { type: "marketplace" } },
+    { params: { type: "publishing" }, props: { type: "publishing" } },
+    { params: { type: "streaming" }, props: { type: "streaming" } },
+    { params: { type: "services" }, props: { type: "service" } },
+  ];
+}
+
+const { type } = Astro.props as { type: TypeKey };
+const meta = TYPE_META[type];
+
+const allResources = await getCollection("resources", ({ data }) => data.published === true);
+
+// English description with fallback to Danish.
+const descOf = (r: (typeof allResources)[number]) =>
+  r.data.descriptionEn ?? r.data.description;
+
+function duckDuckGoFaviconUrl(rawUrl: string) {
+  try {
+    const href = new URL(rawUrl, Astro.site).href;
+    const host = new URL(href).hostname;
+    return `https://icons.duckduckgo.com/ip3/${host}.ico`;
+  } catch {
+    return undefined;
+  }
+}
+
+const resources = allResources
+  .filter((r) => (r.data.type as TypeKey) === type)
+  .sort((a, b) => (a.data.order ?? 9999) - (b.data.order ?? 9999));
+
+const itemListLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: `${meta.title} (Nostr)`,
+  itemListOrder: "http://schema.org/ItemListOrderAscending",
+  itemListElement: resources.map((r, idx) => ({
+    "@type": "ListItem",
+    position: idx + 1,
+    name: r.data.title,
+    url: (() => {
+      try {
+        return new URL(r.data.url, Astro.site).href;
+      } catch {
+        return r.data.url;
+      }
+    })(),
+    description: descOf(r),
+  })),
+};
+---
+
+<NostrLayout
+  title={`${meta.title} | Apps & Services | Nostr.dk`}
+  description={meta.description}
+  jsonLdArticle={itemListLd}
+>
+  <div class="page-header">
+    <h1>{meta.title}</h1>
+    <p>{meta.description}</p>
+  </div>
+
+  <div class="filters" aria-label="Filters">
+    <div class="filters-bar">
+      <label class="filters-label" for="type-select">Type</label>
+      <select id="type-select" class="filters-select">
+        {(Object.keys(TYPE_META) as TypeKey[]).map((k) => (
+          <option value={TYPE_META[k].slug} selected={k === type}>
+            {TYPE_LABELS_PLURAL[k]}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  <section class="resource-section">
+    <div class="resource-grid">
+      {resources.map((resource) => (
+        <div
+          class="resource-card"
+          data-search-text={`${resource.data.title} ${descOf(resource)}`.toLowerCase()}
+        >
+          <div class="resource-title-row">
+            {duckDuckGoFaviconUrl(resource.data.url) && (
+              <img
+                class="resource-favicon"
+                src={duckDuckGoFaviconUrl(resource.data.url)}
+                alt={`${resource.data.title} icon`}
+                width="24"
+                height="24"
+                loading="lazy"
+                decoding="async"
+                referrerpolicy="no-referrer"
+                onerror="this.remove()"
+              />
+            )}
+            <h2 class="resource-h2">{resource.data.title}</h2>
+          </div>
+          <p>{descOf(resource)}</p>
+          <a
+            href={resource.data.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="resource-link"
+            data-umami-event="apps-resource-outbound"
+            data-umami-event-type={type}
+          >
+            Visit {resource.data.title} →
+          </a>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <script is:inline>
+    document.addEventListener("DOMContentLoaded", () => {
+      const select = document.getElementById("type-select");
+      if (!select) return;
+      select.addEventListener("change", () => {
+        const slug = select.value;
+        window.location.href = "/en/apps/" + slug;
+      });
+    });
+  </script>
+
+  <style>
+    .resource-h2 {
+      font-size: 1.25rem;
+      margin: 0;
+      color: #fff;
+      line-height: 1.25;
+    }
+  </style>
+</NostrLayout>

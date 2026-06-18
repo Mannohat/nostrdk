@@ -26,6 +26,16 @@ export const DA_TO_EN: Readonly<Record<string, string>> = {
 	'/profiler': '/en/profiles',
 	'/getnip05': '/en/get-nip05',
 	'/privatlivspolitik': '/en/privacy-policy',
+	// Apps type sub-pages (Danish slug → English slug).
+	'/apps/klienter': '/en/apps/clients',
+	'/apps/wallets': '/en/apps/wallets',
+	'/apps/vaerktojer': '/en/apps/tools',
+	'/apps/udvidelser': '/en/apps/extensions',
+	'/apps/relays': '/en/apps/relays',
+	'/apps/markedspladser': '/en/apps/marketplaces',
+	'/apps/publicering': '/en/apps/publishing',
+	'/apps/streaming': '/en/apps/streaming',
+	'/apps/services': '/en/apps/services',
 	// Blog posts (Danish slug → English slug).
 	'/blog/velkommen-til-nostr': '/en/blog/write-about-nostr',
 };
@@ -46,8 +56,17 @@ export const EN_LIVE: ReadonlySet<string> = new Set<string>([
 	'/en/podcasts', // podcasts
 	'/en/blog', // blog index
 	'/en/blog/write-about-nostr', // blog post: velkommen-til-nostr
+	'/en/apps', // apps & services
+	'/en/apps/clients',
+	'/en/apps/wallets',
+	'/en/apps/tools',
+	'/en/apps/extensions',
+	'/en/apps/relays',
+	'/en/apps/marketplaces',
+	'/en/apps/publishing',
+	'/en/apps/streaming',
+	'/en/apps/services',
 	// '/en/',            // home          — add when src/pages/en/index.astro lands
-	// '/en/apps',        // apps          — add when src/pages/en/apps.astro lands
 	// '/en/blog',        // blog
 	// '/en/profiles',    // profiler
 	// '/en/get-nip05',   // getnip05

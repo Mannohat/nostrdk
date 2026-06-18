@@ -1,6 +1,7 @@
 ---
 title: "NIP-05 Documentation"
 description: "Dokumentation for NIP-05 protokollen til identitet."
+descriptionEn: "Documentation for the NIP-05 identity protocol."
 url: "https://github.com/nostr-protocol/nips/blob/master/05.md"
 category: "tools"
 section: "Documentation"

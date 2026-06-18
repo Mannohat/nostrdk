@@ -1,6 +1,7 @@
 ---
 title: "Flare"
 description: "En anden decentral live-streaming platform."
+descriptionEn: "Another decentralized live-streaming platform."
 url: "https://flare.pub"
 category: "nostr-alternatives"
 section: "Youtube Alternative"

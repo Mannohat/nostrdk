@@ -1,6 +1,7 @@
 ---
 title: "Nostrtool.com"
 description: "Værktøjer til at administrere Nostr-profiler og nøgler."
+descriptionEn: "Tools for managing Nostr profiles and keys."
 url: "https://nostrtool.com/"
 category: "tools"
 section: "Profile Management"

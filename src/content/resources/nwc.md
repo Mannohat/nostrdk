@@ -1,6 +1,7 @@
 ---
 title: "NWC"
 description: "Nostr Wallet Connect."
+descriptionEn: "Nostr Wallet Connect."
 url: "https://nwc.dev/"
 category: "tools"
 section: "Payments"

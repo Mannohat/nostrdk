@@ -1,6 +1,7 @@
 ---
 title: "Fanfares"
 description: "Sælg digitalt indhold for zaps."
+descriptionEn: "Sell digital content for zaps."
 url: "https://fanfares.io"
 category: "services"
 section: "Betalingsmur"
