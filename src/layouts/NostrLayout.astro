@@ -1,6 +1,7 @@
 ---
 import NostrHeader from "../components/NostrHeader.astro";
 import NostrFooter from "../components/NostrFooter.astro";
+import AiTranslationNotice from "../components/AiTranslationNotice.astro";
 import "../styles/global.css";
 import { UMAMI_WEBSITE_ID } from "../site.config";
 import {
@@ -175,6 +176,7 @@ const alternates =
   </head>
 
   <body>
+    {lang === "en" && <AiTranslationNotice />}
     <NostrHeader />
     <main class="container">
       <slot />

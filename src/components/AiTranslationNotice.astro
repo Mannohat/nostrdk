@@ -1,0 +1,89 @@
+---
+/**
+ * One-time "AI-assisted translation" disclosure toast.
+ *
+ * Rendered ONLY on English pages (the layout gates this on lang === "en"), so it
+ * never appears on the Danish site. Shows once per visitor (localStorage-gated),
+ * top-center, slides/fades in and auto-dismisses after ~4s. Announced politely to
+ * screen readers and honors prefers-reduced-motion.
+ */
+---
+
+<div id="ai-tx-notice" class="ai-tx-notice" role="status" aria-live="polite" hidden>
+	These English pages are AI-translated — the Danish version is the original. 💜
+</div>
+
+<style>
+	.ai-tx-notice {
+		position: fixed;
+		top: 16px;
+		left: 50%;
+		transform: translateX(-50%) translateY(-14px);
+		z-index: 2000;
+		max-width: min(92vw, 460px);
+		background: rgba(31, 29, 43, 0.97);
+		color: #fff;
+		border: 1px solid rgba(160, 132, 202, 0.4);
+		border-radius: 12px;
+		padding: 12px 18px;
+		font-size: 0.9rem;
+		line-height: 1.4;
+		text-align: center;
+		box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+		backdrop-filter: blur(8px);
+		-webkit-backdrop-filter: blur(8px);
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.3s ease, transform 0.3s ease;
+	}
+
+	.ai-tx-notice.is-visible {
+		opacity: 1;
+		transform: translateX(-50%) translateY(0);
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ai-tx-notice,
+		.ai-tx-notice.is-visible {
+			transition: opacity 0.2s ease;
+			transform: translateX(-50%);
+		}
+	}
+</style>
+
+<script is:inline>
+	(function () {
+		var KEY = "nostrdk:ai-translation-notice:seen";
+		try {
+			if (localStorage.getItem(KEY)) return;
+		} catch (e) {
+			return;
+		}
+
+		function showNotice() {
+			var el = document.getElementById("ai-tx-notice");
+			if (!el) return;
+			try {
+				localStorage.setItem(KEY, "1");
+			} catch (e) {}
+			el.hidden = false;
+			requestAnimationFrame(function () {
+				requestAnimationFrame(function () {
+					el.classList.add("is-visible");
+				});
+			});
+			setTimeout(function () {
+				el.classList.remove("is-visible");
+				setTimeout(function () {
+					el.hidden = true;
+				}, 350);
+			}, 4000);
+		}
+
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", showNotice, { once: true });
+		} else {
+			showNotice();
+		}
+	})();
+</script>
