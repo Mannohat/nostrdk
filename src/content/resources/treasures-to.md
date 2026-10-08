@@ -4,6 +4,7 @@ description: "Deltag i det decentrale skattejagtseventyr bygget på Nostr. Gem s
 descriptionEn: "Join the decentralized treasure-hunt adventure built on Nostr. Hide treasures, find them, and connect with treasure hunters around the world."
 url: "https://treasures.to/"
 category: "services"
+type: "service"
 order: 50
 published: true
 ---

@@ -4,6 +4,7 @@ description: "Zap‑drevet annoncering. Direkte engagement, ingen mellemled via 
 descriptionEn: "Zap-powered advertising. Direct engagement, no middlemen, via the Lightning Network."
 url: "https://zapadd.com/"
 category: "tools"
+type: "tool"
 order: 50
 published: true
 ---

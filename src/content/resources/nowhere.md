@@ -4,6 +4,7 @@ description: "Nowhere er en platform, der koder bl.a. hele hjemmesider ind i sel
 descriptionEn: "Nowhere is a platform that encodes entire websites into the URL itself, among other things."
 url: "https://hostednowhere.com/"
 category: "tools"
+type: "tool"
 order: 50
 published: true
 ---

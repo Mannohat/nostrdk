@@ -4,6 +4,7 @@ description: "Kort beskrivelse på dansk (1-2 sætninger om hvad appen gør)."
 descriptionEn: "Optional English description (shown on the /en site; falls back to the Danish one if omitted)."
 url: "https://example.com/"
 category: "nostr-alternatives"
+type: "client"
 section: "Type/Kategori"
 order: 10
 published: true
@@ -20,6 +21,7 @@ FIELD FORKLARING:
 - descriptionEn: Valgfri engelsk beskrivelse (vises på /en; falder tilbage til dansk hvis udeladt)
 - url: Link til ressourcen (inkl. trailing slash hvis relevant)
 - category: Vælg én af kategorierne nedenfor
+- type: Påkrævet. Bestemmer sektionen på /apps (se typer nedenfor)
 - section: Valgfri undertag (f.eks. "Social Media", "Meetup Alternative", "Wallet")
 - order: Position i kategorien (1 = først, højere tal = senere)
 - published: true (synlig) eller false (skjult)
@@ -31,6 +33,9 @@ KATEGORIER (vælg én):
 - tools: Hjælpeværktøjer til navigation i Nostr
 - relays: Relay services og managere
 
+TYPER (vælg én):
+- client, wallet, tool, extension, relay, marketplace, publishing, streaming, service
+
 EKSEMPEL:
 
 ---
@@ -38,6 +43,7 @@ title: "Flockstr"
 description: "Decentralt alternativ til Meetup.com for at organisere events."
 url: "https://www.flockstr.com/"
 category: "nostr-alternatives"
+type: "service"
 section: "Meetup Alternative"
 order: 1
 published: true

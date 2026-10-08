@@ -623,7 +623,7 @@ const appsItemListLd = {
         const res = await fetch("/.netlify/functions/suggest-resource", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, url, description, type }),
+          body: JSON.stringify({ name, url, description, type, lang: "da" }),
         });
 
         const data = await res.json();

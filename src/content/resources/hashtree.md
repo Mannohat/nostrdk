@@ -4,6 +4,7 @@ description: "Hashtree.cc – decentral fildeling og git-hosting baseret på ind
 descriptionEn: "Hashtree.cc – decentralized file sharing and git hosting based on content hashes and Nostr keys. No accounts, no servers, no DNS."
 url: "https://hashtree.cc/"
 category: "tools"
+type: "tool"
 order: 50
 published: true
 ---
