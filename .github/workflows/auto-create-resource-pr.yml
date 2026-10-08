@@ -8,124 +8,215 @@ jobs:
   create-resource-pr:
     if: contains(github.event.issue.labels.*.name, 'ressource-forslag')
     runs-on: ubuntu-latest
-    
+
     permissions:
       contents: write
       issues: write
       pull-requests: write
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      
+
       - name: Parse issue and create resource
+        id: parse
         uses: actions/github-script@v7
         with:
           script: |
+            const fs = require('fs');
+            const path = require('path');
+
             const issue = context.payload.issue;
-            const issueBody = issue.body;
-            
+            const issueBody = (issue.body || '').replace(/\r\n/g, '\n');
+
+            // Felter fra issue-formularen eller nostr.dk-modalen. Tomme valgfrie felter står som "_No response_".
             const parseField = (fieldName) => {
-              const regex = new RegExp('### ' + fieldName + '\\s+([\\s\\S]*?)(?=###|$)', 'i');
+              const escaped = fieldName.replace(/[.*+?^$()|[\]\\]/g, '\\$&');
+              const regex = new RegExp('### ' + escaped + '[ \\t]*\\n([\\s\\S]*?)(?=\\n### |$)', 'i');
               const match = issueBody.match(regex);
-              return match ? match[1].trim() : '';
+              const value = match ? match[1].trim() : '';
+              return value === '_No response_' ? '' : value;
             };
-            
-            const name = parseField('Ressource Navn / Resource Name');
-            const url = parseField('URL');
+            const oneLine = (s) => s.replace(/\s+/g, ' ').trim();
+            const withPeriod = (s) => (!s || /[.!?]$/.test(s) ? s : s + '.');
+
+            const name = oneLine(parseField('Ressource Navn / Resource Name'));
+            const url = oneLine(parseField('URL'));
             const categoryRaw = parseField('Kategori / Category');
-            const description = parseField('Beskrivelse / Description');
-            
-            const categoryMap = {
-              '🔄 Nostr Alternativer (nostr-alternatives)': 'nostr-alternatives',
-              '⚡ Nostr Services (services)': 'services',
-              '🔌 Browser Udvidelser (extensions)': 'extensions',
-              '🛠️ Nostr Værktøjer (tools)': 'tools',
-              '🌐 Nostr Relays (relays)': 'relays'
-            };
-            
-            const category = categoryMap[categoryRaw] || 'nostr-alternatives';
-            
-            const filename = name
+            const typeRaw = parseField('Type');
+            const submittedDescription = oneLine(parseField('Beskrivelse / Description'));
+            const submittedDescriptionEn = oneLine(parseField('Engelsk beskrivelse / English description'));
+            // Modalen på /en sender "en": så er beskrivelsen engelsk og den danske mangler
+            const language = parseField('Sprog / Language').toLowerCase().startsWith('en') ? 'en' : 'da';
+
+            if (!name || !url || !submittedDescription) {
+              core.setFailed('Issue mangler navn, URL eller beskrivelse');
+              return;
+            }
+
+            // Match på nøglen i parentes, så emoji/encoding i labelen ikke betyder noget
+            const categories = ['nostr-alternatives', 'services', 'extensions', 'tools', 'relays'];
+            const categoryMatch = categoryRaw.match(/\(([a-z-]+)\)/);
+            const category = categoryMatch && categories.includes(categoryMatch[1]) ? categoryMatch[1] : 'nostr-alternatives';
+
+            // Type styrer hvilken sektion ressourcen vises i på /apps
+            const types = ['client', 'wallet', 'tool', 'extension', 'relay', 'marketplace', 'publishing', 'streaming', 'service'];
+            const typeMatch = typeRaw.toLowerCase().match(new RegExp('\\b(' + types.join('|') + ')\\b'));
+            const typeFromCategory = { extensions: 'extension', relays: 'relay', tools: 'tool' };
+            const type = typeMatch ? typeMatch[1] : typeFromCategory[category] || 'service';
+
+            let description;
+            let descriptionEn;
+            if (language === 'en') {
+              descriptionEn = withPeriod(submittedDescription);
+              description = descriptionEn; // midlertidig – skal oversættes til dansk før merge
+            } else {
+              description = withPeriod(submittedDescription);
+              descriptionEn = withPeriod(submittedDescriptionEn);
+            }
+
+            const slug = name
               .toLowerCase()
+              .replace(/æ/g, 'ae')
+              .replace(/ø/g, 'oe')
+              .replace(/å/g, 'aa')
+              .normalize('NFKD')
+              .replace(/[̀-ͯ]/g, '')
               .replace(/[^a-z0-9]+/g, '-')
-              .replace(/^-+|-+$/g, '') + '.md';
-            
-            const finalDescription = description.endsWith('.') ? description : description + '.';
+              .replace(/^-+|-+$/g, '');
+            if (!slug) {
+              core.setFailed('Kunne ikke lave et filnavn ud fra navnet: ' + name);
+              return;
+            }
+            const filename = slug + '.md';
             const finalUrl = url.endsWith('/') || url.includes('?') ? url : url + '/';
-            
-            let frontmatter = '---\n';
-            frontmatter += 'title: "' + name + '"\n';
-            frontmatter += 'description: "' + finalDescription + '"\n';
-            frontmatter += 'url: "' + finalUrl + '"\n';
-            frontmatter += 'category: "' + category + '"\n';
-            frontmatter += 'order: 50\n';
-            frontmatter += 'published: true\n';
-            frontmatter += '---\n';
-            
+
+            const resourcesDir = 'src/content/resources';
+            const filePath = path.join(resourcesDir, filename);
+
+            // Overskriv aldrig en eksisterende ressource
+            if (fs.existsSync(filePath)) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                body: 'Thanks for the suggestion!\n\n`' + filename + '` already exists in the resources, so no Pull Request was created. The maintainer will take a look.'
+              });
+              core.setOutput('skip', 'true');
+              return;
+            }
+
+            // Mulige dubletter: samme navn (uden tegn/mellemrum) eller samme URL
+            const compact = (s) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const normalizeUrl = (u) => u.toLowerCase().replace(/^https?:\/\/(www\.)?/, '').replace(/\/+$/, '');
+            const duplicates = fs.readdirSync(resourcesDir)
+              .filter((file) => file.endsWith('.md'))
+              .filter((file) => {
+                const content = fs.readFileSync(path.join(resourcesDir, file), 'utf8');
+                const existingTitle = (content.match(/^title:\s*"?([^"\n]*)"?/m) || [])[1] || '';
+                const existingUrl = (content.match(/^url:\s*"?([^"\n]*)"?/m) || [])[1] || '';
+                return compact(file.replace(/\.md$/, '')) === compact(slug) ||
+                  compact(existingTitle) === compact(name) ||
+                  (existingUrl && normalizeUrl(existingUrl) === normalizeUrl(finalUrl));
+              });
+
+            // JSON-strenge er gyldige YAML-strenge, så citationstegn i input ikke ødelægger frontmatter
+            const q = (s) => JSON.stringify(s);
+            const lines = ['---', 'title: ' + q(name), 'description: ' + q(description)];
+            if (descriptionEn) lines.push('descriptionEn: ' + q(descriptionEn));
+            lines.push(
+              'url: ' + q(finalUrl),
+              'category: ' + q(category),
+              'type: ' + q(type),
+              'order: 50',
+              'published: true',
+              '---',
+              ''
+            );
+            fs.writeFileSync(filePath, lines.join('\n'));
+
             core.exportVariable('RESOURCE_NAME', name);
             core.exportVariable('RESOURCE_FILENAME', filename);
-            core.exportVariable('RESOURCE_CONTENT', frontmatter);
-            core.exportVariable('RESOURCE_URL', finalUrl);
-            core.exportVariable('RESOURCE_CATEGORY', category);
-            core.exportVariable('RESOURCE_DESCRIPTION', finalDescription);
-      
-      - name: Create branch and file
+            core.exportVariable('RESOURCE_JSON', JSON.stringify({
+              name,
+              url: finalUrl,
+              category,
+              type,
+              description,
+              descriptionEn,
+              filename,
+              missingDanish: language === 'en',
+              missingEnglish: !descriptionEn,
+              duplicates
+            }));
+
+      - name: Create branch and commit
+        if: steps.parse.outputs.skip != 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Issue-nummeret sikrer at branch-navnet altid er unikt
           BRANCH_NAME="add-resource-${RESOURCE_FILENAME%.md}-${{ github.event.issue.number }}"
-          
+
           git checkout -b "$BRANCH_NAME"
-          
-          echo "$RESOURCE_CONTENT" > "src/content/resources/$RESOURCE_FILENAME"
-          
+
           git add "src/content/resources/$RESOURCE_FILENAME"
           git commit -m "Add $RESOURCE_NAME from issue #${{ github.event.issue.number }}"
           git push origin "$BRANCH_NAME"
-          
+
           echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Create Pull Request
+        if: steps.parse.outputs.skip != 'true'
         uses: actions/github-script@v7
         with:
           script: |
-            const name = process.env.RESOURCE_NAME;
-            const url = process.env.RESOURCE_URL;
-            const category = process.env.RESOURCE_CATEGORY;
-            const description = process.env.RESOURCE_DESCRIPTION;
-            const filename = process.env.RESOURCE_FILENAME;
+            const r = JSON.parse(process.env.RESOURCE_JSON);
             const branchName = process.env.BRANCH_NAME;
-            
-            const prBody = 'This PR adds **' + name + '** to the resources.\n\n' +
+
+            const warnings = [];
+            if (r.missingDanish) {
+              warnings.push('⚠️ **Danish description missing.** This was suggested from the English site, so `description` temporarily holds the English text. Translate it to Danish before merging.');
+            }
+            if (r.missingEnglish) {
+              warnings.push('⚠️ **English description missing.** Add `descriptionEn` before merging, otherwise /en/apps shows the Danish text.');
+            }
+            if (r.duplicates.length) {
+              warnings.push('⚠️ **Possible duplicate** of ' + r.duplicates.map((f) => '`' + f + '`').join(', ') + '. Check before merging.');
+            }
+
+            const prBody = 'This PR adds **' + r.name + '** to the resources.\n\n' +
               '**Auto-generated from issue #' + context.issue.number + '**\n\n' +
+              (warnings.length ? warnings.join('\n\n') + '\n\n' : '') +
               '## Resource Details\n' +
-              '- **Name:** ' + name + '\n' +
-              '- **URL:** ' + url + '\n' +
-              '- **Category:** ' + category + '\n' +
-              '- **Description:** ' + description + '\n\n' +
+              '- **Name:** ' + r.name + '\n' +
+              '- **URL:** ' + r.url + '\n' +
+              '- **Type:** ' + r.type + '\n' +
+              '- **Category:** ' + r.category + '\n' +
+              '- **Description (da):** ' + r.description + '\n' +
+              '- **Description (en):** ' + (r.descriptionEn || '_missing_') + '\n\n' +
               '## Review Checklist\n' +
               '- [ ] URL is correct and works\n' +
-              '- [ ] Description is accurate\n' +
-              '- [ ] Category is appropriate\n' +
-              '- [ ] Filename follows convention (' + filename + ')\n' +
+              '- [ ] Danish description is accurate\n' +
+              '- [ ] English description (`descriptionEn`) is present and accurate\n' +
+              '- [ ] Type is appropriate (decides the section on /apps)\n' +
+              '- [ ] Filename follows convention (' + r.filename + ')\n' +
               '- [ ] Order value is reasonable (currently set to 50)\n\n' +
               '---\n' +
               'Closes #' + context.issue.number;
-            
+
             const pr = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: 'Add ' + name + ' to resources',
+              title: 'Add ' + r.name + ' to resources',
               head: branchName,
               base: 'main',
               body: prBody
             });
-            
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

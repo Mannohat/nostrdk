@@ -21,7 +21,9 @@ exports.handler = async (event) => {
     return { statusCode: 400, headers, body: JSON.stringify({ error: "Ugyldigt JSON" }) };
   }
 
-  const { name, url, description, type } = body;
+  const { name, url, description, type, lang } = body;
+  // Modalen på /en sender "en": så er beskrivelsen skrevet på engelsk
+  const language = lang === "en" ? "en" : "da";
 
   // Valider påkrævede felter
   if (!name || !url || !description || !type) {
@@ -109,6 +111,10 @@ exports.handler = async (event) => {
     `### Beskrivelse / Description`,
     ``,
     description,
+    ``,
+    `### Sprog / Language`,
+    ``,
+    language,
     ``,
     `### Hvorfor? / Why?`,
     ``,

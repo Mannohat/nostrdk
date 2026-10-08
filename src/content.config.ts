@@ -43,22 +43,20 @@ const resources = defineCollection({
 		url: z.string(),
 		category: z.string(),
 		/**
-		 * High-signal filter facet (single-select). Defaults keep existing content valid.
-		 * Examples: client, wallet, tool, extension, relay, marketplace, publishing, streaming, service
+		 * High-signal filter facet (single-select). Required: /apps/[type] lists resources by this
+		 * field alone, so a missing type would silently file the resource under "service".
 		 */
-		type: z
-			.enum([
-				'client',
-				'wallet',
-				'tool',
-				'extension',
-				'relay',
-				'marketplace',
-				'publishing',
-				'streaming',
-				'service',
-			])
-			.default('service'),
+		type: z.enum([
+			'client',
+			'wallet',
+			'tool',
+			'extension',
+			'relay',
+			'marketplace',
+			'publishing',
+			'streaming',
+			'service',
+		]),
 		/** Optional multi-tags for refinement (e.g. chat, payments, video) */
 		tags: z.array(z.string()).default([]),
 		section: z.string().optional(), // ← valgfri, bruges ikke af alle ressourcer

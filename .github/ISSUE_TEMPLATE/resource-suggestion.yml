@@ -32,11 +32,29 @@ body:
       label: Kategori / Category
       description: Hvilken kategori passer bedst?
       options:
-        - �� Nostr Alternativer (nostr-alternatives)
+        - 🔄 Nostr Alternativer (nostr-alternatives)
         - ⚡ Nostr Services (services)
         - 🔌 Browser Udvidelser (extensions)
         - 🛠️ Nostr Værktøjer (tools)
         - 🌐 Nostr Relays (relays)
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type
+      description: Bestemmer hvilken sektion på /apps den vises i / Decides the section on /apps
+      options:
+        - Klient (client)
+        - Wallet (wallet)
+        - Værktøj (tool)
+        - Udvidelse (extension)
+        - Relay (relay)
+        - Markedsplads (marketplace)
+        - Publicering (publishing)
+        - Streaming (streaming)
+        - Service (service)
     validations:
       required: true
 
@@ -48,6 +66,13 @@ body:
       placeholder: En decentraliseret social media klient bygget på Nostr protokollen
     validations:
       required: true
+
+  - type: textarea
+    id: description-en
+    attributes:
+      label: Engelsk beskrivelse / English description
+      description: Valgfri – vises på den engelske side (/en) / Optional – shown on the English site (/en)
+      placeholder: A decentralized social media client built on the Nostr protocol
 
   - type: textarea
     id: why

@@ -88,8 +88,10 @@ Brug denne skabelon i din nye `.md` fil:
 ---
 title: "App Navn"
 description: "Kort beskrivelse på dansk om hvad appen gør."
+descriptionEn: "Short English description of what the app does."
 url: "https://example.com/"
 category: "nostr-alternatives"
+type: "client"
 section: "Type/Kategori"
 order: 10
 published: true
@@ -105,6 +107,7 @@ published: true
 | `descriptionEn` | ❌ Nej | Engelsk beskrivelse til `/en`-siden (falder tilbage til `description` hvis udeladt) |
 | `url` | ✅ Ja | Link til ressourcen |
 | `category` | ✅ Ja | Se kategorier nedenfor |
+| `type` | ✅ Ja | Sektion på `/apps`: `client`, `wallet`, `tool`, `extension`, `relay`, `marketplace`, `publishing`, `streaming` eller `service` |
 | `section` | ❌ Nej | Valgfri tag (f.eks. "Wallet", "Meetup Alternative") |
 | `order` | ✅ Ja | Position i kategorien (1 = først) |
 | `published` | ✅ Ja | `true` for synlig, `false` for skjult |
